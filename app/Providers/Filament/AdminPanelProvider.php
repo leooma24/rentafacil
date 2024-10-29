@@ -58,7 +58,7 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->tenant(Company::class)
-            //->tenantRegistration(RegisterCompany::class)
+            ->tenantRegistration(RegisterCompany::class)
             ->tenantProfile(EditCompanyProfile::class);
             ;
     }
