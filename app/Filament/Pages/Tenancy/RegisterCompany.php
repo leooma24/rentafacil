@@ -33,4 +33,11 @@ class RegisterCompany extends RegisterTenant
 
         return $company;
     }
+
+    public static function canView(): bool
+    {
+        return ! auth()->user()->companies()->count();
+    }
+
+
 }
