@@ -17,10 +17,12 @@ class MaintenanceResource extends Resource
 {
     protected static ?string $model = Maintenance::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?int $navigationSort = 4;
+
+    protected static ?string $navigationIcon = 'heroicon-s-wrench-screwdriver';
     protected static ?string $modelLabel = 'Mantenimiento';
-    protected static ?string $pluralModelLabel = 'Manenimientos';
-    protected static ?string $navigationLabel = 'Manenimientos';
+    protected static ?string $pluralModelLabel = 'Mantenimientos';
+    protected static ?string $navigationLabel = 'Mantenimientos';
 
     public static function form(Form $form): Form
     {

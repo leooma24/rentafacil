@@ -9,11 +9,12 @@ class Address extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['street', 'city', 'number', 'interior_number', 'state_id', 'postal_code', 'township_id', 'country_id', 'customer_id', 'neighborhood_id'];
+    protected $fillable = ['street', 'city', 'number', 'interior_number', 'state_id', 'postal_code', 'township_id', 'country_id', 'neighborhood_id'];
 
-    public function customer()
+
+    public function addressable()
     {
-        return $this->belongsTo(Customer::class);
+        return $this->morphTo();
     }
 
     public function country()

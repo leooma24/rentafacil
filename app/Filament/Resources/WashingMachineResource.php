@@ -26,6 +26,8 @@ class WashingMachineResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-archive-box';
 
+    protected static ?int $navigationSort = 2;
+
     protected static ?string $modelLabel = 'Lavadora';
     protected static ?string $pluralModelLabel = 'Lavadoras';
     protected static ?string $navigationLabel = 'Mis Lavadoras';

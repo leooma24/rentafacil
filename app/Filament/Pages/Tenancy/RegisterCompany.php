@@ -17,11 +17,16 @@ class RegisterCompany extends RegisterTenant
     {
         return $form
             ->schema([
-                TextInput::make('name'),
-                TextInput::make('address'),
-                TextInput::make('phone'),
-                TextInput::make('email'),
-                // ...
+                TextInput::make('name')
+                    ->label('Nombre de la empresa')
+                    ->required(),
+                TextInput::make('phone')
+                    ->label('Teléfono')
+                    ->required(),
+                TextInput::make('email')
+                    ->label('Correo electrónico')
+                    ->required()
+                    ->email(),
             ]);
     }
 

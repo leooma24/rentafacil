@@ -17,7 +17,9 @@ class RentalResource extends Resource
 {
     protected static ?string $model = Rental::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-s-currency-dollar';
+
+    protected static ?int $navigationSort = 3;
 
     protected static ?string $modelLabel = 'Renta';
     protected static ?string $pluralModelLabel = 'Rentas';
