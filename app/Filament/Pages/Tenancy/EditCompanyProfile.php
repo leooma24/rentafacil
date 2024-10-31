@@ -19,6 +19,8 @@ class EditCompanyProfile extends EditTenantProfile
         return 'Company profile';
     }
 
+
+
     public function form(Form $form): Form
     {
         return $form

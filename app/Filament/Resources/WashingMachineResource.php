@@ -31,6 +31,7 @@ class WashingMachineResource extends Resource
     protected static ?string $modelLabel = 'Lavadora';
     protected static ?string $pluralModelLabel = 'Lavadoras';
     protected static ?string $navigationLabel = 'Mis Lavadoras';
+    protected static ?string $slug = 'lavadoras';
 
     public static function form(Form $form): Form
     {
@@ -300,5 +301,10 @@ class WashingMachineResource extends Resource
             'create' => Pages\CreateWashingMachine::route('/create'),
             'edit' => Pages\EditWashingMachine::route('/{record}/edit'),
         ];
+    }
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasRole('propietario');
     }
 }

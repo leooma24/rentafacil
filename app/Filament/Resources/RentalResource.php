@@ -24,6 +24,7 @@ class RentalResource extends Resource
     protected static ?string $modelLabel = 'Renta';
     protected static ?string $pluralModelLabel = 'Rentas';
     protected static ?string $navigationLabel = 'Mis Rentas';
+    protected static ?string $slug = 'mis-rentas';
 
     public static function form(Form $form): Form
     {
@@ -121,5 +122,10 @@ class RentalResource extends Resource
             'create' => Pages\CreateRental::route('/create'),
             'edit' => Pages\EditRental::route('/{record}/edit'),
         ];
+    }
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasRole('propietario');
     }
 }

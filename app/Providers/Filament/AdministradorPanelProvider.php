@@ -2,7 +2,6 @@
 
 namespace App\Providers\Filament;
 
-use App\Models\Company;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -18,29 +17,24 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use App\Filament\Pages\Tenancy\RegisterCompany;
-use App\Filament\Pages\Tenancy\EditCompanyProfile;
 
-class AdminPanelProvider extends PanelProvider
+class AdministradorPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->default()
-            ->id('propietario')
-            ->path('propietario')
-            ->login()
-            ->registration()
-            ->passwordReset()
+            ->id('administrador')
+            ->path('administrador')
             ->colors([
                 'primary' => Color::Amber,
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->login()
+            ->discoverResources(in: app_path('Filament/Administrador/Resources'), for: 'App\\Filament\\Administrador\\Resources')
+            ->discoverPages(in: app_path('Filament/Administrador/Pages'), for: 'App\\Filament\\Administrador\\Pages')
             ->pages([
                 Pages\Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+            ->discoverWidgets(in: app_path('Filament/Administrador/Widgets'), for: 'App\\Filament\\Administrador\\Widgets')
             ->widgets([
 
             ])
@@ -58,8 +52,8 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->tenant(Company::class)
-            ->tenantRegistration(RegisterCompany::class)
-            ->tenantProfile(EditCompanyProfile::class);
+            ->plugins([
+                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make()
+            ]);
     }
 }

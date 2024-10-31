@@ -23,6 +23,7 @@ class MaintenanceResource extends Resource
     protected static ?string $modelLabel = 'Mantenimiento';
     protected static ?string $pluralModelLabel = 'Mantenimientos';
     protected static ?string $navigationLabel = 'Mantenimientos';
+    protected static ?string $slug = 'mantenimientos';
 
     public static function form(Form $form): Form
     {
@@ -88,5 +89,10 @@ class MaintenanceResource extends Resource
             'create' => Pages\CreateMaintenance::route('/create'),
             'edit' => Pages\EditMaintenance::route('/{record}/edit'),
         ];
+    }
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasRole('propietario');
     }
 }

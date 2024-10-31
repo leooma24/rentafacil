@@ -18,6 +18,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Collection;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 
 class CustomerResource extends Resource
 {
@@ -30,6 +31,7 @@ class CustomerResource extends Resource
     protected static ?string $modelLabel = 'Cliente';
     protected static ?string $pluralModelLabel = 'Clientes';
     protected static ?string $navigationLabel = 'Mis Clientes';
+    protected static ?string $slug = 'clientes';
 
     public static function form(Form $form): Form
     {
@@ -108,5 +110,10 @@ class CustomerResource extends Resource
             'create' => Pages\CreateCustomer::route('/create'),
             'edit' => Pages\EditCustomer::route('/{record}/edit'),
         ];
+    }
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasRole('propietario');
     }
 }
