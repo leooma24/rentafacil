@@ -32,10 +32,22 @@ class CompanyResource extends Resource
         ->schema([
             Section::make('Información de la Compañia')
                 ->columns(3)
-                ->schema(CompanyForm::getFormCompanyFields()),
+                ->schema(CompanyForm::getFormCompanyFields()
+                ),
             Section::make('Dirección')
                 ->collapsible()
                 ->schema([AddressForm::getFormAddressFields()]),
+            Section::make('Usuarios')
+                ->columns(3)
+                ->schema(
+                    [
+                        Forms\Components\Select::make('members')
+                            ->relationship('members', 'name')
+                            ->multiple()
+                            ->preload()
+                            ->searchable()
+                    ]
+                ),
         ]);
     }
 
