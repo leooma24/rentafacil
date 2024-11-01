@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Administrador\Resources;
+namespace App\Filament\Resources;
 
-use App\Filament\Administrador\Resources\CompanyResource\Pages;
-use App\Filament\Administrador\Resources\CompanyResource\RelationManagers;
+use App\Filament\Resources\CompanyResource\Pages;
+use App\Filament\Resources\CompanyResource\RelationManagers;
 use App\Models\Company;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -22,9 +22,11 @@ class CompanyResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    protected static ?string $navigationGroup = 'Administrador';
     protected static ?string $modelLabel = 'Compañia';
     protected static ?string $pluralModelLabel = 'Compañias';
     protected static ?string $navigationLabel = 'Compañias';
+    protected static bool $isScopedToTenant = false;
 
     public static function form(Form $form): Form
     {

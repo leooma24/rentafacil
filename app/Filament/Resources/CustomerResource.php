@@ -41,12 +41,15 @@ class CustomerResource extends Resource
                     ->columns('3')
                     ->schema([
                         Forms\Components\TextInput::make('name')
+                            ->label('Nombre')
                             ->required()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('email')
+                            ->label('Correo Electrónico')
                             ->email()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('phone')
+                            ->label('Teléfono')
                             ->tel()
                             ->maxLength(15),
                     ]),
@@ -110,10 +113,5 @@ class CustomerResource extends Resource
             'create' => Pages\CreateCustomer::route('/create'),
             'edit' => Pages\EditCustomer::route('/{record}/edit'),
         ];
-    }
-
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('propietario');
     }
 }

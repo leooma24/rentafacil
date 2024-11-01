@@ -58,6 +58,9 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
+            ->plugins([
+                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make()
+            ])
             ->tenant(Company::class)
             ->tenantRegistration(RegisterCompany::class)
             ->tenantProfile(EditCompanyProfile::class);

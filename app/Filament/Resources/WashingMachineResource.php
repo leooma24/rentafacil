@@ -303,8 +303,4 @@ class WashingMachineResource extends Resource
         ];
     }
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('propietario');
-    }
 }

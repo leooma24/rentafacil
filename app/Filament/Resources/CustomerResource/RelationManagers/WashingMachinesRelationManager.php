@@ -37,6 +37,7 @@ class WashingMachinesRelationManager extends RelationManager
                         })
                     ),
                 Forms\Components\DatePicker::make('start_date')
+                    ->label('Fecha de Inicio')
                     ->native(false)
                     ->format('Y-m-d')
                     ->required()
@@ -49,6 +50,7 @@ class WashingMachinesRelationManager extends RelationManager
                         $set('end_date', $startDate->add(7, 'days')->format('Y-m-d'));
                     }),
                 Forms\Components\DatePicker::make('end_date')
+                    ->label('Fecha de Fin')
                     ->native(false)
                     ->format('Y-m-d')
                     ->required()

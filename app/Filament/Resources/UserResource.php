@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Administrador\Resources;
+namespace App\Filament\Resources;
 
-use App\Filament\Administrador\Resources\UserResource\Pages;
-use App\Filament\Administrador\Resources\UserResource\RelationManagers;
+use App\Filament\Resources\UserResource\Pages;
+use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -19,10 +19,12 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    protected static ?string $navigationGroup = 'Administrador';
     protected static ?string $modelLabel = 'Usuario';
     protected static ?string $pluralModelLabel = 'Usuarios';
     protected static ?string $navigationLabel = 'Usuarios';
     protected static ?string $slug = 'usuarios';
+    protected static bool $isScopedToTenant = false;
 
     public static function form(Form $form): Form
     {

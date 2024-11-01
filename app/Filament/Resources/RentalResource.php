@@ -32,25 +32,25 @@ class RentalResource extends Resource
             ->schema([
                 //
                 Forms\Components\Select::make('customer_id')
-                    ->label('Customer')
+                    ->label('Cliente')
                     ->relationship('customer', 'name')
                     ->required(),
                 Forms\Components\Select::make('washing_machine_id')
-                    ->label('Washing Machine')
+                    ->label('Lavadora')
                     ->relationship('washingMachine', 'machine_code')
                     ->required(),
                 Forms\Components\DatePicker::make('start_date')
-                    ->label('Start Date')
+                    ->label('Fecha de Inicio')
                     ->default(now())
                     ->native(false)
                     ->format('Y-m-d')
                     ->required(),
                 Forms\Components\DatePicker::make('end_date')
-                    ->label('End Date')
+                    ->label('Fecha de Fin')
                     ->native(false)
                     ->format('Y-m-d'),
                 Forms\Components\Select::make('status')
-                    ->label('Status')
+                    ->label('Estatus')
                     ->options([
                         'activa' => 'Activa',
                         'vencida' => 'Vencida',
@@ -60,7 +60,7 @@ class RentalResource extends Resource
                     ->default('activa')
                     ->required(),
                 Forms\Components\Textarea::make('notes')
-                    ->label('Notes')
+                    ->label('Notas')
                     ->columnSpanFull(),
             ]);
     }
@@ -71,25 +71,25 @@ class RentalResource extends Resource
             ->columns([
                 //
                 Tables\Columns\TextColumn::make('customer.name')
-                    ->label('Customer')
+                    ->label('Cliente')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('washingMachine.machine_code')
-                    ->label('Washing Machine')
+                    ->label('Lavadora')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('start_date')
-                    ->label('Start Date')
+                    ->label('Fecha de Inicio')
                     ->date()
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('end_date')
-                    ->label('End Date')
+                    ->label('Fecha de Fin')
                     ->date()
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
-                    ->label('Status')
+                    ->label('Estatus')
                     ->badge()
                     ->searchable()
                     ->sortable(),
@@ -124,8 +124,4 @@ class RentalResource extends Resource
         ];
     }
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('propietario');
-    }
 }
