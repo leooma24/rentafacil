@@ -14,6 +14,7 @@ use Filament\Forms;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Facades\Filament;
 use Filament\Widgets\TableWidget as BaseWidget;
+use Filament\Notifications\Actions\Action as NotificationAction;
 
 class RentDueWashingMachines extends BaseWidget
 {
@@ -50,18 +51,32 @@ class RentDueWashingMachines extends BaseWidget
                     ->requiresConfirmation()
                     ->action(function (array $data, Rental $record) use ($tenant) {
 
-                        $newDate = new Carbon($record->end_date);
-                        $newDate->add(7, 'days');
-                        $record->end_date = $newDate->format('Y-m-d');
-                        $record->save();
-
-                        if($record->status === 'vencida') {
-                            $record->status = 'activa';
-                            $record->save();
+                        $settings = $tenant->settings;
+                        $days = $settings->days_per_payment;
+                        $price = $settings->price;
+                        if(!$days || !$price) {
+                            Notification::make()
+                                ->title('No se puede extender la renta, no hay configuración de precios')
+                                ->danger()
+                                ->actions([
+                                    NotificationAction::make('Configurar')
+                                        ->button()
+                                        ->url('/propietario/' . $tenant->id . '/configuracion'),
+                                ])
+                                ->send();
+                            return;
                         }
 
+                        $newDate = new Carbon($record->end_date);
+                        $newDate->add($days, 'days');
+                        $record->end_date = $newDate->format('Y-m-d');
+                        if($record->status === 'vencida') {
+                            $record->status = 'activa';
+                        }
+                        $record->save();
+
                         Notification::make()
-                            ->title('Se pago una semana mas de renta')
+                            ->title('Se pago la renta de la lavadora.')
                             ->success()
                             ->send();
                     }),

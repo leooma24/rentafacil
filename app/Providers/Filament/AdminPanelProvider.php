@@ -32,6 +32,10 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->registration()
             ->passwordReset()
+            ->brandLogo(asset('img/logo.png'))
+            ->brandLogoHeight('4rem')
+            ->favicon(asset('img/favicon.ico'))
+            ->brandName('Renta Facíl')
             ->colors([
                 'primary' => Color::Amber,
             ])

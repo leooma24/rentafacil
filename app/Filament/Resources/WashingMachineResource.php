@@ -2,10 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\CustomerResource\RelationManagers\WashingMachinesRelationManager;
+use App\Filament\Resources\CompanyResource\Actions\ExtendRentAction;
+use App\Filament\Resources\CompanyResource\Actions\RentAction;
 use App\Filament\Resources\WashingMachineResource\Pages;
-use App\Filament\Resources\WashingMachineResource\RelationManagers;
-use App\Models\Rental;
 use App\Models\WashingMachine;
 use Carbon\Carbon;
 use Filament\Forms;
@@ -13,12 +12,12 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Notifications\Notification;
 use Filament\Facades\Filament;
 use Filament\Tables\Actions\ActionGroup;
+
+
 
 class WashingMachineResource extends Resource
 {
@@ -128,71 +127,8 @@ class WashingMachineResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 ActionGroup::make([
-                Tables\Actions\Action::make('rent', 'Rentar')
-                    ->visible(fn (WashingMachine $record) => $record->status === 'disponible')
-                    ->icon('heroicon-s-currency-dollar')
-                    ->label('Rentar')
-                    ->slideOver()
-                    ->form([
-                        Forms\Components\Select::make('customer_id')
-                            ->label('Customer')
-                            ->options(
-                                \App\Models\Customer::where('company_id', $tenant->id)->pluck('name', 'id')
-                            )
-                            ,
-                        Forms\Components\DatePicker::make('start_date')
-                            ->label('Fecha de Inicio')
-                            ->required(),
-                        Forms\Components\DatePicker::make('end_date')
-                            ->label('Fecha de Fin')
-                            ->required(),
-                        Forms\Components\Select::make('status')
-                            ->label('Estatus')
-                            ->options([
-                                'activa' => 'Activa',
-                                'completa' => 'Completa',
-                                'cancelada' => 'Cancelada',
-                            ])
-                            ->default('activa')
-                            ->required(),
-                        Forms\Components\Textarea::make('notes')
-                            ->label('Notas')
-                            ->columnSpanFull(),
-                    ])->action(function (array $data, WashingMachine $record) use ($tenant) {
-                        $data['washing_machine_id'] = $record->id;
-                        $rental = $tenant->rentals()->create($data);
-
-                        $record->update(['status' => 'rentada']);
-
-                        Notification::make()
-                            ->title('La lavadora ha sido rentada')
-                            ->success()
-                            ->send();
-                    }),
-                    Tables\Actions\Action::make('extend_rent')
-                        ->visible(fn (WashingMachine $record) => $record->status === 'rentada')
-                        ->label('Extender Renta')
-                        ->icon('heroicon-o-calendar')
-                        ->requiresConfirmation()
-                        ->action(function (array $data, WashingMachine $record) use ($tenant) {
-                            $rental = $record->rentals()->whereIn('status', ['activa', 'vencida'])->first();
-
-
-                            $newDate = new Carbon($rental->end_date);
-                            $newDate->add(7, 'days');
-                            $rental->end_date = $newDate->format('Y-m-d');
-                            $rental->save();
-
-                            if($rental->status === 'vencida') {
-                                $rental->status = 'activa';
-                                $rental->save();
-                            }
-
-                            Notification::make()
-                                ->title('Se pago una semana mas de renta')
-                                ->success()
-                                ->send();
-                        }),
+                    RentAction::make($tenant),
+                    ExtendRentAction::make($tenant),
                     Tables\Actions\Action::make('make_available')
                         ->visible(fn (WashingMachine $record) => in_array($record->status, ['rentada', 'en_mantenimiento']) )
                         ->label('Marcar Disponible')

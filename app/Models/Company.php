@@ -69,4 +69,9 @@ class Company extends Model
         $clientCount = $this->washingMachines()->count();
         return $package && $clientCount < $package->max_washers;
     }
+
+    public function settings()
+    {
+        return $this->hasOne(Setting::class);
+    }
 }
