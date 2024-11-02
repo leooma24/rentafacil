@@ -88,6 +88,11 @@ class CompanyResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->badge(),
+                Tables\Columns\TextColumn::make('companyPackage.package.name')
+                    ->label('Paquete')
+                    ->searchable()
+                    ->sortable()
+                    ->badge(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
