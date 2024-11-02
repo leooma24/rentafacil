@@ -58,14 +58,14 @@ class Company extends Model
     // Método para verificar los límites del paquete
     public function canAddMoreClients()
     {
-        $package = $this->companyPackage->package;
+        $package = $this->companyPackage?->package;
         $clientCount = $this->customers()->count();
         return $package && $clientCount < $package->max_clients;
     }
 
     public function canAddMoreWashingMachines()
     {
-        $package = $this->companyPackage->package;
+        $package = $this->companyPackage?->package;
         $clientCount = $this->washingMachines()->count();
         return $package && $clientCount < $package->max_washers;
     }
