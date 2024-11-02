@@ -20,7 +20,6 @@ class AddressForm
             ->reorderable(false)
             ->relationship()
             ->columns(3)
-            ->minItems(1)
             ->maxItems(1)
             ->schema([
                 Forms\Components\TextInput::make('street')

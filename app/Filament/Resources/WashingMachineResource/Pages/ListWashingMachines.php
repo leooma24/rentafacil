@@ -8,6 +8,7 @@ use Filament\Resources\Pages\ListRecords;
 
 use Filament\Resources\Components\Tab;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Facades\Filament;
 
 class ListWashingMachines extends ListRecords
 {
@@ -15,9 +16,13 @@ class ListWashingMachines extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [
-            Actions\CreateAction::make(),
-        ];
+        $tenant = Filament::getTenant();
+        if($tenant->canAddMoreWashingMachines()) {
+            return [
+                Actions\CreateAction::make(),
+            ];
+        }
+        return [];
     }
 
     public function getTabs(): array

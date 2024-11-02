@@ -2,28 +2,25 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\UserResource\Pages;
-use App\Filament\Resources\UserResource\RelationManagers;
-use App\Models\User;
+use App\Filament\Resources\PackageResource\Pages;
+use App\Models\Package;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class UserResource extends Resource
+class PackageResource extends Resource
 {
-    protected static ?string $model = User::class;
+    protected static ?string $model = Package::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     protected static ?string $navigationGroup = 'Administrador';
-    protected static ?string $modelLabel = 'Usuario';
-    protected static ?string $pluralModelLabel = 'Usuarios';
-    protected static ?string $navigationLabel = 'Usuarios';
-    protected static ?string $slug = 'usuarios';
+    protected static ?string $modelLabel = 'Paquete';
+    protected static ?string $pluralModelLabel = 'Paquetes';
+    protected static ?string $navigationLabel = 'Paquetes';
+    protected static ?string $slug = 'paquetes';
     protected static bool $isScopedToTenant = false;
 
     public static function form(Form $form): Form
@@ -34,25 +31,19 @@ class UserResource extends Resource
                     ->label('Nombre')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('email')
-                    ->label('Correo electrónico')
-                    ->email()
+                Forms\Components\TextInput::make('max_clients')
+                    ->label('Máximo de clientes')
                     ->required()
-                    ->maxLength(255),
-                Forms\Components\DateTimePicker::make('email_verified_at')
-                    ->label('Correo electrónico verificado')
-                    ->nullable(),
-                Forms\Components\TextInput::make('password')
-                    ->label('Contraseña')
-                    ->password()
+                    ->numeric(),
+                Forms\Components\TextInput::make('max_washers')
+                    ->label('Máximo de lavadoras')
                     ->required()
-                    ->hiddenOn('edit')
-                    ->maxLength(255),
-                Forms\Components\Select::make('roles')
-                    ->relationship('roles', 'name')
-                    ->multiple()
-                    ->preload()
-                    ->searchable()
+                    ->numeric(),
+                Forms\Components\TextInput::make('price')
+                    ->label('Precio Mensual')
+                    ->required()
+                    ->numeric()
+                    ->prefix('$'),
             ]);
     }
 
@@ -63,20 +54,25 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nombre')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('email')
-                    ->label('Correo electrónico')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('roles.name')
-                    ->label('Roles')
-                    ->badge(),
-                Tables\Columns\TextColumn::make('companies.name')
-                    ->label('Compañías')
-                    ->badge(),
+                Tables\Columns\TextColumn::make('max_clients')
+                    ->label('Máximo de clientes')
+                    ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('max_washers')
+                    ->label('Máximo de lavadoras')
+                    ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('price')
+                    ->label('Precio Mensual')
+                    ->money('MXN')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Creado')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Actualizado')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -104,9 +100,14 @@ class UserResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListUsers::route('/'),
-            'create' => Pages\CreateUser::route('/create'),
-            'edit' => Pages\EditUser::route('/{record}/edit'),
+            'index' => Pages\ListPackages::route('/'),
+            'create' => Pages\CreatePackage::route('/create'),
+            'edit' => Pages\EditPackage::route('/{record}/edit'),
         ];
+    }
+
+    public static function canAccess() : bool
+    {
+        return auth()->user()->hasRole('super_admin');
     }
 }

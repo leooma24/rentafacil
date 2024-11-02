@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\CompanyResource\Forms\CompanyForm;
 use App\Filament\Resources\Components\Forms\AddressForm;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 
 class CompanyResource extends Resource
@@ -39,7 +40,7 @@ class CompanyResource extends Resource
             Section::make('Dirección')
                 ->collapsible()
                 ->schema([AddressForm::getFormAddressFields()]),
-            Section::make('Usuarios')
+            Section::make('Administración')
                 ->columns(3)
                 ->schema(
                     [
@@ -47,7 +48,26 @@ class CompanyResource extends Resource
                             ->relationship('members', 'name')
                             ->multiple()
                             ->preload()
-                            ->searchable()
+                            ->searchable(),
+                        Repeater::make('companyPackage')
+                            ->label('Paquete')
+                            ->relationship()
+                            ->reorderable(false)
+                            ->maxItems(1)
+                            ->schema([
+                                Forms\Components\Select::make('package_id')
+                                    ->relationship('package', 'name'),
+                                Forms\Components\DatePicker::make('start_date')
+                                    ->date()
+                                    ->native(false)
+                                    ->displayFormat('Y-m-d')
+                                    ->required(),
+                                Forms\Components\DatePicker::make('end_date')
+                                    ->date()
+                                    ->native(false)
+                                    ->displayFormat('Y-m-d')
+                                    ->required(),
+                            ]),
                     ]
                 ),
         ]);

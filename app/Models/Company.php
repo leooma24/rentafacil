@@ -46,4 +46,27 @@ class Company extends Model
     {
         return $this->morphMany(Address::class, 'addressable');
     }
+
+    public function companyPackage() {
+        return $this->hasOne(CompanyPackage::class);
+    }
+
+    public function currentPackage() {
+        return $this->hasOne(CompanyPackage::class)->where('end_date', '>=', now());
+    }
+
+    // Método para verificar los límites del paquete
+    public function canAddMoreClients()
+    {
+        $package = $this->companyPackage->package;
+        $clientCount = $this->customers()->count();
+        return $package && $clientCount < $package->max_clients;
+    }
+
+    public function canAddMoreWashingMachines()
+    {
+        $package = $this->companyPackage->package;
+        $clientCount = $this->washingMachines()->count();
+        return $package && $clientCount < $package->max_washers;
+    }
 }

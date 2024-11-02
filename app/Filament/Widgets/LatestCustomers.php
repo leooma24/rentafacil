@@ -11,7 +11,7 @@ use App\Filament\Resources\CustomerResource;
 class LatestCustomers extends BaseWidget
 {
     protected static ?int $sort = 4;
-    protected static ?string $heading = 'Últimas Clientes';
+    protected static ?string $heading = 'Últimos Clientes';
 
     public function table(Table $table): Table
     {
