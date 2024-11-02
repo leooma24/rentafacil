@@ -31,8 +31,8 @@ class Settings extends Page implements HasForms
     public function mount() : void {
         $this->tenant = Filament::getTenant();
         $this->form->fill([
-            'price' => $this->tenant->settings->price,
-            'days_per_payment' => $this->tenant->settings->days_per_payment,
+            'price' => $this->tenant->settings?->price,
+            'days_per_payment' => $this->tenant->settings?->days_per_payment,
         ]);
     }
 
