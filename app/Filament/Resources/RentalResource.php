@@ -34,7 +34,7 @@ class RentalResource extends Resource
                 Forms\Components\Select::make('customer_id')
                     ->label('Cliente')
                     ->options(
-                        $tenant->customers()->pluck('nombre', 'id')
+                        $tenant->customers()->pluck('name', 'id')
                     )
                     ->required(),
                 Forms\Components\Select::make('washing_machine_id')
