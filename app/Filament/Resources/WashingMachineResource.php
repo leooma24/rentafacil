@@ -192,7 +192,7 @@ class WashingMachineResource extends Resource
                             ->requiresConfirmation()
                             ->action(function (array $data, WashingMachine $record) use ($tenant) {
 
-                                $maintenance = $record->maintenances()->where('status', 'en_progreso')->first();
+                                $maintenance = $record->maintenances()->whereIn('status', ['en_progreso', 'programada'])->first();
                                 $maintenance->completeMaintenance();
                                 $rental = $record->rentals()->where('status', 'activa')->first();
                                 if($rental) {
