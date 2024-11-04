@@ -40,7 +40,7 @@ class RentalResource extends Resource
                 Forms\Components\Select::make('washing_machine_id')
                     ->label('Lavadora')
                     ->options(
-                        $tenant->washingMachines()->pluck('machine_code', 'id')
+                        $tenant->washingMachines()->where('status', 'disponible')->pluck('machine_code', 'id')
                     )
                     ->required(),
                 Forms\Components\DatePicker::make('start_date')
