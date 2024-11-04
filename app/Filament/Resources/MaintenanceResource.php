@@ -39,24 +39,31 @@ class MaintenanceResource extends Resource
             ->columns([
                 //
                 Tables\Columns\TextColumn::make('technician_name')
+                    ->label('Técnico')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('start_date')
+                    ->label('Fecha de Inicio')
                     ->date()
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('end_date')
+                    ->label('Fecha de fin')
                     ->date()
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('maintenance_type')
+                    ->label('Tipo de Mantenimiento')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('description'),
+                Tables\Columns\TextColumn::make('description')
+                    ->label('Descripción'),
                 Tables\Columns\TextColumn::make('cost')
+                    ->label('Costo')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
+                    ->label('Estatus')
                     ->badge()
                     ->searchable()
                     ->sortable(),
