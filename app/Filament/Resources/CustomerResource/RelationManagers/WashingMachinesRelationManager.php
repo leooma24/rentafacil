@@ -29,6 +29,7 @@ class WashingMachinesRelationManager extends RelationManager
         return $form
             ->schema([
                 Forms\Components\Select::make('washing_machine_id')
+                    ->label('Lavadora')
                     ->required()
                     ->searchable()
                     ->options(
