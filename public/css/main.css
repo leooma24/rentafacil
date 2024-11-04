@@ -376,7 +376,7 @@ p {
 .pricing-inner {
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: start;
 }
 .pricing-content {
     padding: 2rem 0;

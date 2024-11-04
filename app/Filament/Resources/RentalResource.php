@@ -10,8 +10,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Facades\Filament;
 
 class RentalResource extends Resource
 {
@@ -28,12 +27,15 @@ class RentalResource extends Resource
 
     public static function form(Form $form): Form
     {
+        $tenant = Filament::getTenant();
         return $form
             ->schema([
                 //
                 Forms\Components\Select::make('customer_id')
                     ->label('Cliente')
-                    ->relationship('customer', 'name')
+                    ->options(
+                        $tenant->customers()->pluck('nombre', 'id')
+                    )
                     ->required(),
                 Forms\Components\Select::make('washing_machine_id')
                     ->label('Lavadora')

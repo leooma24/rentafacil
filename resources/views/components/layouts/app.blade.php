@@ -163,6 +163,14 @@
                         <ul>
                             <li>{{ $package->max_washers}} Lavadora</li>
                             <li>{{ $package->max_clients}} Clientes</li>
+                            <li>Soporte Chat</li>
+                            @if($package->price > 0)
+                            <li>Soporte Telefónico</li>
+                            <li>Reportes diarios</li>
+                            <li>Notificaciones de Vencimientos</li>
+                            @else
+                            <li>Reportes semanales</li>
+                            @endif
                             <li>Soporte 24/7</li>
                             <li>Acceso a la plataforma</li>
                             <li>Reportes de uso</li>
