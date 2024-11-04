@@ -45,6 +45,7 @@ class CompanyResource extends Resource
                 ->schema(
                     [
                         Forms\Components\Select::make('members')
+                            ->label('Usuarios')
                             ->relationship('members', 'name')
                             ->multiple()
                             ->preload()
@@ -78,10 +79,13 @@ class CompanyResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
+                    ->label('Nombre')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('phone')
+                    ->label('Teléfono')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
+                    ->label('Correo Electrónico')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('members.name')
                     ->label('Usuario')
@@ -94,10 +98,12 @@ class CompanyResource extends Resource
                     ->sortable()
                     ->badge(),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Creado')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Actualizado')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

@@ -15,12 +15,15 @@ class CompanyForm
     {
         return [
             Forms\Components\TextInput::make('name')
+                ->label('Nombre')
                 ->required()
                 ->maxLength(255),
             Forms\Components\TextInput::make('phone')
+                ->label('Telefóno')
                 ->tel()
                 ->maxLength(15),
             Forms\Components\TextInput::make('email')
+                ->label('Correo Electrónico')
                 ->email()
                 ->maxLength(255),
         ];
