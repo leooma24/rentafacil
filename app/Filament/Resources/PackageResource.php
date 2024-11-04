@@ -14,7 +14,7 @@ class PackageResource extends Resource
 {
     protected static ?string $model = Package::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-s-rectangle-group';
 
     protected static ?string $navigationGroup = 'Administrador';
     protected static ?string $modelLabel = 'Paquete';

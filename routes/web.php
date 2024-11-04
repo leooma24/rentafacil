@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 
+use App\Livewire\ShowHome;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -12,7 +14,9 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-
+/*
 Route::get('/', function () {
-    return redirect('/propietario');
+    return view('welcome');
 });
+*/
+Route::get('/', ShowHome::class);

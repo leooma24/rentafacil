@@ -17,13 +17,15 @@ class Settings extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationIcon = 'heroicon-s-cog-6-tooth';
 
     protected static string $view = 'filament.pages.settings';
 
     protected static ?string $title = 'Configuración';
 
     protected static ?string $slug = 'configuracion';
+
+    protected static ?int $navigationSort = 6;
 
     public ?array $data = [];
     public $tenant = null;

@@ -38,12 +38,12 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('Renta Facíl')
             ->font('Roboto')
             ->colors([
-                'danger' => Color::Rose,       // #E11D48 (ejemplo)
-                'gray' => Color::Gray,         // #9CA3AF (ejemplo)
-                'info' => Color::Blue,         // #3B82F6 (ejemplo)
-                'primary' => Color::Cyan,      // #1E90FF (o #00BFFF)
-                'success' => Color::Emerald,   // #10B981 (ejemplo)
-                'warning' => Color::Orange,    // #F59E0B (ejemplo)
+                'danger' => Color::Rose,
+                'gray' => Color::Gray,
+                'info' => Color::Blue,         
+                'primary' => Color::Cyan,
+                'success' => Color::Emerald,
+                'warning' => Color::Orange,
             ])
             ->profile()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')

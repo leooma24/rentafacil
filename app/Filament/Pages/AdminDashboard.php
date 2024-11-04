@@ -7,7 +7,7 @@ use  App\Filament\Widgets\StatsOverview;
 
 class AdminDashboard extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationIcon = 'heroicon-s-table-cells';
 
     protected static string $view = 'filament.pages.admin-dashboard';
 

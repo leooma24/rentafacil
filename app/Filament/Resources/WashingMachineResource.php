@@ -23,7 +23,7 @@ class WashingMachineResource extends Resource
 {
     protected static ?string $model = WashingMachine::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-archive-box';
+    protected static ?string $navigationIcon = 'heroicon-s-archive-box';
 
     protected static ?int $navigationSort = 2;
 
