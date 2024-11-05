@@ -30,6 +30,22 @@ class MaintenanceResource extends Resource
         return $form
             ->schema([
                 //
+                Forms\Components\TextInput::make('technician_id')
+                    ->label('Técnico')
+                    ->required(),
+                Forms\Components\DatePicker::make('start_date')
+                    ->label('Fecha de Inicio')
+                    ->default(now())
+                    ->required(),
+                Forms\Components\DatePicker::make('end_date')
+                    ->label('Fecha de Fin')
+                    ->required(),
+                Forms\Components\TextInput::make('maintenance_type')
+                    ->label('Tipo de Mantenimiento')
+                    ->required(),
+                Forms\Components\Textarea::make('description')
+                    ->label('Descripción')
+                    ->required(),
             ]);
     }
 
@@ -62,13 +78,11 @@ class MaintenanceResource extends Resource
                     ->label('Costo')
                     ->searchable()
                     ->sortable(),
-
-                /*    Tables\Columns\TextColumn::make('status')
+                Tables\Columns\TextColumn::make('status')
                     ->label('Estatus')
                     ->badge()
                     ->searchable()
-                    ->sortable(),*/
-
+                    ->sortable(),
             ])
             ->filters([
                 //
