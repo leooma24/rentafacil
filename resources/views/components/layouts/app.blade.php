@@ -4,12 +4,12 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <meta name="description" content="Renta Fácil es una aplicación para automatizar tus maquinas de lavado.">
-        <meta name="keywords" content="Renta Fácil, Maquinas de lavado, Lavandería, App, Automatización">
+        <meta name="description" content="Renta Fácil es una aplicación para automatizar tus máquinas de lavado.">
+        <meta name="keywords" content="Renta Fácil, Máquinas de lavado, Lavandería, App, Automatización">
         <meta name="author" content="Renta Fácil">
 
-        <meta property="og:title" content="Renta Fácil | Aplicación para automatizar tus maquinas de lavado.">
-        <meta property="og:description" content="Renta Fácil es una aplicación para automatizar tus maquinas de lavado.">
+        <meta property="og:title" content="Renta Fácil | Aplicación para automatizar tus máquinas de lavado.">
+        <meta property="og:description" content="Renta Fácil es una aplicación para automatizar tus máquinas de lavado.">
         <meta property="og:image" content="{{ asset('img/logo.png') }}">
         <meta property="og:url" content="{{ url('/') }}">
         <meta property="og:type" content="website">
@@ -17,7 +17,7 @@
         <link rel="icon" href="{{ asset('img/favicon.png') }}" type="image/png">
 
 
-        <title>{{ $title ?? 'Renta Fácil | Aplicación para automatizar tus maquinas de lavado.' }}</title>
+        <title>{{ $title ?? 'Renta Fácil | Aplicación para automatizar tus máquinas de lavado.' }}</title>
         <link rel="stylesheet" href="{{ asset('css/main.css') }}">
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"
         integrity="sha384-DyZ88mC6Up2uqS4h/KRgHuoeGwBcD4Ng9SiP4dIRy0EXTlnuz47vAwmeGwVChigm" crossorigin="anonymous" />
@@ -77,8 +77,8 @@
                 <div class="banner-inner">
 
                     <div class="banner-content">
-                        <h1>Somos la mejor aplicación para que manejes tus maquinas de lavado</h1>
-                        <p>Renta maquinas de lavado de forma fácil y conveniente, sin complicaciones de mantenimiento ni costos adicionales. Gestiona tus equipos y optimiza tu tiempo con nuestra plataforma</p>
+                        <h1>Somos la mejor aplicación para que manejes tus máquinas de lavado</h1>
+                        <p>Renta máquinas de lavado de forma fácil y conveniente, sin complicaciones de mantenimiento ni costos adicionales. Gestiona tus equipos y optimiza tu tiempo con nuestra plataforma</p>
                         <a href="/propietario" class="btn">Empieza Ahora</a>
                     </div>
 
@@ -124,7 +124,7 @@
                                 <i class="fa fa-check"></i>
                             </div>
                             <h3>Facilidad de uso</h3>
-                            <p>Maneja tus maquinas de lavado de forma fácil y rápida</p>
+                            <p>Maneja tus máquinas de lavado de forma fácil y rápida</p>
                         </div>
 
                         <div class="why-choose-item text-center">
