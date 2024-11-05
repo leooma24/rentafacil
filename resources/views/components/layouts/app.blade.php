@@ -14,7 +14,7 @@
         <meta property="og:url" content="{{ url('/') }}">
         <meta property="og:type" content="website">
 
-        <link rel="icon" href="{{ asset('img/favicon.png') }}" type="image/png">
+        <link rel="icon" href="{{ asset('img/favicon.ico') }}" type="image/ico">
 
 
         <title>{{ $title ?? 'Renta Fácil | Aplicación para automatizar tus máquinas de lavado.' }}</title>
