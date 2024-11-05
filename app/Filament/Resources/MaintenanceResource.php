@@ -30,7 +30,7 @@ class MaintenanceResource extends Resource
         return $form
             ->schema([
                 //
-                Forms\Components\TextInput::make('technician_id')
+                Forms\Components\TextInput::make('technician_name')
                     ->label('Técnico')
                     ->required(),
                 Forms\Components\DatePicker::make('start_date')
