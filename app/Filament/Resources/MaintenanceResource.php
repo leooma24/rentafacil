@@ -62,18 +62,19 @@ class MaintenanceResource extends Resource
                     ->label('Costo')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('status')
+
+                /*    Tables\Columns\TextColumn::make('status')
                     ->label('Estatus')
                     ->badge()
                     ->searchable()
-                    ->sortable(),
+                    ->sortable(),*/
 
             ])
             ->filters([
                 //
             ])
             ->actions([
-                //Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make(),
             ])
             /*->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
