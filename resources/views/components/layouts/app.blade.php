@@ -4,6 +4,19 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+        <meta name="description" content="Renta Fácil es una aplicación para automatizar tus maquinas de lavado.">
+        <meta name="keywords" content="Renta Fácil, Maquinas de lavado, Lavandería, App, Automatización">
+        <meta name="author" content="Renta Fácil">
+
+        <meta property="og:title" content="Renta Fácil | Aplicación para automatizar tus maquinas de lavado.">
+        <meta property="og:description" content="Renta Fácil es una aplicación para automatizar tus maquinas de lavado.">
+        <meta property="og:image" content="{{ asset('img/logo.png') }}">
+        <meta property="og:url" content="{{ url('/') }}">
+        <meta property="og:type" content="website">
+
+        <link rel="icon" href="{{ asset('img/favicon.png') }}" type="image/png">
+
+
         <title>{{ $title ?? 'Renta Fácil | Aplicación para automatizar tus maquinas de lavado.' }}</title>
         <link rel="stylesheet" href="{{ asset('css/main.css') }}">
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"
@@ -161,7 +174,7 @@
                         <h2>{{ $package->name }}</h2>
                         <div>$ <span class="price">{{ $package->price }}</span> Men.</div>
                         <ul>
-                            <li>{{ $package->max_washers}} Lavadora</li>
+                            <li>{{ $package->max_washers}} máquinas de lavado</li>
                             <li>{{ $package->max_clients}} Clientes</li>
                             <li>Soporte Chat</li>
                             @if($package->price > 0)
