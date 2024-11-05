@@ -133,7 +133,6 @@ class WashingMachineResource extends Resource
                         ->visible(fn (WashingMachine $record) => in_array($record->status, ['rentada', 'en_mantenimiento']) )
                         ->label('Marcar Disponible')
                         ->icon('heroicon-s-check-circle')
-                        ->slideOver()
                         ->requiresConfirmation()
                         ->action(function (array $data, WashingMachine $record) use ($tenant) {
                             $record->update(['status' => 'disponible']);

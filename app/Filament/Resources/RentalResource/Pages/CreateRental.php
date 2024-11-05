@@ -9,4 +9,10 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateRental extends CreateRecord
 {
     protected static string $resource = RentalResource::class;
+
+
+    public function afterCreate() {
+        $this->record->washingMachine()->update(['status' => 'rentada']);
+    }
+
 }

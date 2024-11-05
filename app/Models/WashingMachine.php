@@ -45,4 +45,8 @@ class WashingMachine extends Model
         return $this->hasMany(Maintenance::class);
     }
 
+    public function getNameAttribute() {
+        return $this->machine_code . ' ' . $this->brand . ' ' . $this->model;
+    }
+
 }

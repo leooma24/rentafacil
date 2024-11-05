@@ -1,6 +1,7 @@
 <?php
 namespace App\Filament\Resources\CompanyResource\Actions;
 
+use App\Events\RentEvent;
 use Filament\Tables;
 use App\Models\WashingMachine;
 use Filament\Forms;
@@ -44,6 +45,14 @@ class RentAction {
             $rental = $tenant->rentals()->create($data);
 
             $record->update(['status' => 'rentada']);
+
+            $data = [
+                'email' => $rental->customer->email,
+                'nombre' => $rental->customer->name,
+                'mensaje' => 'Has rentado ' . $record->name . ', el día ' . $rental->start_date . ' enviaremos un instalador a su domicilio.'
+            ];
+
+            event(new RentEvent($data));
 
             Notification::make()
                 ->title('La lavadora ha sido rentada')
