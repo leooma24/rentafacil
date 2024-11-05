@@ -10,8 +10,10 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Facades\Filament;
+use Filament\Tables\Actions\ActionGroup;
+use Carbon\Carbon;
+use Filament\Notifications\Notification;
 
 class MaintenanceResource extends Resource
 {
@@ -27,9 +29,16 @@ class MaintenanceResource extends Resource
 
     public static function form(Form $form): Form
     {
+        $tenant = Filament::getTenant();
         return $form
             ->schema([
                 //
+                Forms\Components\Select::make('washing_machine_id')
+                    ->label('Lavadora')
+                    ->options(
+                        $tenant->washingMachines()->where('status', '!=', 'mantenimiento')->pluck('machine_code', 'id')
+                    )
+                    ->required(),
                 Forms\Components\TextInput::make('technician_name')
                     ->label('Técnico')
                     ->required(),
@@ -38,10 +47,13 @@ class MaintenanceResource extends Resource
                     ->default(now())
                     ->required(),
                 Forms\Components\DatePicker::make('end_date')
-                    ->label('Fecha de Fin')
-                    ->required(),
-                Forms\Components\TextInput::make('maintenance_type')
+                    ->label('Fecha de Fin'),
+                Forms\Components\Select::make('maintenance_type')
                     ->label('Tipo de Mantenimiento')
+                    ->options([
+                        'preventivo' => 'Preventivo',
+                        'correctivo' => 'Correctivo',
+                    ])
                     ->required(),
                 Forms\Components\Textarea::make('description')
                     ->label('Descripción')
@@ -51,6 +63,7 @@ class MaintenanceResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $tenant = Filament::getTenant();
         return $table
             ->columns([
                 //
@@ -89,6 +102,46 @@ class MaintenanceResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                ActionGroup::make([
+                    Tables\Actions\Action::make('make_maintenance')
+                        ->visible(fn (Maintenance $record) => !in_array($record->status, ['completado']) )
+                        ->label('Terminar Mantenimiento')
+                        ->slideOver()
+                        ->modalWidth('md')
+                        ->modalSubmitActionLabel('Terminar')
+                        ->form([
+                            Forms\Components\TextInput::make('cost')
+                                ->label('Costo')
+                                ->required(),
+                        ])->action(function (array $data, Maintenance $record) use ($tenant) {
+                            $record->update([
+                                'status' => 'completado',
+                                'end_date' => now(),
+                                'cost' => $data['cost']
+                            ]);
+
+                            $rental = $record->washingMachine->rentals()->where('status', 'activa')->first();
+                            if($rental) {
+                                $days = $record->getDurationInDays();
+                                if($days > 0) {
+                                    $newDate = new Carbon($rental->end_date);
+                                    $newDate->add($days, 'days');
+                                    $rental->end_date = $newDate->format('Y-m-d');
+                                    $rental->save();
+                                }
+                                $record->washingMachine->update(['status' => 'rentada']);
+                            } else {
+                                $record->washingMachine->update(['status' => 'disponible']);
+                            }
+
+                            Notification::make()
+                                    ->title('Mantenimiento Terminado')
+                                    ->success()
+                                    ->send();
+
+                        })
+                ])
+
             ])
             /*->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
