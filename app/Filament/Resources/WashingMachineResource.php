@@ -67,10 +67,12 @@ class WashingMachineResource extends Resource
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('brand')
+                    ->visibleFrom('md')
                     ->label('Marca')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('model')
+                    ->visibleFrom('md')
                     ->label('Modelo')
                     ->searchable()
                     ->sortable(),
@@ -87,6 +89,7 @@ class WashingMachineResource extends Resource
                         'fuera_de_servicio' => 'danger',
                     }),
                 Tables\Columns\TextColumn::make('rental.status')
+                    ->visibleFrom('md')
                     ->label('Estatus Renta')
                     ->badge()
                     ->searchable()
@@ -102,11 +105,13 @@ class WashingMachineResource extends Resource
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('rental.start_date')
+                    ->visibleFrom('md')
                     ->label('Fecha de Inicio')
                     ->date()
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('rental.end_date')
+                    ->visibleFrom('md')
                     ->label('Fecha de Fin')
                     ->date()
                     ->searchable()

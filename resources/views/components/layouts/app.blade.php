@@ -31,12 +31,12 @@
                         <div class="header-content-data">
                             <div class="phone">
                                 <i class="fa fa-phone"></i>
-                                <span>Tel: 668 2493398</span>
+                                <span>Tel: <a href="https://wa.me/6682493398?text=Más%20Información" target="_blank">668 249-3398</a></span>
                             </div>
 
                             <div class="email">
                                 <i class="fa fa-envelope"></i>
-                                <span>Email: leooma@hotmail.com</span>
+                                <span>Email: <a href="mailto:leooma@hotmail.com" target="_blank">leooma@hotmail.com</a></span>
                             </div>
                         </div>
 
