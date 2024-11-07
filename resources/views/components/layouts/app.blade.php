@@ -87,7 +87,7 @@
                             <i class="fa fa-phone"></i>
                             <div class="banner-footer-content">
                                 <span>¿Tienes alguna duda? LLamanos</span>
-                                <span>123-456-7890</span>
+                                <span>668-249-3398</span>
                             </div>
                         </div>
 
