@@ -7,6 +7,7 @@ use Livewire\Component;
 
 class ShowHome extends Component
 {
+
     public function render()
     {
         $packages = Package::all();

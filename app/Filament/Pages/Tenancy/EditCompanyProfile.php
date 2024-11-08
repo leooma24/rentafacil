@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Filament\Pages\Tenancy;
+
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Components\Section;
@@ -16,7 +18,7 @@ class EditCompanyProfile extends EditTenantProfile
 {
     public static function getLabel(): string
     {
-        return 'Company profile';
+        return 'Compañia';
     }
 
 
@@ -25,12 +27,12 @@ class EditCompanyProfile extends EditTenantProfile
     {
         return $form
             ->schema([
-                Section::make('Información del Cliente')
+                Section::make('Información Compañia')
                     ->columns('3')
                     ->schema(
                         CompanyForm::getFormCompanyFields()
                     ),
-                    Section::make('Dirección')
+                Section::make('Dirección')
                     ->collapsible()
                     ->schema([
                         Repeater::make('addresses')
@@ -58,7 +60,7 @@ class EditCompanyProfile extends EditTenantProfile
                                     ->required()
                                     ->maxLength(5)
                                     ->live(onBlur: true)
-                                    ->afterStateUpdated(function( Set $set, Get $get) {
+                                    ->afterStateUpdated(function (Set $set, Get $get) {
                                         $neighborhood = Neighborhood::query()
                                             ->where('codigo_postal', $get('postal_code'))
                                             ->first();
@@ -88,21 +90,21 @@ class EditCompanyProfile extends EditTenantProfile
                                 Forms\Components\Select::make('township_id')
                                     ->preload()
                                     ->live()
-                                    ->options(fn( Get $get): Collection => Township::query()
+                                    ->options(fn(Get $get): Collection => Township::query()
                                         ->where('estado_id', $get('state_id'))
-                                        ->pluck('nombre', 'id') )
+                                        ->pluck('nombre', 'id'))
                                     ->label('Municipio')
                                     ->searchable()
                                     ->required(),
                                 Forms\Components\Select::make('neighborhood_id')
                                     ->preload()
                                     ->live()
-                                    ->options(function( Get $get) {
-                                        if($get('postal_code')) {
+                                    ->options(function (Get $get) {
+                                        if ($get('postal_code')) {
                                             $neighborhoods = Neighborhood::query()
                                                 ->where('codigo_postal', $get('postal_code'))
                                                 ->get();
-                                            if($neighborhoods->count() > 0) {
+                                            if ($neighborhoods->count() > 0) {
                                                 return $neighborhoods->pluck('nombre', 'id');
                                             }
                                         }

@@ -21,6 +21,8 @@
         <link rel="stylesheet" href="{{ asset('css/main.css') }}">
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"
         integrity="sha384-DyZ88mC6Up2uqS4h/KRgHuoeGwBcD4Ng9SiP4dIRy0EXTlnuz47vAwmeGwVChigm" crossorigin="anonymous" />
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="//unpkg.com/alpinejs" defer></script>
         @livewireStyles
     </head>
     <body>
@@ -188,14 +190,16 @@
                             <li>Acceso a la plataforma</li>
                             <li>Reportes de uso</li>
                         </ul>
+
+                        <a href="/propietario" class="btn btn-primary">Contratar</a>
+
+
                     </div>
                     @endforeach
 
                 </div>
             </div>
         </section>
-
-
 
         {{ $slot }}
 
@@ -215,6 +219,38 @@
         <script defer src="https://use.fontawesome.com/releases/v5.15.4/js/fontawesome.js"
             integrity="sha384-dPBGbj4Uoy1OOpM4+aRGfAOc0W37JkROT+3uynUgTHZCHZNMHfGXsmmvYTffZjYO" crossorigin="anonymous">
         </script>
+
+        <!--<script src="https://js.stripe.com/v3/"></script>
+        <script>
+            const stripe = Stripe("{{ env('STRIPE_KEY') }}");
+            const elements = stripe.elements();
+            const cardElement = elements.create('card');
+            cardElement.mount('#card-element');
+
+            const form = document.getElementById('payment-form');
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                const { clientSecret } = await fetch('/create-payment-intent', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                    },
+                }).then((r) => r.json());
+
+                const { error } = await stripe.confirmCardPayment(clientSecret, {
+                    payment_method: { card: cardElement }
+                });
+
+                const resultDiv = document.getElementById('payment-result');
+                if (error) {
+                    resultDiv.textContent = error.message;
+                } else {
+                    resultDiv.textContent = '¡Pago exitoso!';
+                }
+            });
+        </script>
+    -->
         @livewireScripts
     </body>
 </html>

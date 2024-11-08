@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 use App\Livewire\ShowHome;
+use App\Http\Controllers\PaymentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,4 +20,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 */
+
 Route::get('/', ShowHome::class);
+
+Route::post('/create-payment-intent', [PaymentController::class, 'createPaymentIntent']);
