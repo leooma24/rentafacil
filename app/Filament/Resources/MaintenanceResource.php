@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\MaintenanceResource\Pages;
 use App\Filament\Resources\MaintenanceResource\RelationManagers;
 use App\Models\Maintenance;
+use App\Models\WashingMachine;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -35,9 +36,15 @@ class MaintenanceResource extends Resource
                 //
                 Forms\Components\Select::make('washing_machine_id')
                     ->label('Lavadora')
-                    ->options(
-                        $tenant->washingMachines()->where('status', '!=', 'mantenimiento')->pluck('machine_code', 'id')
-                    )
+                    ->options(function ($record) use ($tenant) {
+                        $options = $tenant->washingMachines()
+                            ->where('status', '!=', 'mantenimiento');
+                        if ($record) {
+                            $options->orWhere('id', $record->washing_machine_id);
+                        }
+                        return $options->get()
+                            ->pluck('machine_code', 'id');
+                    })
                     ->required(),
                 Forms\Components\TextInput::make('technician_name')
                     ->label('Técnico')
@@ -104,7 +111,7 @@ class MaintenanceResource extends Resource
                 Tables\Actions\EditAction::make(),
                 ActionGroup::make([
                     Tables\Actions\Action::make('make_maintenance')
-                        ->visible(fn (Maintenance $record) => !in_array($record->status, ['completado']) )
+                        ->visible(fn(Maintenance $record) => !in_array($record->status, ['completado']))
                         ->label('Terminar Mantenimiento')
                         ->slideOver()
                         ->modalWidth('md')
@@ -121,9 +128,9 @@ class MaintenanceResource extends Resource
                             ]);
 
                             $rental = $record->washingMachine->rentals()->where('status', 'activa')->first();
-                            if($rental) {
+                            if ($rental) {
                                 $days = $record->getDurationInDays();
-                                if($days > 0) {
+                                if ($days > 0) {
                                     $newDate = new Carbon($rental->end_date);
                                     $newDate->add($days, 'days');
                                     $rental->end_date = $newDate->format('Y-m-d');
@@ -135,10 +142,9 @@ class MaintenanceResource extends Resource
                             }
 
                             Notification::make()
-                                    ->title('Mantenimiento Terminado')
-                                    ->success()
-                                    ->send();
-
+                                ->title('Mantenimiento Terminado')
+                                ->success()
+                                ->send();
                         })
                 ])
 
@@ -165,5 +171,4 @@ class MaintenanceResource extends Resource
             'edit' => Pages\EditMaintenance::route('/{record}/edit'),
         ];
     }
-
 }

@@ -37,7 +37,8 @@ class Maintenance extends Model
         return $this->belongsTo(WashingMachine::class);
     }
 
-     /**
+
+    /**
      * Calcula la duración del mantenimiento en días.
      */
     public function getDurationInDays(): int
