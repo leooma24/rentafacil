@@ -390,22 +390,27 @@ p {
     border-radius: 1rem;
     box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.2);
 }
-.pricing-content h2 {
+.pricing-content h2,
+.package-content h2 {
     font-weight: 900;
     font-size: 2.5rem;
     margin-bottom: 0;
     padding-bottom: 1.6rem;
 }
-.pricing-content ul {
+.pricing-content ul,
+.package-content ul {
     list-style: none;
     font-size: 1.4rem;
     padding: 1rem;
 }
-.pricing-content li {
+.pricing-content li,
+.package-content li {
     padding: 1rem;
+    font-weight: 300;
     border-bottom: 1px solid var(--color-primary-dark);
 }
-.pricing-content li:last-child {
+.pricing-content li:last-child,
+.package-content li:last-child {
     border-bottom: none;
 }
 
@@ -418,8 +423,26 @@ p {
     padding: 0.8rem 0;
     width: 100%;
 }
-.pricing-content span.price {
+.pricing-content span.price,
+.package-content span.price {
     font-size: 4rem;
+}
+
+.package-inner {
+    display: flex;
+    justify-content: center;
+}
+
+.package-content {
+    padding: 2rem;
+    width: 400px;
+    border: 1px solid var(--color-primary-dark);
+    margin: 3rem 0;
+    border-radius: 1rem;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.2);
+}
+#card-element {
+    padding: 1rem;
 }
 
 footer {

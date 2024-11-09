@@ -31,6 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('propietario')
             ->login()
             ->registration()
+            ->registrationRouteSlug('registrar')
             ->passwordReset()
             ->brandLogo(asset('img/logo.png'))
             ->brandLogoHeight('4rem')
@@ -40,7 +41,7 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'danger' => Color::Rose,
                 'gray' => Color::Gray,
-                'info' => Color::Blue,         
+                'info' => Color::Blue,
                 'primary' => Color::Cyan,
                 'success' => Color::Emerald,
                 'warning' => Color::Orange,
@@ -52,9 +53,7 @@ class AdminPanelProvider extends PanelProvider
                 Pages\Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
-            ->widgets([
-
-            ])
+            ->widgets([])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

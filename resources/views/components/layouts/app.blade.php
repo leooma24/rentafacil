@@ -21,7 +21,7 @@
         <link rel="stylesheet" href="{{ asset('css/main.css') }}">
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"
         integrity="sha384-DyZ88mC6Up2uqS4h/KRgHuoeGwBcD4Ng9SiP4dIRy0EXTlnuz47vAwmeGwVChigm" crossorigin="anonymous" />
-        <script src="https://cdn.tailwindcss.com"></script>
+
         <script src="//unpkg.com/alpinejs" defer></script>
         @livewireStyles
     </head>
@@ -73,134 +73,11 @@
                 </div>
             </div>
         </section>
-
-        <section class="banner">
-            <div class="container">
-                <div class="banner-inner">
-
-                    <div class="banner-content">
-                        <h1>Somos la mejor aplicación para que manejes tus máquinas de lavado</h1>
-                        <p>Renta máquinas de lavado de forma fácil y conveniente, sin complicaciones de mantenimiento ni costos adicionales. Gestiona tus equipos y optimiza tu tiempo con nuestra plataforma</p>
-                        <a href="/propietario" class="btn">Empieza Ahora</a>
-                    </div>
-
-                    <div class="banner-footer">
-                        <div class="banner-footer-inner banner-footer--1">
-                            <i class="fa fa-phone"></i>
-                            <div class="banner-footer-content">
-                                <span>¿Tienes alguna duda? LLamanos</span>
-                                <span>668-249-3398</span>
-                            </div>
-                        </div>
-
-                        <div class="banner-footer-inner banner-footer--2">
-                            <i class="fa fa-clock"></i>
-                            <div class="banner-footer-content">
-                                <span>Estamos abiertos</span>
-                                <span>Lunes a viernes de 08:00 - 17:00</span>
-                            </div>
-                        </div>
-
-                        <div class="banner-footer-inner banner-footer--3">
-                            <i class="fa fa-check"></i>
-                            <div class="banner-footer-content">
-                                <span>¿Necesitas ayuda? Envíanos un correo</span>
-                                <a href="mailto:soporte@tu-app.co">Soporte@tu-app.co</a>
-                            </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="porque-nosotros" class="why-choose-us">
-            <div class="container">
-                <div class="why-choose-us-inner">
-                    <div class=why-choose-us-content>
-                        <h2 class="text-color-primary-dark">¿POR QUÉ ELEGIRNOS?</h2>
-                        <p>Conoce las razones por las que somos la mejor opción para ti</p>
-                    </div>
-
-                    <div class="why-choose-items">
-                        <div class="why-choose-item text-center">
-                            <div class="why-choose-item-icon">
-                                <i class="fa fa-check"></i>
-                            </div>
-                            <h3>Facilidad de uso</h3>
-                            <p>Maneja tus máquinas de lavado de forma fácil y rápida</p>
-                        </div>
-
-                        <div class="why-choose-item text-center">
-                            <div class="why-choose-item-icon">
-                                <i class="fa fa-check"></i>
-                            </div>
-                            <h3>Soporte 24/7</h3>
-                            <p>Contamos con soporte técnico las 24 horas del día</p>
-                        </div>
-
-                        <div class="why-choose-item text-center">
-                            <div class="why-choose-item-icon">
-                                <i class="fa fa-check"></i>
-                            </div>
-                            <h3>Seguridad</h3>
-                            <p>Protegemos tus datos y tu información personal</p>
-                        </div>
-
-                        <div class="why-choose-item text-center">
-                            <div class="why-choose-item-icon">
-                                <i class="fa fa-check"></i>
-                            </div>
-                            <h3>Optimización</h3>
-                            <p>Optimiza tu tiempo y tus recursos con nuestra plataforma</p>
-                        </div>
-                    </div>
-                </div>
-        </section>
-
-        <section class="other-banner">
-            <div class="container">
-                <div class="other-banner-inner">
-                    <div class="other-banner-content">
-                        <h2>¿Quieres saber más sobre nosotros?</h2>
-                        <p>Conoce más sobre nuestra plataforma y los beneficios que te ofrecemos</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="precios" class="pricing">
-            <div class="container">
-                <h2 class="text-color-primary-dark text-center">NUESTROS PRECIOS</h2>
-                <div class="pricing-inner">
-                    @foreach ($packages as $package)
-                    <div class="pricing-content text-center">
-                        <h2>{{ $package->name }}</h2>
-                        <div>$ <span class="price">{{ $package->price }}</span> Men.</div>
-                        <ul>
-                            <li>{{ $package->max_washers}} máquinas de lavado</li>
-                            <li>{{ $package->max_clients}} Clientes</li>
-                            <li>Soporte Chat</li>
-                            @if($package->price > 0)
-                            <li>Soporte Telefónico</li>
-                            <li>Reportes diarios</li>
-                            <li>Notificaciones de Vencimientos</li>
-                            @else
-                            <li>Reportes semanales</li>
-                            @endif
-                            <li>Soporte 24/7</li>
-                            <li>Acceso a la plataforma</li>
-                            <li>Reportes de uso</li>
-                        </ul>
-
-                        <a href="/propietario" class="btn btn-primary">Contratar</a>
+<!--
 
 
-                    </div>
-                    @endforeach
 
-                </div>
-            </div>
-        </section>
-
+-->
         {{ $slot }}
 
         <footer id="footer" class="footer">
@@ -220,37 +97,6 @@
             integrity="sha384-dPBGbj4Uoy1OOpM4+aRGfAOc0W37JkROT+3uynUgTHZCHZNMHfGXsmmvYTffZjYO" crossorigin="anonymous">
         </script>
 
-        <!--<script src="https://js.stripe.com/v3/"></script>
-        <script>
-            const stripe = Stripe("{{ env('STRIPE_KEY') }}");
-            const elements = stripe.elements();
-            const cardElement = elements.create('card');
-            cardElement.mount('#card-element');
-
-            const form = document.getElementById('payment-form');
-            form.addEventListener('submit', async (event) => {
-                event.preventDefault();
-
-                const { clientSecret } = await fetch('/create-payment-intent', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                    },
-                }).then((r) => r.json());
-
-                const { error } = await stripe.confirmCardPayment(clientSecret, {
-                    payment_method: { card: cardElement }
-                });
-
-                const resultDiv = document.getElementById('payment-result');
-                if (error) {
-                    resultDiv.textContent = error.message;
-                } else {
-                    resultDiv.textContent = '¡Pago exitoso!';
-                }
-            });
-        </script>
-    -->
         @livewireScripts
     </body>
 </html>

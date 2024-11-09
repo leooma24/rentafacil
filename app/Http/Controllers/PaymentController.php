@@ -9,12 +9,14 @@ use Stripe\PaymentIntent;
 class PaymentController extends Controller
 {
     //
-    public function createPaymentIntent()
+    public function createPaymentIntent(Request $request)
     {
         Stripe::setApiKey(config('services.stripe.secret'));
+        $package_id = $request->packageId;
+        $package = \App\Models\Package::findOrFail($package_id);
 
         $paymentIntent = PaymentIntent::create([
-            'amount' => 1000, // monto en centavos, ej. $10.00 = 1000
+            'amount' => $package->price * 100, // monto en centavos, ej. $10.00 = 1000
             'currency' => 'mxn',
             'payment_method_types' => ['card'],
         ]);

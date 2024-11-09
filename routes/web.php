@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Livewire\ShowHome;
 use App\Http\Controllers\PaymentController;
+use App\Livewire\ShowPackage;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,5 +23,6 @@ Route::get('/', function () {
 */
 
 Route::get('/', ShowHome::class);
+Route::get('/contratar/{package}', ShowPackage::class);
 
 Route::post('/create-payment-intent', [PaymentController::class, 'createPaymentIntent']);

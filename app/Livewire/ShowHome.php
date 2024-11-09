@@ -11,9 +11,6 @@ class ShowHome extends Component
     public function render()
     {
         $packages = Package::all();
-        return view('livewire.show-home')
-            ->layoutData(
-                ['packages' => $packages]
-            );
+        return view('livewire.show-home', compact('packages'));
     }
 }
