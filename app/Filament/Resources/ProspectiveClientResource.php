@@ -78,6 +78,27 @@ class ProspectiveClientResource extends Resource
         return $table
             ->columns([
                 //
+                Tables\Columns\TextColumn::make('name')
+                    ->label('Nombre')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('email')
+                    ->label('Correo electrónico')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('phone')
+                    ->label('Teléfono')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('source')
+                    ->label('Fuente')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Estatus')
+                    ->badge()
+                    ->searchable()
+                    ->sortable(),
             ])
             ->filters([
                 //
