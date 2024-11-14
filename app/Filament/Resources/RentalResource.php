@@ -127,5 +127,4 @@ class RentalResource extends Resource
             'edit' => Pages\EditRental::route('/{record}/edit'),
         ];
     }
-
 }
