@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('prospective_clients', function (Blueprint $table) {
             $table->id();
             $table->string('name');  // Nombre del cliente potencial
-            $table->string('email')->unique();  // Email único para contacto
+            $table->string('email')->nullable();  // Email único para contacto
             $table->string('phone')->nullable();  // Teléfono opcional
             $table->string('source')->nullable();  // Fuente de contacto, e.g., redes sociales, formulario web
             $table->text('notes')->nullable();  // Notas sobre el cliente, intereses, etc.
