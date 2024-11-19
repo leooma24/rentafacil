@@ -27,10 +27,10 @@ return new class extends Migration
             $table->integer('spin_speed')->nullable(); // in RPM
             $table->string('energy_consumption')->nullable(); // Rating: A++, etc.
             $table->string('motor_type')->nullable(); // Inverter, traditional
-            $table->integer('washing_program_count')->default(0);
-            $table->json('available_temperatures'); // ['Cold', '30°C', '40°C']
-            $table->integer('noise_level'); // in decibels
-            $table->integer('water_efficiency'); // in liters/cycle
+            $table->integer('washing_program_count')->nullable()->default(0);
+            $table->json('available_temperatures')->nullable(); // ['Cold', '30°C', '40°C']
+            $table->integer('noise_level')->nullable(); // in decibels
+            $table->integer('water_efficiency')->nullable(); // in liters/cycle
         });
     }
 
@@ -41,6 +41,24 @@ return new class extends Migration
     {
         Schema::table('washing_machines_tables', function (Blueprint $table) {
             //
+            $table->dropColumn('serial_number');
+            $table->dropColumn('purchase_date');
+            $table->dropColumn('purchase_price');
+            $table->dropColumn('type');
+            $table->dropColumn('color');
+            $table->dropColumn('load_capacity');
+            $table->dropColumn('height');
+            $table->dropColumn('width');
+            $table->dropColumn('depth');
+            $table->dropColumn('weight');
+            $table->dropColumn('motor_power');
+            $table->dropColumn('spin_speed');
+            $table->dropColumn('energy_consumption');
+            $table->dropColumn('motor_type');
+            $table->dropColumn('washing_program_count');
+            $table->dropColumn('available_temperatures');
+            $table->dropColumn('noise_level');
+            $table->dropColumn('water_efficiency');
         });
     }
 };
