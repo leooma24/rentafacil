@@ -24,10 +24,10 @@ class ExtendRentAction
                 //
                 Forms\Components\TextInput::make('price')
                     ->label('Precio de renta')
-                    ->default($tenant->settings->price),
+                    ->default($tenant->settings?->price),
                 Forms\Components\TextInput::make('days')
                     ->label('Días de renta')
-                    ->default($tenant->settings->days_per_payment),
+                    ->default($tenant->settings?->days_per_payment),
 
             ])
             ->action(function (array $data, WashingMachine $record) use ($tenant) {
