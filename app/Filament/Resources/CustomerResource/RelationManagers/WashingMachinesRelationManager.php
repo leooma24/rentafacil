@@ -58,11 +58,11 @@ class WashingMachinesRelationManager extends RelationManager
                     ->default(function () {
                         return (new Carbon())->add(7, 'days');
                     }),
-                    Forms\Components\Select::make('status')
+                Forms\Components\Select::make('status')
                     ->label('Estatus')
                     ->options([
                         'activa' => 'Activa',
-                        'completa' => 'Completa',
+                        'completada' => 'Completada',
                         'cancelada' => 'Cancelada',
                     ])
                     ->default('activa')
@@ -89,7 +89,7 @@ class WashingMachinesRelationManager extends RelationManager
                     ->badge(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'activa' => 'primary',
                         'vencida' => 'danger',
                         'completada' => 'info',
@@ -123,20 +123,30 @@ class WashingMachinesRelationManager extends RelationManager
                     Tables\Actions\Action::make('extend_rent')
                         ->label('Extender Renta')
                         ->icon('heroicon-o-calendar')
-                        ->requiresConfirmation()
+                        ->form([
+                            //
+                            Forms\Components\TextInput::make('price')
+                                ->label('Precio de renta')
+                                ->default($tenant->settings->price),
+                            Forms\Components\TextInput::make('days')
+                                ->label('Días de renta')
+                                ->default($tenant->settings->days_per_payment),
+
+                        ])
                         ->action(function (array $data, Rental $record) use ($tenant) {
                             $newDate = new Carbon($record->end_date);
-                            $newDate->add(7, 'days');
+                            $newDate->add($data['days'], 'days');
                             $record->end_date = $newDate->format('Y-m-d');
                             $record->save();
 
                             Notification::make()
-                                ->title('Se pago una semana mas de renta')
+                                ->title('Se pago un periodo mas de renta')
                                 ->success()
                                 ->send();
                         }),
                     Tables\Actions\Action::make('make_available')
-                        ->label('Marcar Disponible')
+                        ->label('Cancelar Renta')
+                        ->visible(fn(Rental $record) => $record->status === 'activa')
                         ->icon('heroicon-s-check-circle')
                         ->requiresConfirmation()
                         ->action(function (array $data, Rental $record) use ($tenant) {
@@ -148,6 +158,19 @@ class WashingMachinesRelationManager extends RelationManager
 
                             Notification::make()
                                 ->title('La lavadora esta disponible')
+                                ->success()
+                                ->send();
+                        }),
+                    Tables\Actions\Action::make('pick_up')
+                        ->visible(fn(Rental $record) => $record->status == 'vencida')
+                        ->label('Recoger Lavadora')
+                        ->icon('heroicon-s-check-circle')
+                        ->requiresConfirmation()
+                        ->action(function (array $data, Rental $record) use ($tenant) {
+                            $record->update(['status' => 'completada']);
+                            $record->washingMachine->update(['status' => 'disponible']);
+                            Notification::make()
+                                ->title('La lavadora esta disponible y la lavadora ha sido recogida')
                                 ->success()
                                 ->send();
                         }),

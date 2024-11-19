@@ -39,9 +39,15 @@ class RentalResource extends Resource
                     ->required(),
                 Forms\Components\Select::make('washing_machine_id')
                     ->label('Lavadora')
-                    ->options(
-                        $tenant->washingMachines()->where('status', 'disponible')->pluck('machine_code', 'id')
-                    )
+                    ->options(function ($record) use ($tenant) {
+                        $options = $tenant->washingMachines()
+                            ->where('status', 'disponible');
+                        if ($record) {
+                            $options->orWhere('id', $record->washing_machine_id);
+                        }
+                        return $options->get()
+                            ->pluck('machine_code', 'id');
+                    })
                     ->required(),
                 Forms\Components\DatePicker::make('start_date')
                     ->label('Fecha de Inicio')
@@ -58,10 +64,11 @@ class RentalResource extends Resource
                     ->options([
                         'activa' => 'Activa',
                         'vencida' => 'Vencida',
-                        'completa' => 'Completa',
+                        'completada' => 'Completada',
                         'cancelada' => 'Cancelada',
                     ])
                     ->default('activa')
+                    ->hiddenOn(['edit'])
                     ->required(),
                 Forms\Components\Textarea::make('notes')
                     ->label('Notas')
@@ -107,7 +114,7 @@ class RentalResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    //Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

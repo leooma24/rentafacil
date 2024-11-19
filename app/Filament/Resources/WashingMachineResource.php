@@ -36,23 +36,131 @@ class WashingMachineResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('machine_code')
-                    ->label('Código')
-                    ->required(),
-                Forms\Components\TextInput::make('brand')
-                    ->label('Marca'),
-                Forms\Components\TextInput::make('model')
-                    ->label('Modelo'),
-                Forms\Components\Select::make('status')
-                    ->label('Estatus')
-                    ->options([
-                        'disponible' => 'Disponible',
-                        'rentada' => 'Rentada',
-                        'mantenimiento' => 'Mantenimiento',
-                        'vendida' => 'Vendida',
-                        'fuera_de_servicio' => 'Fuera de Servicio',
+                Forms\Components\Section::make('Información Básica')
+                    ->description('Datos generales de la lavadora')
+                    ->icon('heroicon-o-information-circle')
+                    ->schema([
+                        Forms\Components\TextInput::make('machine_code')
+                            ->label('Código')
+                            ->required(),
+                        Forms\Components\TextInput::make('brand')
+                            ->label('Marca'),
+                        Forms\Components\TextInput::make('model')
+                            ->label('Modelo'),
+                        Forms\Components\TextInput::make('serial_number')
+                            ->label('Número de serie')
+                            ->nullable()
+                            ->maxLength(255),
+                        Forms\Components\DatePicker::make('purchase_date')
+                            ->label('Fecha de compra')
+                            ->nullable(),
+                        Forms\Components\TextInput::make('purchase_price')
+                            ->label('Precio de compra')
+                            ->nullable()
+                            ->numeric(),
+                        Forms\Components\Select::make('type')
+                            ->label('Tipo')
+                            ->options([
+                                'Carga frontal' => 'Carga frontal',
+                                'Carga superior' => 'Carga superior',
+                                'Lavadora-secadora' => 'Lavadora-secadora',
+                            ])
+                            ->nullable(),
+                        Forms\Components\TextInput::make('color')
+                            ->label('Color')
+                            ->nullable()
+                            ->maxLength(100),
                     ])
-                    ->required(),
+                    ->columns(2),
+
+                Forms\Components\Section::make('Dimensiones y Peso')
+                    ->description('Medidas y peso de la lavadora')
+                    ->icon('heroicon-o-scale')
+                    ->schema([
+                        Forms\Components\TextInput::make('load_capacity')
+                            ->label('Capacidad de carga (kg)')
+                            ->nullable()
+                            ->numeric(),
+                        Forms\Components\TextInput::make('height')
+                            ->label('Altura (cm)')
+                            ->nullable()
+                            ->numeric(),
+                        Forms\Components\TextInput::make('width')
+                            ->label('Ancho (cm)')
+                            ->nullable()
+                            ->numeric(),
+                        Forms\Components\TextInput::make('depth')
+                            ->label('Profundidad (cm)')
+                            ->nullable()
+                            ->numeric(),
+                        Forms\Components\TextInput::make('weight')
+                            ->label('Peso (kg)')
+                            ->nullable()
+                            ->numeric(),
+                    ])
+                    ->columns(2),
+
+                Forms\Components\Section::make('Especificaciones Técnicas')
+                    ->description('Detalles técnicos de la lavadora')
+                    ->icon('heroicon-o-cog')
+                    ->schema([
+                        Forms\Components\TextInput::make('motor_power')
+                            ->label('Potencia del motor (W)')
+                            ->nullable()
+                            ->numeric(),
+                        Forms\Components\TextInput::make('spin_speed')
+                            ->label('Velocidad de centrifugado (RPM)')
+                            ->nullable()
+                            ->numeric(),
+                        Forms\Components\TextInput::make('energy_consumption')
+                            ->label('Consumo energético (calificación)')
+                            ->nullable(),
+                        Forms\Components\Select::make('motor_type')
+                            ->label('Tipo de motor')
+                            ->options([
+                                'Inverter' => 'Inverter',
+                                'Tradicional' => 'Tradicional',
+                            ])
+                            ->nullable(),
+                        Forms\Components\TextInput::make('washing_program_count')
+                            ->label('Cantidad de programas de lavado')
+                            ->nullable()
+                            ->numeric(),
+                        Forms\Components\Repeater::make('available_temperatures')
+                            ->label('Temperaturas disponibles')
+                            ->schema([
+                                Forms\Components\TextInput::make('temperature')
+                                    ->label('Temperatura')
+                                    ->placeholder('Ejemplo: 30°C, 40°C'),
+                            ])
+                            ->nullable(),
+                        Forms\Components\TextInput::make('noise_level')
+                            ->label('Nivel de ruido (decibelios)')
+                            ->nullable()
+                            ->numeric(),
+                        Forms\Components\TextInput::make('water_efficiency')
+                            ->label('Eficiencia de agua (litros por ciclo)')
+                            ->nullable()
+                            ->numeric(),
+                    ])
+                    ->columns(3),
+
+                Forms\Components\Section::make('Estatus')
+                    ->description('Estado actual de la lavadora')
+                    ->icon('heroicon-o-clipboard-document-list')
+                    ->schema([
+                        Forms\Components\Select::make('status')
+                            ->label('Estatus')
+                            ->options([
+                                'disponible' => 'Disponible',
+                                'rentada' => 'Rentada',
+                                'mantenimiento' => 'Mantenimiento',
+                                'vendida' => 'Vendida',
+                                'fuera_de_servicio' => 'Fuera de Servicio',
+                            ])
+                            ->required(),
+                    ])
+                    ->columns(1),
             ]);
     }
 
@@ -81,7 +189,7 @@ class WashingMachineResource extends Resource
                     ->badge()
                     ->searchable()
                     ->sortable()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'disponible' => 'primary',
                         'rentada' => 'success',
                         'mantenimiento' => 'gray',
@@ -94,7 +202,7 @@ class WashingMachineResource extends Resource
                     ->badge()
                     ->searchable()
                     ->sortable()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'activa' => 'primary',
                         'vencida' => 'danger',
                         'completada' => 'info',
@@ -134,21 +242,35 @@ class WashingMachineResource extends Resource
                 ActionGroup::make([
                     RentAction::make($tenant),
                     ExtendRentAction::make($tenant),
+
                     Tables\Actions\Action::make('make_available')
-                        ->visible(fn (WashingMachine $record) => in_array($record->status, ['rentada', 'en_mantenimiento']) )
-                        ->label('Marcar Disponible')
+                        ->visible(fn(WashingMachine $record) => in_array($record->status, ['rentada', 'en_mantenimiento']) && $record->rental?->status == 'activa')
+                        ->label('Cancelar Renta')
                         ->icon('heroicon-s-check-circle')
                         ->requiresConfirmation()
                         ->action(function (array $data, WashingMachine $record) use ($tenant) {
                             $record->update(['status' => 'disponible']);
-                            $record->rentals()->where('status', 'activa')->first()->update(['status' => 'cancelada', 'end_date' => new Carbon()]);
+                            $record->rental->update(['status' => 'cancelada', 'end_date' => new Carbon()]);
                             Notification::make()
                                 ->title('La lavadora esta disponible y la renta ha sido cancelada')
                                 ->success()
                                 ->send();
                         }),
+                    Tables\Actions\Action::make('pick_up')
+                        ->visible(fn(WashingMachine $record) => in_array($record->status, ['rentada', 'en_mantenimiento']) && $record->rental?->status == 'vencida')
+                        ->label('Recoger Lavadora')
+                        ->icon('heroicon-s-check-circle')
+                        ->requiresConfirmation()
+                        ->action(function (array $data, WashingMachine $record) use ($tenant) {
+                            $record->update(['status' => 'disponible']);
+                            $record->rentals()->where('status', 'vencida')->update(['status' => 'completada']);
+                            Notification::make()
+                                ->title('La lavadora esta disponible y la lavadora ha sido recogida')
+                                ->success()
+                                ->send();
+                        }),
                     Tables\Actions\Action::make('make_maintenance')
-                        ->visible(fn (WashingMachine $record) => !in_array($record->status, ['mantenimiento']) )
+                        ->visible(fn(WashingMachine $record) => !in_array($record->status, ['mantenimiento']))
                         ->label('Enviar a Mantenimiento')
                         ->icon('heroicon-s-wrench-screwdriver')
                         ->form([
@@ -175,7 +297,7 @@ class WashingMachineResource extends Resource
                         ->action(function (array $data, WashingMachine $record) use ($tenant) {
                             $data['washing_machine_id'] = $record->id;
                             // Check date if it is today
-                            if($data['start_date'] === Carbon::now()->format('Y-m-d')) {
+                            if ($data['start_date'] === Carbon::now()->format('Y-m-d')) {
                                 $data['status'] = 'en_progreso';
                             } else {
                                 $data['status'] = 'programada';
@@ -189,34 +311,34 @@ class WashingMachineResource extends Resource
                                 ->success()
                                 ->send();
                         }),
-                        Tables\Actions\Action::make('make_active')
-                            ->visible(fn (WashingMachine $record) => in_array($record->status, ['mantenimiento']) )
-                            ->label('Activar Lavadora')
-                            ->icon('heroicon-s-wrench-screwdriver')
-                            ->requiresConfirmation()
-                            ->action(function (array $data, WashingMachine $record) use ($tenant) {
+                    Tables\Actions\Action::make('make_active')
+                        ->visible(fn(WashingMachine $record) => in_array($record->status, ['mantenimiento']))
+                        ->label('Terminar Mantenimiento')
+                        ->icon('heroicon-s-wrench-screwdriver')
+                        ->requiresConfirmation()
+                        ->action(function (array $data, WashingMachine $record) use ($tenant) {
 
-                                $maintenance = $record->maintenances()->whereIn('status', ['en_progreso', 'programada'])->first();
-                                $maintenance->completeMaintenance();
-                                $rental = $record->rentals()->where('status', 'activa')->first();
-                                if($rental) {
-                                    $days = $maintenance->getDurationInDays();
-                                    if($days > 0) {
-                                        $newDate = new Carbon($rental->end_date);
-                                        $newDate->add($days, 'days');
-                                        $rental->end_date = $newDate->format('Y-m-d');
-                                        $rental->save();
-                                    }
-                                    $record->update(['status' => 'rentada']);
-                                } else {
-                                    $record->update(['status' => 'disponible']);
+                            $maintenance = $record->maintenances()->whereIn('status', ['en_progreso', 'programada'])->first();
+                            $maintenance->completeMaintenance();
+                            $rental = $record->rentals()->where('status', 'activa')->first();
+                            if ($rental) {
+                                $days = $maintenance->getDurationInDays();
+                                if ($days > 0) {
+                                    $newDate = new Carbon($rental->end_date);
+                                    $newDate->add($days, 'days');
+                                    $rental->end_date = $newDate->format('Y-m-d');
+                                    $rental->save();
                                 }
+                                $record->update(['status' => 'rentada']);
+                            } else {
+                                $record->update(['status' => 'disponible']);
+                            }
 
-                                Notification::make()
-                                    ->title('La lavadora esta disponible y el mantenimiento ha sido completado')
-                                    ->success()
-                                    ->send();
-                            }),
+                            Notification::make()
+                                ->title('La lavadora esta disponible y el mantenimiento ha sido completado')
+                                ->success()
+                                ->send();
+                        }),
                 ]),
 
             ])
@@ -229,9 +351,7 @@ class WashingMachineResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-
-        ];
+        return [];
     }
 
     public static function getPages(): array
@@ -242,5 +362,4 @@ class WashingMachineResource extends Resource
             'edit' => Pages\EditWashingMachine::route('/{record}/edit'),
         ];
     }
-
 }

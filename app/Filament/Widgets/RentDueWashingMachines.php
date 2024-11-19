@@ -20,7 +20,7 @@ class RentDueWashingMachines extends BaseWidget
 {
     protected static ?int $sort = 6;
     protected static ?string $heading = 'Rentas por Vencer';
-    protected int | string | array $columnSpan = 'full';
+    //protected int | string | array $columnSpan = 'full';
 
     public function table(Table $table): Table
     {
@@ -28,7 +28,7 @@ class RentDueWashingMachines extends BaseWidget
         return $table
             ->query(
                 RentalResource::getEloquentQuery()
-                    ->where('status', 'activa')
+                    ->where('end_date', '>', Carbon::now())
                     ->where('end_date', '<', Carbon::now()->addDays(3))
             )
             ->paginated(false)
@@ -54,7 +54,7 @@ class RentDueWashingMachines extends BaseWidget
                         $settings = $tenant->settings;
                         $days = $settings->days_per_payment;
                         $price = $settings->price;
-                        if(!$days || !$price) {
+                        if (!$days || !$price) {
                             Notification::make()
                                 ->title('No se puede extender la renta, no hay configuración de precios')
                                 ->danger()
@@ -70,7 +70,7 @@ class RentDueWashingMachines extends BaseWidget
                         $newDate = new Carbon($record->end_date);
                         $newDate->add($days, 'days');
                         $record->end_date = $newDate->format('Y-m-d');
-                        if($record->status === 'vencida') {
+                        if ($record->status === 'vencida') {
                             $record->status = 'activa';
                         }
                         $record->save();

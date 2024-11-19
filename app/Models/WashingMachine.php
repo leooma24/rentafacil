@@ -16,9 +16,31 @@ class WashingMachine extends Model
         'brand',
         'model',
         'status',
+        'serial_number',
+        'purchase_date',
+        'purchase_price',
+        'type',
+        'color',
+        'load_capacity',
+        'height',
+        'width',
+        'depth',
+        'weight',
+        'motor_power',
+        'spin_speed',
+        'energy_consumption',
+        'motor_type',
+        'washing_program_count',
+        'available_temperatures',
+        'noise_level',
+        'water_efficiency',
     ];
 
-    public function company() : BelongsTo
+    protected $casts = [
+        'available_temperatures' => 'array',
+    ];
+
+    public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
     }
@@ -28,11 +50,16 @@ class WashingMachine extends Model
         return $this->hasMany(Rental::class);
     }
 
-    public function customers() : BelongsToMany
+    public function rental()
+    {
+        return $this->hasOne(Rental::class)->whereIn('status', ['activa', 'vencida']);
+    }
+
+    public function customers(): BelongsToMany
     {
         return $this->belongsToMany(Customer::class, 'rentals')
-                    ->withPivot('start_date', 'end_date', 'status', 'notes')
-                    ->withTimestamps();
+            ->withPivot('start_date', 'end_date', 'status', 'notes')
+            ->withTimestamps();
     }
 
     public function getRentalAttribute()
@@ -45,8 +72,8 @@ class WashingMachine extends Model
         return $this->hasMany(Maintenance::class);
     }
 
-    public function getNameAttribute() {
+    public function getNameAttribute()
+    {
         return $this->machine_code . ' ' . $this->brand . ' ' . $this->model;
     }
-
 }
