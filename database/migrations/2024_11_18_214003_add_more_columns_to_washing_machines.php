@@ -39,7 +39,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('washing_machines_tables', function (Blueprint $table) {
+        Schema::table('washing_machines', function (Blueprint $table) {
             //
             $table->dropColumn('serial_number');
             $table->dropColumn('purchase_date');
