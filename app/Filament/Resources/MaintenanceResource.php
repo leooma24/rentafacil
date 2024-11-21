@@ -22,6 +22,7 @@ class MaintenanceResource extends Resource
 
     protected static ?int $navigationSort = 4;
 
+    protected static ?string $navigationGroup = 'Servicios';
     protected static ?string $navigationIcon = 'heroicon-s-wrench-screwdriver';
     protected static ?string $modelLabel = 'Mantenimiento';
     protected static ?string $pluralModelLabel = 'Mantenimientos';

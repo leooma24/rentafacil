@@ -22,22 +22,22 @@ class Company extends Model
         return $this->belongsToMany(User::class);
     }
 
-    public function washingMachines() : HasMany
+    public function washingMachines(): HasMany
     {
         return $this->hasMany(WashingMachine::class);
     }
 
-    public function customers() : HasMany
+    public function customers(): HasMany
     {
         return $this->hasMany(Customer::class);
     }
 
-    public function rentals() : HasMany
+    public function rentals(): HasMany
     {
         return $this->hasMany(Rental::class);
     }
 
-    public function maintenances() : HasMany
+    public function maintenances(): HasMany
     {
         return $this->hasMany(Maintenance::class);
     }
@@ -47,11 +47,18 @@ class Company extends Model
         return $this->morphMany(Address::class, 'addressable');
     }
 
-    public function companyPackage() {
+    public function payments()
+    {
+        return $this->hasManyThrough(Payment::class, Rental::class);
+    }
+
+    public function companyPackage()
+    {
         return $this->hasOne(CompanyPackage::class);
     }
 
-    public function currentPackage() {
+    public function currentPackage()
+    {
         return $this->hasOne(CompanyPackage::class)->where('end_date', '>=', now());
     }
 

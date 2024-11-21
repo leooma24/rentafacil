@@ -20,6 +20,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use App\Filament\Pages\Tenancy\RegisterCompany;
 use App\Filament\Pages\Tenancy\EditCompanyProfile;
+use Filament\Navigation\NavigationGroup;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -54,6 +55,13 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([])
+            ->navigationGroups([
+                'Gestión Principal' => NavigationGroup::make('Gestión Principal', 'heroicon-s-home'),
+                'Finanzas' => NavigationGroup::make('Finanzas', 'heroicon-o-currency-dollar'),
+                'Servicios' => NavigationGroup::make('Servicios', 'heroicon-o-cog'),
+                'Configuración' => NavigationGroup::make('Configuración', 'heroicon-o-cog'),
+                'Administrador' => NavigationGroup::make('Administrador', 'heroicon-o-cog'),
+            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

@@ -20,6 +20,7 @@ class RentalResource extends Resource
 
     protected static ?int $navigationSort = 3;
 
+    protected static ?string $navigationGroup = 'Gestión Principal';
     protected static ?string $modelLabel = 'Renta';
     protected static ?string $pluralModelLabel = 'Rentas';
     protected static ?string $navigationLabel = 'Mis Rentas';

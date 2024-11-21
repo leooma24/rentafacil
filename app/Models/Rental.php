@@ -12,17 +12,17 @@ class Rental extends Model
 
     protected $fillable = ['company_id', 'customer_id', 'washing_machine_id', 'start_date', 'end_date', 'status', 'notes'];
 
-    public function company() : BelongsTo
+    public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
     }
 
-    public function customer() : BelongsTo
+    public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
-    public function washingMachine() : BelongsTo
+    public function washingMachine(): BelongsTo
     {
         return $this->belongsTo(WashingMachine::class);
     }
@@ -32,4 +32,8 @@ class Rental extends Model
         return $this->due_date < now() && $this->status === 'activa';
     }
 
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
 }

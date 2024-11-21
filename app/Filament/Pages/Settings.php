@@ -21,16 +21,18 @@ class Settings extends Page implements HasForms
 
     protected static string $view = 'filament.pages.settings';
 
+    protected static ?string $navigationGroup = 'Configuración';
     protected static ?string $title = 'Configuración';
 
     protected static ?string $slug = 'configuracion';
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 10;
 
     public ?array $data = [];
     public $tenant = null;
 
-    public function mount() : void {
+    public function mount(): void
+    {
         $this->tenant = Filament::getTenant();
         $this->form->fill([
             'price' => $this->tenant->settings?->price,
@@ -62,7 +64,8 @@ class Settings extends Page implements HasForms
         ];
     }
 
-    public function save() : void {
+    public function save(): void
+    {
         try {
             $data = $this->form->getState();
             $this->tenant->settings()->updateOrCreate(['company_id' => $this->tenant->id], $data);

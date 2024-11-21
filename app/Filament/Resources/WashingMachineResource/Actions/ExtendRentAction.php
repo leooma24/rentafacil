@@ -22,12 +22,44 @@ class ExtendRentAction
             ->icon('heroicon-o-calendar')
             ->form([
                 //
-                Forms\Components\TextInput::make('price')
-                    ->label('Precio de renta')
-                    ->default($tenant->settings?->price),
-                Forms\Components\TextInput::make('days')
-                    ->label('Días de renta')
-                    ->default($tenant->settings?->days_per_payment),
+                Forms\Components\Section::make('Extender Renta')
+                    ->description('Formulario para extender la renta de la lavadora')
+                    ->icon('heroicon-o-calendar')
+                    ->columns('3')
+                    ->schema([
+                        Forms\Components\DatePicker::make('payment_date')
+                            ->label('Fecha de Pago')
+                            ->default(now()),
+                        Forms\Components\TextInput::make('price')
+                            ->label('Precio de renta')
+                            ->default($tenant->settings?->price),
+                        Forms\Components\TextInput::make('days')
+                            ->label('Días de renta')
+                            ->default($tenant->settings?->days_per_payment),
+                        Forms\Components\Select::make('payment_method')
+                            ->label('Método de Pago')
+                            ->options([
+                                'Tarjeta de Crédito' => 'Tarjeta de Crédito',
+                                'Tarjeta de Débito' => 'Tarjeta de Débito',
+                                'PayPal' => 'PayPal',
+                                'Transferencia Bancaria' => 'Transferencia Bancaria',
+                                'Efectivo' => 'Efectivo',
+                            ])
+                            ->default('Efectivo')
+                            ->required(),
+                        Forms\Components\TextInput::make('reference')
+                            ->label('Referencia')
+                            ->nullable(),
+                        Forms\Components\Select::make('status')
+                            ->label('Estado')
+                            ->options([
+                                'pendiente' => 'Pendiente',
+                                'completado' => 'Completado',
+                                'fallido' => 'Fallido',
+                            ])
+                            ->required()
+                            ->default('completado'),
+                    ]),
 
             ])
             ->action(function (array $data, WashingMachine $record) use ($tenant) {
@@ -52,6 +84,15 @@ class ExtendRentAction
                 $newDate->add($days, 'days');
                 $rental->end_date = $newDate->format('Y-m-d');
                 $rental->save();
+
+                $rental->payments()->create([
+                    'company_id' => $tenant->id,
+                    'amount' => $price,
+                    'payment_date' => $data['payment_date'],
+                    'payment_method' => $data['payment_method'],
+                    'reference' => $data['reference'],
+                    'status' => $data['status'],
+                ]);
 
                 if ($rental->status === 'vencida') {
                     $rental->status = 'activa';
