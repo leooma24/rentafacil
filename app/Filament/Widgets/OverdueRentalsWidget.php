@@ -20,6 +20,7 @@ class OverdueRentalsWidget extends BaseWidget
                         'rentals',
                         fn($query) =>
                         $query->where('end_date', '<=', now())
+                            ->whereIn('status', ['activa', 'vencida'])
                     )
             )
             ->defaultPaginationPageOption(5)

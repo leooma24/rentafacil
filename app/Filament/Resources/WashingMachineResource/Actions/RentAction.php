@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\CompanyResource\Actions;
+namespace App\Filament\Resources\WashingMachineResource\Actions;
 
 use App\Events\RentEvent;
 use Filament\Tables;
@@ -18,6 +18,7 @@ class RentAction
             ->label('Rentar')
             ->slideOver()
             ->modalWidth('md')
+            ->modalSubmitActionLabel('Rentar')
             ->form([
                 Forms\Components\Select::make('customer_id')
                     ->label('Cliente')

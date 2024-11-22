@@ -2,16 +2,14 @@
 
 namespace App\Filament\Widgets;
 
-use App\Filament\Resources\WashingMachineResource;
 use App\Filament\Resources\RentalResource;
+use App\Filament\Resources\RentalResource\Actions\ExtendRentAction;
 use App\Models\Rental;
-use App\Models\WashingMachine;
 use Carbon\Carbon;
 use Filament\Notifications\Notification;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Forms;
-use Filament\Tables\Actions\ActionGroup;
+
 use Filament\Facades\Filament;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Filament\Notifications\Actions\Action as NotificationAction;
@@ -28,23 +26,23 @@ class RentDueWashingMachines extends BaseWidget
         return $table
             ->query(
                 RentalResource::getEloquentQuery()
-                    ->where('end_date', '>', Carbon::now())
-                    ->where('end_date', '<', Carbon::now()->addDays(3))
+                    ->where('end_date', '>=', Carbon::now())
+                    ->where('end_date', '<=', Carbon::now()->addDays(3))
             )
             ->paginated(false)
             ->defaultSort('end_date', 'asc')
             ->columns([
                 Tables\Columns\TextColumn::make('customer.name')
-                    ->label('Customer'),
+                    ->label('Cliente'),
                 Tables\Columns\TextColumn::make('washingMachine.machine_code')
-                    ->label('Washing Machine'),
+                    ->label('Lavadora'),
                 Tables\Columns\TextColumn::make('end_date')
-                    ->label('End Date')
-                    ->date(),
-                Tables\Columns\TextColumn::make('status')
-                    ->label('Status')
+                    ->label('Fecha de vencimiento')
+                    ->date()
                     ->badge(),
             ])->actions([
+                ExtendRentAction::make($tenant),
+                /*
                 Tables\Actions\Action::make('extend_rent')
                     ->label('Extender Renta')
                     ->icon('heroicon-o-calendar')
@@ -80,6 +78,7 @@ class RentDueWashingMachines extends BaseWidget
                             ->success()
                             ->send();
                     }),
+                    */
             ]);
     }
 }

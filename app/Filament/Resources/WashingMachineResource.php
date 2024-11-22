@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\CompanyResource\Actions\ExtendRentAction;
-use App\Filament\Resources\CompanyResource\Actions\RentAction;
+use App\Filament\Resources\WashingMachineResource\Actions;
+
 use App\Filament\Resources\WashingMachineResource\Pages;
 use App\Models\WashingMachine;
 use Carbon\Carbon;
@@ -241,8 +241,8 @@ class WashingMachineResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 ActionGroup::make([
-                    RentAction::make($tenant),
-                    ExtendRentAction::make($tenant),
+                    Actions\RentAction::make($tenant),
+                    Actions\ExtendRentAction::make($tenant),
 
                     Tables\Actions\Action::make('make_available')
                         ->visible(fn(WashingMachine $record) => in_array($record->status, ['rentada', 'en_mantenimiento']) && $record->rental?->status == 'activa')

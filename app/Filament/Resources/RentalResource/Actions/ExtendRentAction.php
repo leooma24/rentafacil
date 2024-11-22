@@ -1,12 +1,11 @@
 <?php
 
-namespace App\Filament\Resources\WashingMachineResource\Actions;
+namespace App\Filament\Resources\RentalResource\Actions;
 
 use Filament\Notifications\Actions\Action as NotificationAction;
-use App\Models\WashingMachine;
+use App\Models\Rental;
 use Carbon\Carbon;
 use Filament\Notifications\Notification;
-use Filament\Facades\Filament;
 use Filament\Tables;
 use App\Models\Company;
 use Filament\Forms;
@@ -16,7 +15,6 @@ class ExtendRentAction
     public static function make(Company $tenant): Tables\Actions\Action
     {
         return Tables\Actions\Action::make('extend_rent')
-            ->visible(fn(WashingMachine $record) => $record->status === 'rentada')
             ->label('Extender Renta')
             ->icon('heroicon-o-calendar')
             ->modalSubmitActionLabel('Pagar')
@@ -62,8 +60,7 @@ class ExtendRentAction
                     ]),
 
             ])
-            ->action(function (array $data, WashingMachine $record) use ($tenant) {
-                $rental = $record->rentals()->whereIn('status', ['activa', 'vencida'])->first();
+            ->action(function (array $data, Rental $rental) use ($tenant) {
 
                 $days = $data['days'];
                 $price = $data['price'];
@@ -100,7 +97,7 @@ class ExtendRentAction
                 }
 
                 Notification::make()
-                    ->title('Se pago la renta de la lavadora ' . $record->machine_code)
+                    ->title('Se pago la renta de la lavadora ' . $rental->washingMachine->machine_code)
                     ->success()
                     ->send();
             });
