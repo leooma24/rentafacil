@@ -62,6 +62,11 @@ class Company extends Model
         return $this->hasOne(CompanyPackage::class)->where('end_date', '>=', now());
     }
 
+    public function incidents()
+    {
+        return $this->hasMany(Incident::class);
+    }
+
     // Método para verificar los límites del paquete
     public function canAddMoreClients()
     {

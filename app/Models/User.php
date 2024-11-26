@@ -24,6 +24,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
         'password',
     ];
 
+
     public function companies(): BelongsToMany
     {
         return $this->belongsToMany(Company::class);
@@ -43,5 +44,4 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     {
         return true;
     }
-
 }
