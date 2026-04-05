@@ -76,8 +76,11 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('30s')
             ->plugins([
-                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make()
+                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
+                \Saade\FilamentFullCalendar\FilamentFullCalendarPlugin::make(),
             ])
             ->tenant(Company::class)
             ->tenantRegistration(RegisterCompany::class)

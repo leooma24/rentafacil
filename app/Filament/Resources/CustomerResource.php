@@ -2,12 +2,14 @@
 
 namespace App\Filament\Resources;
 
+use App\Exports\CustomersExport;
 use App\Filament\Resources\Components\Forms\AddressForm;
 use App\Filament\Resources\CustomerResource\Pages;
 use App\Filament\Resources\CustomerResource\RelationManagers\WashingMachinesRelationManager;
 use App\Models\Customer;
 use App\Models\Township;
 use App\Models\Neighborhood;
+use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
@@ -19,6 +21,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Collection;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
+use Maatwebsite\Excel\Facades\Excel;
 
 class CustomerResource extends Resource
 {
@@ -85,6 +88,15 @@ class CustomerResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->headerActions([
+                Tables\Actions\Action::make('export')
+                    ->label('Exportar Excel')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->action(fn () => Excel::download(
+                        new CustomersExport(Filament::getTenant()->id),
+                        'clientes-' . now()->format('Y-m-d') . '.xlsx'
+                    )),
             ])
             ->filters([
                 //

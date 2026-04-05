@@ -5,6 +5,8 @@ namespace App\Console\Commands;
 use App\Mail\RentalExpiringNotification;
 use App\Mail\RentalOverdueNotification;
 use App\Models\Rental;
+use App\Notifications\RentalExpiringDatabaseNotification;
+use App\Notifications\RentalOverdueDatabaseNotification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
 
@@ -26,6 +28,11 @@ class SendRentalReminders extends Command
         foreach ($expiring as $rental) {
             Mail::to($rental->customer->email)
                 ->send(new RentalExpiringNotification($rental));
+
+            // Database notification to company members
+            $rental->company->members->each(fn ($member) =>
+                $member->notify(new RentalExpiringDatabaseNotification($rental))
+            );
         }
 
         $this->info("Enviados {$expiring->count()} recordatorios de rentas por vencer.");
@@ -39,6 +46,10 @@ class SendRentalReminders extends Command
         foreach ($overdue as $rental) {
             Mail::to($rental->customer->email)
                 ->send(new RentalOverdueNotification($rental));
+
+            $rental->company->members->each(fn ($member) =>
+                $member->notify(new RentalOverdueDatabaseNotification($rental))
+            );
         }
 
         $this->info("Enviados {$overdue->count()} avisos de rentas vencidas.");

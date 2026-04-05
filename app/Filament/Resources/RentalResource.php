@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Exports\RentalsExport;
 use App\Filament\Resources\RentalResource\Pages;
 use App\Filament\Resources\RentalResource\RelationManagers;
 use App\Models\Rental;
@@ -11,6 +12,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Facades\Filament;
+use Maatwebsite\Excel\Facades\Excel;
 
 class RentalResource extends Resource
 {
@@ -107,6 +109,15 @@ class RentalResource extends Resource
                     ->searchable()
                     ->sortable(),
 
+            ])
+            ->headerActions([
+                Tables\Actions\Action::make('export')
+                    ->label('Exportar Excel')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->action(fn () => Excel::download(
+                        new RentalsExport(Filament::getTenant()->id),
+                        'rentas-' . now()->format('Y-m-d') . '.xlsx'
+                    )),
             ])
             ->filters([
                 //

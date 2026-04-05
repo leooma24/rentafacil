@@ -31,3 +31,7 @@ Route::post('/create-payment-intent', [PaymentController::class, 'createPaymentI
 Route::get('/contrato/{rental}/descargar', [ContractController::class, 'download'])
     ->name('contract.download')
     ->middleware('auth');
+
+Route::get('/recibo/{payment}/descargar', [ContractController::class, 'receipt'])
+    ->name('receipt.download')
+    ->middleware('auth');

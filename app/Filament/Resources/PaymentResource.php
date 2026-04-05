@@ -2,16 +2,17 @@
 
 namespace App\Filament\Resources;
 
+use App\Exports\PaymentsExport;
 use App\Filament\Resources\PaymentResource\Pages;
 use App\Filament\Resources\PaymentResource\RelationManagers;
 use App\Models\Payment;
+use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PaymentResource extends Resource
 {
@@ -79,11 +80,26 @@ class PaymentResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->headerActions([
+                Tables\Actions\Action::make('export')
+                    ->label('Exportar Excel')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->action(fn () => Excel::download(
+                        new PaymentsExport(Filament::getTenant()->id),
+                        'pagos-' . now()->format('Y-m-d') . '.xlsx'
+                    )),
+            ])
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('download_receipt')
+                    ->label('Recibo')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->color('success')
+                    ->url(fn ($record) => route('receipt.download', $record))
+                    ->openUrlInNewTab(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
