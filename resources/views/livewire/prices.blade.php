@@ -1,33 +1,44 @@
 <section id="precios" class="pricing">
     <div class="container">
-        <h2 class="text-color-primary-dark text-center">NUESTROS PRECIOS</h2>
+        <div class="section-header text-center">
+            <span class="section-tag">Planes flexibles</span>
+            <h2 class="text-color-primary-dark">NUESTROS PRECIOS</h2>
+            <p>Elige el plan que mejor se adapte a tu negocio</p>
+        </div>
         <div class="pricing-inner">
             @foreach ($packages as $package)
-            <div class="pricing-content text-center">
-                <h2>{{ $package->name }}</h2>
-                <div>$ <span class="price">{{ $package->price }}</span> Men.</div>
-                <ul>
-                    <li>{{ $package->max_washers}} máquinas de lavado</li>
-                    <li>{{ $package->max_clients}} Clientes</li>
-                    <li>Soporte Chat</li>
+            <div class="pricing-card {{ $loop->index === 1 ? 'pricing-card-featured' : '' }}">
+                @if($loop->index === 1)
+                <div class="pricing-badge">Popular</div>
+                @endif
+                <h3 class="pricing-card-title">{{ $package->name }}</h3>
+                <div class="pricing-card-price">
+                    <span class="pricing-currency">$</span>
+                    <span class="pricing-amount">{{ number_format($package->price, 0) }}</span>
+                    <span class="pricing-period">/mes</span>
+                </div>
+                <ul class="pricing-card-features">
+                    <li><i class="fas fa-check"></i> {{ $package->max_washers }} lavadoras</li>
+                    <li><i class="fas fa-check"></i> {{ $package->max_clients }} clientes</li>
+                    <li><i class="fas fa-check"></i> Dashboard con gráficas</li>
+                    <li><i class="fas fa-check"></i> Contratos PDF</li>
+                    <li><i class="fas fa-check"></i> Cobros por WhatsApp</li>
                     @if($package->price > 0)
-                    <li>Soporte Telefónico</li>
-                    <li>Reportes diarios</li>
-                    <li>Notificaciones de Vencimientos</li>
+                    <li><i class="fas fa-check"></i> Pagos con Stripe</li>
+                    <li><i class="fas fa-check"></i> Notificaciones automáticas</li>
+                    <li><i class="fas fa-check"></i> Portal del cliente</li>
+                    <li><i class="fas fa-check"></i> Reportes Excel</li>
+                    <li><i class="fas fa-check"></i> Soporte telefónico</li>
                     @else
-                    <li>Reportes semanales</li>
+                    <li><i class="fas fa-check"></i> Reportes semanales</li>
+                    <li><i class="fas fa-check"></i> Soporte por chat</li>
                     @endif
-                    <li>Soporte 24/7</li>
-                    <li>Acceso a la plataforma</li>
-                    <li>Reportes de uso</li>
                 </ul>
-
-                <a href="/propietario/registrar" class="btn btn-primary">Contratar</a>
-
-
+                <a href="/propietario/registrar" class="btn {{ $loop->index === 1 ? 'btn-primary' : 'btn-outline-dark' }} btn-block">
+                    {{ $package->price > 0 ? 'Contratar' : 'Empezar Gratis' }}
+                </a>
             </div>
             @endforeach
-
         </div>
     </div>
 </section>
