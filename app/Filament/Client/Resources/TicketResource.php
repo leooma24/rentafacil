@@ -76,6 +76,13 @@ class TicketResource extends Resource
                             ->rows(4)
                             ->required()
                             ->maxLength(65535),
+                        Forms\Components\FileUpload::make('photos')
+                            ->label('Fotos del problema')
+                            ->image()
+                            ->multiple()
+                            ->maxFiles(5)
+                            ->directory('incidents')
+                            ->columnSpanFull(),
                     ])
                     ->columns(2),
             ]);

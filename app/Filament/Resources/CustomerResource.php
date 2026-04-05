@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Exports\CustomersExport;
+use App\Imports\CustomersImport;
 use App\Filament\Resources\Components\Forms\AddressForm;
 use App\Filament\Resources\CustomerResource\Pages;
 use App\Filament\Resources\CustomerResource\RelationManagers\WashingMachinesRelationManager;
@@ -106,12 +107,30 @@ class CustomerResource extends Resource
             ])
             ->headerActions([
                 Tables\Actions\Action::make('export')
-                    ->label('Exportar Excel')
+                    ->label('Exportar')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->action(fn () => Excel::download(
                         new CustomersExport(Filament::getTenant()->id),
                         'clientes-' . now()->format('Y-m-d') . '.xlsx'
                     )),
+                Tables\Actions\Action::make('import')
+                    ->label('Importar')
+                    ->icon('heroicon-o-arrow-up-tray')
+                    ->color('success')
+                    ->form([
+                        Forms\Components\FileUpload::make('file')
+                            ->label('Archivo Excel (.xlsx)')
+                            ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'])
+                            ->required(),
+                    ])
+                    ->action(function (array $data) {
+                        $file = storage_path('app/public/' . $data['file']);
+                        Excel::import(new CustomersImport(Filament::getTenant()->id), $file);
+                        \Filament\Notifications\Notification::make()
+                            ->title('Clientes importados correctamente')
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),

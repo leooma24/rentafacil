@@ -114,6 +114,13 @@ class IncidentResource extends Resource
                             ->label('Comentarios')
                             ->maxLength(65535)
                             ->nullable(),
+                        Forms\Components\FileUpload::make('photos')
+                            ->label('Fotos')
+                            ->image()
+                            ->multiple()
+                            ->maxFiles(5)
+                            ->directory('incidents')
+                            ->columnSpanFull(),
                     ])
                     ->columns(2),
             ]);
@@ -236,6 +243,10 @@ class IncidentResource extends Resource
                         TextEntry::make('type')->label('Tipo de Incidencia')->formatStateUsing(fn($state) => ucfirst($state)),
                         TextEntry::make('resolved_at')->label('Fecha de Resolución')->formatStateUsing(fn($state) => $state ? $state->format('d/m/Y H:i') : 'No resuelta'),
                         TextEntry::make('comments')->label('Comentarios'),
+                        InfolistComponent\ImageEntry::make('photos')
+                            ->label('Fotos')
+                            ->disk('public')
+                            ->columnSpanFull(),
                         TextEntry::make('created_at')->label('Creado el')->formatStateUsing(fn($state) => $state->format('d/m/Y H:i')),
                         TextEntry::make('updated_at')->label('Actualizado el')->formatStateUsing(fn($state) => $state->format('d/m/Y H:i')),
                     ])

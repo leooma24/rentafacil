@@ -3,8 +3,8 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\WashingMachineResource\Actions;
-
 use App\Filament\Resources\WashingMachineResource\Pages;
+use App\Imports\WashingMachinesImport;
 use App\Models\WashingMachine;
 use Carbon\Carbon;
 use Filament\Forms;
@@ -16,6 +16,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Notifications\Notification;
 use Filament\Facades\Filament;
 use Filament\Tables\Actions\ActionGroup;
+use Maatwebsite\Excel\Facades\Excel;
 
 
 
@@ -240,8 +241,27 @@ class WashingMachineResource extends Resource
                     ->searchable()
                     ->sortable(),
             ])
+            ->headerActions([
+                Tables\Actions\Action::make('import')
+                    ->label('Importar')
+                    ->icon('heroicon-o-arrow-up-tray')
+                    ->color('success')
+                    ->form([
+                        Forms\Components\FileUpload::make('file')
+                            ->label('Archivo Excel (.xlsx)')
+                            ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'])
+                            ->required(),
+                    ])
+                    ->action(function (array $data) {
+                        $file = storage_path('app/public/' . $data['file']);
+                        Excel::import(new WashingMachinesImport(Filament::getTenant()->id), $file);
+                        Notification::make()
+                            ->title('Lavadoras importadas correctamente')
+                            ->success()
+                            ->send();
+                    }),
+            ])
             ->filters([
-                //
                 SelectFilter::make('status')
                     ->options([
                         'disponible' => 'Disponible',
@@ -256,6 +276,12 @@ class WashingMachineResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\RestoreAction::make(),
+                Tables\Actions\Action::make('qr_code')
+                    ->label('QR')
+                    ->icon('heroicon-o-qr-code')
+                    ->color('gray')
+                    ->url(fn ($record) => route('qr.download', $record))
+                    ->openUrlInNewTab(),
                 ActionGroup::make([
                     Actions\RentAction::make($tenant),
                     Actions\ExtendRentAction::make($tenant),

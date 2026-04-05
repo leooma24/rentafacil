@@ -21,6 +21,11 @@ class Incident extends Model
         'type',
         'resolved_at',
         'comments',
+        'photos',
+    ];
+
+    protected $casts = [
+        'photos' => 'array',
     ];
 
     public function company()
