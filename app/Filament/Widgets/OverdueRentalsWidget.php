@@ -28,11 +28,11 @@ class OverdueRentalsWidget extends BaseWidget
             ->defaultSort('created_at', 'desc')
             ->columns([
                 // ...
-                Tables\Columns\TextColumn::make('rental.customer.name')
+                Tables\Columns\TextColumn::make('activeRental.customer.name')
                     ->label('Cliente'),
                 Tables\Columns\TextColumn::make('machine_code')
                     ->label('Código'),
-                Tables\Columns\TextColumn::make('rental.end_date')
+                Tables\Columns\TextColumn::make('activeRental.end_date')
                     ->label('Fecha de Vencimiento')
                     ->badge()
                     ->color('danger')

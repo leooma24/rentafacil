@@ -197,7 +197,7 @@ class WashingMachineResource extends Resource
                         'vendida' => 'info',
                         'fuera_de_servicio' => 'danger',
                     }),
-                Tables\Columns\TextColumn::make('rental.status')
+                Tables\Columns\TextColumn::make('activeRental.status')
                     ->visibleFrom('md')
                     ->label('Estatus Renta')
                     ->badge()
@@ -209,17 +209,17 @@ class WashingMachineResource extends Resource
                         'completada' => 'info',
                         'cancelada' => 'danger',
                     }),
-                Tables\Columns\TextColumn::make('rental.customer.name')
+                Tables\Columns\TextColumn::make('activeRental.customer.name')
                     ->label('Cliente')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('rental.start_date')
+                Tables\Columns\TextColumn::make('activeRental.start_date')
                     ->visibleFrom('md')
                     ->label('Fecha de Inicio')
                     ->date()
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('rental.end_date')
+                Tables\Columns\TextColumn::make('activeRental.end_date')
                     ->visibleFrom('md')
                     ->label('Fecha de Fin')
                     ->date()
@@ -245,20 +245,20 @@ class WashingMachineResource extends Resource
                     Actions\ExtendRentAction::make($tenant),
 
                     Tables\Actions\Action::make('make_available')
-                        ->visible(fn(WashingMachine $record) => in_array($record->status, ['rentada', 'en_mantenimiento']) && $record->rental?->status == 'activa')
+                        ->visible(fn(WashingMachine $record) => in_array($record->status, ['rentada', 'en_mantenimiento']) && $record->activeRental?->status == 'activa')
                         ->label('Cancelar Renta')
                         ->icon('heroicon-s-check-circle')
                         ->requiresConfirmation()
                         ->action(function (array $data, WashingMachine $record) use ($tenant) {
                             $record->update(['status' => 'disponible']);
-                            $record->rental->update(['status' => 'cancelada', 'end_date' => new Carbon()]);
+                            $record->activeRental->update(['status' => 'cancelada', 'end_date' => new Carbon()]);
                             Notification::make()
                                 ->title('La lavadora esta disponible y la renta ha sido cancelada')
                                 ->success()
                                 ->send();
                         }),
                     Tables\Actions\Action::make('pick_up')
-                        ->visible(fn(WashingMachine $record) => in_array($record->status, ['rentada', 'en_mantenimiento']) && $record->rental?->status == 'vencida')
+                        ->visible(fn(WashingMachine $record) => in_array($record->status, ['rentada', 'en_mantenimiento']) && $record->activeRental?->status == 'vencida')
                         ->label('Recoger Lavadora')
                         ->icon('heroicon-s-check-circle')
                         ->requiresConfirmation()

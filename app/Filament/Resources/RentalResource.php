@@ -59,7 +59,8 @@ class RentalResource extends Resource
                 Forms\Components\DatePicker::make('end_date')
                     ->label('Fecha de Fin')
                     ->native(false)
-                    ->format('Y-m-d'),
+                    ->format('Y-m-d')
+                    ->afterOrEqual('start_date'),
                 Forms\Components\Select::make('status')
                     ->label('Estatus')
                     ->options([

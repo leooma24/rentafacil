@@ -154,7 +154,7 @@ class IncidentResource extends Resource
                     ->label('Estado')
                     ->options([
                         'abierta' => 'Abierta',
-                        'in_progress' => 'En Progreso',
+                        'en_progreso' => 'En Progreso',
                         'cerrada' => 'Cerrada',
                     ]),
                 Tables\Filters\SelectFilter::make('priority')
@@ -177,9 +177,21 @@ class IncidentResource extends Resource
                 Tables\Actions\ViewAction::make()
                     ->slideOver(),
                 Tables\Actions\EditAction::make()
-                    ->slideOver(),
+                    ->slideOver()
+                    ->mutateFormDataUsing(function (array $data): array {
+                        $data['user_id'] = $data['user_id'] ?? auth()->id();
+                        return $data;
+                    }),
                 Tables\Actions\DeleteAction::make()
                     ->requiresConfirmation(),
+            ])
+            ->headerActions([
+                Tables\Actions\CreateAction::make()
+                    ->slideOver()
+                    ->mutateFormDataUsing(function (array $data): array {
+                        $data['user_id'] = auth()->id();
+                        return $data;
+                    }),
             ]);
     }
 

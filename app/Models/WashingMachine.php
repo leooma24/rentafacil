@@ -50,9 +50,9 @@ class WashingMachine extends Model
         return $this->hasMany(Rental::class);
     }
 
-    public function rental()
+    public function activeRental()
     {
-        return $this->hasOne(Rental::class)->whereIn('status', ['activa', 'vencida']);
+        return $this->hasOne(Rental::class)->whereIn('status', ['activa', 'vencida'])->latestOfMany();
     }
 
     public function customers(): BelongsToMany
@@ -60,11 +60,6 @@ class WashingMachine extends Model
         return $this->belongsToMany(Customer::class, 'rentals')
             ->withPivot('start_date', 'end_date', 'status', 'notes')
             ->withTimestamps();
-    }
-
-    public function getRentalAttribute()
-    {
-        return $this->rentals()->whereIn('status', ['activa', 'vencida'])->first();
     }
 
     public function maintenances()

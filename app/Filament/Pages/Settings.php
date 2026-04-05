@@ -47,9 +47,14 @@ class Settings extends Page implements HasForms
                 // Schema fields here
                 TextInput::make('price')
                     ->label('Precio por pago')
+                    ->numeric()
+                    ->minValue(0)
                     ->required(),
                 TextInput::make('days_per_payment')
                     ->label('Días que cubre el pago')
+                    ->numeric()
+                    ->integer()
+                    ->minValue(1)
                     ->required(),
             ])
             ->statePath('data');

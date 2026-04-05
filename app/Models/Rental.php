@@ -29,7 +29,7 @@ class Rental extends Model
 
     public function isOverdue(): bool
     {
-        return $this->due_date < now() && $this->status === 'activa';
+        return $this->end_date < now() && $this->status === 'activa';
     }
 
     public function payments()
