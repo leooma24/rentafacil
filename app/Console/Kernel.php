@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         $schedule->command('rentals:mark-overdue')->daily();
+        $schedule->command('rentals:send-reminders')->dailyAt('09:00');
     }
 
     /**

@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Livewire\ShowHome;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ContractController;
 use App\Livewire\ShowPackage;
 
 /*
@@ -26,3 +27,7 @@ Route::get('/', ShowHome::class);
 Route::get('/contratar/{package}', ShowPackage::class);
 
 Route::post('/create-payment-intent', [PaymentController::class, 'createPaymentIntent']);
+
+Route::get('/contrato/{rental}/descargar', [ContractController::class, 'download'])
+    ->name('contract.download')
+    ->middleware('auth');
