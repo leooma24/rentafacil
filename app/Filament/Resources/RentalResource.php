@@ -28,6 +28,42 @@ class RentalResource extends Resource
     protected static ?string $navigationLabel = 'Mis Rentas';
     protected static ?string $slug = 'mis-rentas';
 
+    public static function getNavigationBadge(): ?string
+    {
+        $tenant = Filament::getTenant();
+        if (!$tenant) return null;
+        $count = $tenant->rentals()->where('status', 'vencida')->count();
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'danger';
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'Rentas vencidas';
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['customer.name', 'washingMachine.machine_code'];
+    }
+
+    public static function getGlobalSearchResultTitle(\Illuminate\Database\Eloquent\Model $record): string
+    {
+        return ($record->customer?->name ?? 'Cliente') . ' - ' . ($record->washingMachine?->machine_code ?? '');
+    }
+
+    public static function getGlobalSearchResultDetails(\Illuminate\Database\Eloquent\Model $record): array
+    {
+        return [
+            'Estado' => ucfirst($record->status),
+            'Vence' => $record->end_date ? \Carbon\Carbon::parse($record->end_date)->format('d/m/Y') : '-',
+        ];
+    }
+
     public static function form(Form $form): Form
     {
         $tenant = Filament::getTenant();
@@ -120,7 +156,36 @@ class RentalResource extends Resource
                     )),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('Estado')
+                    ->options([
+                        'activa' => 'Activa',
+                        'vencida' => 'Vencida',
+                        'completada' => 'Completada',
+                        'cancelada' => 'Cancelada',
+                    ]),
+                Tables\Filters\Filter::make('end_date')
+                    ->form([
+                        Forms\Components\DatePicker::make('from')
+                            ->label('Vence desde'),
+                        Forms\Components\DatePicker::make('until')
+                            ->label('Vence hasta'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when($data['from'], fn ($q, $date) => $q->whereDate('end_date', '>=', $date))
+                            ->when($data['until'], fn ($q, $date) => $q->whereDate('end_date', '<=', $date));
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['from'] ?? null) {
+                            $indicators[] = Tables\Filters\Indicator::make('Desde ' . \Carbon\Carbon::parse($data['from'])->format('d/m/Y'));
+                        }
+                        if ($data['until'] ?? null) {
+                            $indicators[] = Tables\Filters\Indicator::make('Hasta ' . \Carbon\Carbon::parse($data['until'])->format('d/m/Y'));
+                        }
+                        return $indicators;
+                    }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -141,7 +206,7 @@ class RentalResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\PaymentsRelationManager::class,
         ];
     }
 

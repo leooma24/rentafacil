@@ -32,6 +32,20 @@ class WashingMachineResource extends Resource
     protected static ?string $pluralModelLabel = 'Lavadoras';
     protected static ?string $navigationLabel = 'Mis Lavadoras';
     protected static ?string $slug = 'lavadoras';
+    protected static ?string $recordTitleAttribute = 'machine_code';
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['machine_code', 'brand', 'model', 'serial_number'];
+    }
+
+    public static function getGlobalSearchResultDetails(\Illuminate\Database\Eloquent\Model $record): array
+    {
+        return [
+            'Marca' => $record->brand . ' ' . $record->model,
+            'Estado' => ucfirst($record->status),
+        ];
+    }
 
     public static function form(Form $form): Form
     {
@@ -237,9 +251,11 @@ class WashingMachineResource extends Resource
                         'fuera_de_servicio' => 'Fuera de Servicio',
                     ])
                     ->label('Status'),
+                Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\RestoreAction::make(),
                 ActionGroup::make([
                     Actions\RentAction::make($tenant),
                     Actions\ExtendRentAction::make($tenant),

@@ -32,6 +32,23 @@ class IncidentResource extends Resource
 
     protected static ?int $navigationSort = 4;
 
+    public static function getNavigationBadge(): ?string
+    {
+        $tenant = Filament::getTenant();
+        if (!$tenant) return null;
+        $count = $tenant->incidents()->whereIn('status', ['abierta', 'en_progreso'])->count();
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'Tickets abiertos';
+    }
 
     public static function form(Form $form): Form
     {

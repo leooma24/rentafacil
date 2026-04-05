@@ -11,6 +11,7 @@ use App\Models\Township;
 use App\Models\Neighborhood;
 use Filament\Facades\Filament;
 use Filament\Forms;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
@@ -36,6 +37,20 @@ class CustomerResource extends Resource
     protected static ?string $pluralModelLabel = 'Clientes';
     protected static ?string $navigationLabel = 'Mis Clientes';
     protected static ?string $slug = 'clientes';
+    protected static ?string $recordTitleAttribute = 'name';
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'email', 'phone'];
+    }
+
+    public static function getGlobalSearchResultDetails(\Illuminate\Database\Eloquent\Model $record): array
+    {
+        return [
+            'Email' => $record->email ?? '-',
+            'Teléfono' => $record->phone ?? '-',
+        ];
+    }
 
     public static function form(Form $form): Form
     {
@@ -99,14 +114,17 @@ class CustomerResource extends Resource
                     )),
             ])
             ->filters([
-                //
+                Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\RestoreAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
                 ]),
             ]);
     }

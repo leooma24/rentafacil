@@ -6,6 +6,7 @@ use App\Exports\PaymentsExport;
 use App\Filament\Resources\PaymentResource\Pages;
 use App\Filament\Resources\PaymentResource\RelationManagers;
 use App\Models\Payment;
+use Carbon\Carbon;
 use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -27,6 +28,24 @@ class PaymentResource extends Resource
     protected static ?string $pluralModelLabel = 'Pagos';
     protected static ?string $navigationLabel = 'Pagos';
     protected static ?string $slug = 'pagos';
+
+    public static function getNavigationBadge(): ?string
+    {
+        $tenant = Filament::getTenant();
+        if (!$tenant) return null;
+        $count = \App\Models\Payment::where('company_id', $tenant->id)->where('status', 'pendiente')->count();
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'Pagos pendientes';
+    }
 
     public static function form(Form $form): Form
     {
@@ -90,7 +109,44 @@ class PaymentResource extends Resource
                     )),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('Estado')
+                    ->options([
+                        'completado' => 'Completado',
+                        'pendiente' => 'Pendiente',
+                        'fallido' => 'Fallido',
+                    ]),
+                Tables\Filters\SelectFilter::make('payment_method')
+                    ->label('Método')
+                    ->options([
+                        'Efectivo' => 'Efectivo',
+                        'Tarjeta de Crédito' => 'Tarjeta de Crédito',
+                        'Tarjeta de Débito' => 'Tarjeta de Débito',
+                        'Transferencia Bancaria' => 'Transferencia Bancaria',
+                        'PayPal' => 'PayPal',
+                    ]),
+                Tables\Filters\Filter::make('payment_date')
+                    ->form([
+                        Forms\Components\DatePicker::make('from')
+                            ->label('Desde'),
+                        Forms\Components\DatePicker::make('until')
+                            ->label('Hasta'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when($data['from'], fn ($q, $date) => $q->whereDate('payment_date', '>=', $date))
+                            ->when($data['until'], fn ($q, $date) => $q->whereDate('payment_date', '<=', $date));
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['from'] ?? null) {
+                            $indicators[] = Tables\Filters\Indicator::make('Desde ' . Carbon::parse($data['from'])->format('d/m/Y'));
+                        }
+                        if ($data['until'] ?? null) {
+                            $indicators[] = Tables\Filters\Indicator::make('Hasta ' . Carbon::parse($data['until'])->format('d/m/Y'));
+                        }
+                        return $indicators;
+                    }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
