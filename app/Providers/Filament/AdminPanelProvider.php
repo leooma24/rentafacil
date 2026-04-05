@@ -10,6 +10,8 @@ use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Support\Facades\FilamentView;
+use Illuminate\Support\HtmlString;
 use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -82,6 +84,11 @@ class AdminPanelProvider extends PanelProvider
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
                 \Saade\FilamentFullCalendar\FilamentFullCalendarPlugin::make(),
             ])
+            ->renderHook('panels::head.end', fn () => new HtmlString(
+                '<link rel="manifest" href="/manifest.json">' .
+                '<meta name="theme-color" content="#06b6d4">' .
+                '<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js")}</script>'
+            ))
             ->tenant(Company::class)
             ->tenantRegistration(RegisterCompany::class)
             ->tenantProfile(EditCompanyProfile::class);

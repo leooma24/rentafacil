@@ -195,6 +195,88 @@ class RentalResource extends Resource
                     ->color('success')
                     ->url(fn ($record) => route('contract.download', $record))
                     ->openUrlInNewTab(),
+                Tables\Actions\Action::make('send_whatsapp')
+                    ->label('WhatsApp')
+                    ->icon('heroicon-o-chat-bubble-left-ellipsis')
+                    ->color('success')
+                    ->visible(fn ($record) => $record->customer?->phone && in_array($record->status, ['activa', 'vencida']))
+                    ->requiresConfirmation()
+                    ->modalHeading('Enviar recordatorio por WhatsApp')
+                    ->modalDescription(fn ($record) => "Se enviará un mensaje a {$record->customer->name} ({$record->customer->phone})")
+                    ->action(function ($record) {
+                        $whatsapp = app(\App\Services\WhatsAppService::class);
+                        $endDate = \Carbon\Carbon::parse($record->end_date)->format('d/m/Y');
+
+                        if ($record->status === 'vencida') {
+                            $whatsapp->sendOverdueNotice($record->customer->phone, $record->customer->name, $record->washingMachine->machine_code, now()->diffInDays($record->end_date));
+                        } else {
+                            $whatsapp->sendPaymentReminder($record->customer->phone, $record->customer->name, $record->washingMachine->machine_code, $endDate);
+                        }
+
+                        \Filament\Notifications\Notification::make()->title('Mensaje de WhatsApp enviado')->success()->send();
+                    }),
+                Tables\Actions\Action::make('send_payment_link')
+                    ->label('Link de Pago')
+                    ->icon('heroicon-o-link')
+                    ->color('warning')
+                    ->visible(fn ($record) => in_array($record->status, ['activa', 'vencida']))
+                    ->requiresConfirmation()
+                    ->modalHeading('Generar link de pago')
+                    ->modalDescription('Se generará un link de Stripe Checkout que puedes enviar al cliente.')
+                    ->action(function ($record) {
+                        $service = app(\App\Services\StripePaymentLinkService::class);
+                        $url = $service->createPaymentLink($record);
+                        if ($url) {
+                            // Also send via WhatsApp if phone available
+                            if ($record->customer?->phone) {
+                                $whatsapp = app(\App\Services\WhatsAppService::class);
+                                $endDate = \Carbon\Carbon::parse($record->end_date)->format('d/m/Y');
+                                $whatsapp->sendPaymentReminder(
+                                    $record->customer->phone,
+                                    $record->customer->name,
+                                    $record->washingMachine->machine_code,
+                                    $endDate,
+                                    $url,
+                                );
+                            }
+                            \Filament\Notifications\Notification::make()
+                                ->title('Link de pago generado')
+                                ->body($url)
+                                ->success()
+                                ->persistent()
+                                ->send();
+                        } else {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Error: configura el precio primero')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
+                Tables\Actions\Action::make('setup_recurring')
+                    ->label('Pago Recurrente')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('info')
+                    ->visible(fn ($record) => $record->status === 'activa')
+                    ->requiresConfirmation()
+                    ->modalHeading('Activar pago recurrente con Stripe')
+                    ->modalDescription('Se generará un link de Stripe para que el cliente configure su pago automático.')
+                    ->action(function ($record) {
+                        $service = app(\App\Services\StripeRecurringService::class);
+                        $url = $service->createSubscriptionForRental($record);
+                        if ($url) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Link de suscripción generado')
+                                ->body($url)
+                                ->success()
+                                ->persistent()
+                                ->send();
+                        } else {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Error: configura el precio en Configuración primero')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
