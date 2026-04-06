@@ -91,7 +91,7 @@ class AdminPanelProvider extends PanelProvider
             ))
             ->renderHook('panels::body.start', function () {
                 $tenant = \Filament\Facades\Filament::getTenant();
-                if (!$tenant) return '';
+                if (!$tenant || auth()->user()?->hasRole('super_admin')) return '';
                 $planUrl = "/propietario/{$tenant->id}/mi-plan";
                 if ($tenant->isOnTrial()) {
                     $days = $tenant->trialDaysLeft();

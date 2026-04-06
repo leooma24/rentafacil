@@ -108,6 +108,26 @@
 
 @livewire('prices', ['packages' => $packages])
 
+<section id="contacto" class="lead-section">
+    <div class="container">
+        <div class="lead-section-inner">
+            <div class="lead-section-text">
+                <span class="section-tag">Contáctanos</span>
+                <h2>¿Tienes un negocio de renta de lavadoras?</h2>
+                <p>Déjanos tus datos y te contactamos por WhatsApp para mostrarte cómo Renta Fácil puede ayudarte a gestionar tu negocio.</p>
+                <ul class="lead-benefits">
+                    <li><i class="fas fa-check-circle"></i> Sin compromiso</li>
+                    <li><i class="fas fa-check-circle"></i> Te contactamos en menos de 24 hrs</li>
+                    <li><i class="fas fa-check-circle"></i> Demo personalizada gratis</li>
+                </ul>
+            </div>
+            <div class="lead-section-form">
+                @livewire('lead-form')
+            </div>
+        </div>
+    </div>
+</section>
+
 <section class="cta-final">
     <div class="container text-center">
         <h2>Prueba gratis por 15 días, sin compromiso</h2>
