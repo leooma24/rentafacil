@@ -207,6 +207,10 @@ a.banner-footer-value:hover { color: var(--color-primary-light); }
 .pricing-card-features li { padding: 0.8rem 0; font-size: 1.4rem; color: var(--color-gray-700); border-bottom: 1px solid var(--color-gray-200); display: flex; align-items: center; gap: 1rem; }
 .pricing-card-features li:last-child { border-bottom: none; }
 .pricing-card-features i { color: var(--color-success); font-size: 1.2rem; }
+.pricing-toggle { background: none; border: none; color: var(--color-primary-dark); font-size: 1.3rem; font-weight: 600; cursor: pointer; padding: 0.8rem 0; width: 100%; text-align: center; transition: color 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.6rem; }
+.pricing-toggle:hover { color: var(--color-primary); }
+.pricing-toggle i { font-size: 1.1rem; }
+.pricing-extra-features { border-top: 1px dashed var(--color-gray-200); margin-top: 0; }
 
 /* ==================== CTA FINAL ==================== */
 .cta-final { padding: 8rem 0; background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)); color: var(--color-white); }
