@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
 use App\Models\Rental;
 use App\Services\WhatsAppService;
 use Carbon\Carbon;
@@ -34,8 +35,12 @@ class StripeWebhookController extends Controller
 
         if ($type === 'checkout.session.completed') {
             $session = $event->data->object;
-            if (($session->metadata->type ?? null) === 'one_time_payment') {
+            $metaType = $session->metadata->type ?? null;
+
+            if ($metaType === 'one_time_payment') {
                 $this->handleOneTimePayment($session);
+            } elseif ($metaType === 'plan_purchase') {
+                $this->handlePlanPurchase($session);
             }
         }
 
@@ -126,5 +131,26 @@ class StripeWebhookController extends Controller
                 $newEndDate->format('d/m/Y'),
             );
         }
+    }
+
+    protected function handlePlanPurchase($session): void
+    {
+        $companyId = $session->metadata->company_id ?? null;
+        $packageId = $session->metadata->package_id ?? null;
+
+        if (!$companyId || !$packageId) return;
+
+        $company = Company::find($companyId);
+        if (!$company) return;
+
+        // Update or create the company package with 30 days
+        $company->companyPackage()->updateOrCreate(
+            ['company_id' => $company->id],
+            [
+                'package_id' => $packageId,
+                'start_date' => now(),
+                'end_date' => now()->addDays(30),
+            ]
+        );
     }
 }

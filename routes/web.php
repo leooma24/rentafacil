@@ -6,6 +6,7 @@ use App\Livewire\ShowHome;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\QrCodeController;
+use App\Http\Controllers\PlanCheckoutController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Livewire\ShowPackage;
 
@@ -47,3 +48,7 @@ Route::get('/lavadora/{washingMachine}/qr', [QrCodeController::class, 'download'
 
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle'])
     ->name('stripe.webhook');
+
+Route::get('/plan/{package}/checkout', [PlanCheckoutController::class, 'checkout'])
+    ->name('plan.checkout')
+    ->middleware('auth');
