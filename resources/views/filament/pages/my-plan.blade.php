@@ -95,17 +95,24 @@
             </ul>
 
             @if($package->price > 0)
-                <a href="{{ route('plan.checkout', $package) }}"
-                   style="display: block; text-align: center; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; transition: all 0.2s;
-                   {{ $currentPlan && $currentPlan->id === $package->id && $hasActivePackage
-                       ? 'background: #e5e7eb; color: #6b7280; pointer-events: none;'
-                       : 'background: #06b6d4; color: white;' }}">
-                    @if($currentPlan && $currentPlan->id === $package->id && $hasActivePackage)
+                @if($currentPlan && $currentPlan->id === $package->id && $hasActivePackage)
+                    <span style="display: block; text-align: center; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; background: #e5e7eb; color: #6b7280;">
                         Plan actual
-                    @else
-                        Contratar
-                    @endif
-                </a>
+                    </span>
+                @else
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        @if(config('services.stripe.enabled'))
+                        <a href="{{ route('plan.checkout', $package) }}"
+                           style="display: block; text-align: center; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; background: #06b6d4; color: white;">
+                            Pagar con tarjeta
+                        </a>
+                        @endif
+                        <a href="https://wa.me/6682493398?text=Quiero%20contratar%20el%20plan%20{{ urlencode($package->name) }}%20%28%24{{ $package->price }}%2Fmes%29.%20Quiero%20pagar%20por%20SPEI." target="_blank"
+                           style="display: block; text-align: center; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; background: #25D366; color: white;">
+                            Pagar por SPEI / Transferencia
+                        </a>
+                    </div>
+                @endif
             @else
                 <span style="display: block; text-align: center; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; background: #f3f4f6; color: #6b7280;">
                     Plan gratuito

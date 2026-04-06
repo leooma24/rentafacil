@@ -32,6 +32,7 @@ return [
     ],
     // config/services.php
     'stripe' => [
+        'enabled' => env('STRIPE_ENABLED', false),
         'key' => env('STRIPE_KEY'),
         'secret' => env('STRIPE_SECRET'),
         'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
