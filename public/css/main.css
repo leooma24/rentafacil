@@ -88,8 +88,8 @@ p { font-size: 1.6rem; margin: 0; }
 
 /* ==================== HERO BANNER ==================== */
 .banner { background-image: linear-gradient(135deg, rgba(14, 116, 144, 0.92), rgba(6, 182, 212, 0.88)), url("./../img/laundry-saloon-567951_1920.jpg"); background-size: cover; background-position: center; padding: 8rem 0 0; }
-.banner-inner { display: flex; flex-direction: column; }
-.banner-content { max-width: 65rem; color: var(--color-white); padding-bottom: 6rem; }
+.banner-inner { display: flex; gap: 4rem; align-items: center; }
+.banner-content { flex: 1; color: var(--color-white); padding-bottom: 6rem; }
 .banner-tag { display: inline-block; background: rgba(255,255,255,0.2); backdrop-filter: blur(4px); padding: 0.5rem 1.6rem; border-radius: 2rem; font-size: 1.3rem; font-weight: 600; margin-bottom: 2rem; }
 .banner-content h1 { margin-bottom: 2rem; color: var(--color-white); }
 .banner-content p { font-size: 1.8rem; opacity: 0.9; margin-bottom: 3rem; line-height: 1.7; }
@@ -97,6 +97,16 @@ p { font-size: 1.6rem; margin: 0; }
 .banner-trust { display: flex; gap: 2.5rem; }
 .banner-trust-item { display: flex; align-items: center; gap: 0.6rem; font-size: 1.3rem; opacity: 0.85; }
 .banner-trust-item i { color: var(--color-success); }
+
+/* Banner stats (right side) */
+.banner-stats { flex: 0 0 38rem; display: flex; flex-direction: column; gap: 1.5rem; padding-bottom: 6rem; }
+.banner-stat { display: flex; align-items: flex-start; gap: 1.4rem; background: rgba(255,255,255,0.12); backdrop-filter: blur(6px); border-radius: var(--radius); padding: 1.6rem 1.8rem; transition: background 0.3s; }
+.banner-stat:hover { background: rgba(255,255,255,0.2); }
+.banner-stat-icon { flex-shrink: 0; width: 4.2rem; height: 4.2rem; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; }
+.banner-stat-icon i { font-size: 1.8rem; color: var(--color-white); }
+.banner-stat-text { display: flex; flex-direction: column; }
+.banner-stat-text strong { font-size: 1.5rem; color: var(--color-white); margin-bottom: 0.2rem; }
+.banner-stat-text span { font-size: 1.3rem; color: rgba(255,255,255,0.8); line-height: 1.5; }
 
 .banner-footer { display: flex; }
 .banner-footer > div { flex: 1; }
@@ -270,10 +280,12 @@ a.banner-footer-value:hover { color: var(--color-primary-light); }
     .mobile-menu-toggle { display: block; }
 
     .banner { padding: 4rem 0 0; }
-    .banner-content { padding: 0 2rem 4rem; }
+    .banner-inner { flex-direction: column; }
+    .banner-content { padding: 0 2rem 3rem; }
     .banner-content h1 { font-size: 3.2rem; }
     .banner-buttons { flex-direction: column; }
     .banner-trust { flex-direction: column; gap: 0.8rem; }
+    .banner-stats { flex: none; width: 100%; padding: 0 2rem 4rem; }
     .banner-footer { flex-direction: column; }
 
     .features-grid { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }

@@ -3,8 +3,8 @@
         <div class="banner-inner">
             <div class="banner-content">
                 <span class="banner-tag">15 días gratis con todas las funciones</span>
-                <h1>Gestiona tus lavadoras en renta de forma inteligente</h1>
-                <p>Controla rentas, cobros, clientes y mantenimientos desde un solo lugar. Prueba el plan completo gratis por 15 días, sin tarjeta de crédito.</p>
+                <h1>Deja la libreta. Tu negocio merece crecer sin que tú trabajes de más.</h1>
+                <p>Cada hora que pasas buscando en cuadernos, cobrando sin orden o sin saber quién te debe, es tiempo que le quitas a tu familia y a hacer crecer tu negocio. Con Renta Fácil, todo eso se hace solo.</p>
                 <div class="banner-buttons">
                     <a href="/propietario/registrar" class="btn btn-primary btn-lg">Probar 15 Días Gratis</a>
                     <a href="#como-funciona" class="btn btn-outline btn-lg">Ver cómo funciona</a>
@@ -21,6 +21,37 @@
                     <div class="banner-trust-item">
                         <i class="fas fa-check-circle"></i>
                         <span>Soporte incluido</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="banner-stats">
+                <div class="banner-stat">
+                    <div class="banner-stat-icon"><i class="fas fa-clock"></i></div>
+                    <div class="banner-stat-text">
+                        <strong>Ahorra +10 hrs/semana</strong>
+                        <span>Deja de anotar en libretas, buscar datos y hacer cuentas a mano</span>
+                    </div>
+                </div>
+                <div class="banner-stat">
+                    <div class="banner-stat-icon"><i class="fas fa-map-marker-alt"></i></div>
+                    <div class="banner-stat-text">
+                        <strong>Sabe dónde está cada máquina</strong>
+                        <span>Quién la tiene, desde cuándo y cuánto te debe en tiempo real</span>
+                    </div>
+                </div>
+                <div class="banner-stat">
+                    <div class="banner-stat-icon"><i class="fas fa-dollar-sign"></i></div>
+                    <div class="banner-stat-text">
+                        <strong>Ve cuánto ganas de verdad</strong>
+                        <span>Ingresos, gastos de mantenimiento y utilidad por cada lavadora</span>
+                    </div>
+                </div>
+                <div class="banner-stat">
+                    <div class="banner-stat-icon"><i class="fas fa-mobile-alt"></i></div>
+                    <div class="banner-stat-text">
+                        <strong>Desde tu celular, siempre</strong>
+                        <span>Revisa todo desde donde estés: celular, tablet o computadora</span>
                     </div>
                 </div>
             </div>
