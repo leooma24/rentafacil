@@ -135,6 +135,42 @@ a.banner-footer-value:hover { color: var(--color-primary-light); }
 .other-banner-content h2 { color: var(--color-white); margin-bottom: 1.5rem; }
 .other-banner-content p { font-size: 1.8rem; opacity: 0.9; margin-bottom: 3rem; max-width: 60rem; margin-left: auto; margin-right: auto; }
 
+/* Feature card highlight (new) */
+.feature-card-highlight { border-color: var(--color-primary); background: linear-gradient(135deg, rgba(6,182,212,0.04), rgba(14,116,144,0.04)); }
+.feature-icon-highlight { background: rgba(6, 182, 212, 0.2) !important; }
+.feature-icon-highlight i { color: var(--color-primary) !important; }
+
+/* ==================== FEATURE REQUEST BANNER ==================== */
+.feature-request-banner { padding: 5rem 0; background: var(--color-white); }
+.feature-request-inner { display: flex; align-items: center; gap: 3rem; background: linear-gradient(135deg, #f0fdfa, #ecfeff); border: 2px solid var(--color-primary-light); border-radius: var(--radius-lg); padding: 3.5rem 4rem; }
+.feature-request-icon { flex-shrink: 0; width: 7rem; height: 7rem; border-radius: 50%; background: linear-gradient(135deg, var(--color-warning), #d97706); display: flex; align-items: center; justify-content: center; }
+.feature-request-icon i { font-size: 3rem; color: var(--color-white); }
+.feature-request-content { flex: 1; }
+.feature-request-content h3 { font-size: 2rem; margin-bottom: 0.5rem; color: var(--color-gray-900); }
+.feature-request-content p { font-size: 1.5rem; color: var(--color-gray-500); line-height: 1.6; }
+.feature-request-inner .btn { flex-shrink: 0; white-space: nowrap; display: flex; align-items: center; gap: 0.8rem; }
+.feature-request-inner .btn i { font-size: 2rem; }
+
+/* ==================== COMPARISON ==================== */
+.comparison { padding: 8rem 0; }
+.comparison-table { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; max-width: 90rem; margin: 0 auto; }
+.comparison-col { border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow); }
+.comparison-header { padding: 2.5rem; display: flex; align-items: center; gap: 1.5rem; }
+.comparison-header i { font-size: 2.8rem; }
+.comparison-header h3 { font-size: 2rem; margin: 0; }
+.comparison-header-old { background: #fef2f2; color: #991b1b; }
+.comparison-header-old i { color: #ef4444; }
+.comparison-header-new { background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)); color: var(--color-white); }
+.comparison-header-new i { color: var(--color-white); }
+.comparison-header-new h3 { color: var(--color-white); }
+.comparison-col ul { list-style: none; padding: 2rem 2.5rem; margin: 0; background: var(--color-white); }
+.comparison-col-old ul { background: #fffbfb; }
+.comparison-col li { padding: 1.2rem 0; font-size: 1.5rem; display: flex; align-items: flex-start; gap: 1.2rem; border-bottom: 1px solid #f1f5f9; color: var(--color-gray-700); }
+.comparison-col li:last-child { border-bottom: none; }
+.comparison-col-old li i { color: #ef4444; font-size: 1.3rem; margin-top: 0.3rem; flex-shrink: 0; }
+.comparison-col-new li i { color: var(--color-success); font-size: 1.3rem; margin-top: 0.3rem; flex-shrink: 0; }
+.comparison-col-new { transform: scale(1.03); box-shadow: var(--shadow-xl); }
+
 /* ==================== HOW IT WORKS ==================== */
 .how-it-works { padding: 8rem 0; background: var(--color-gray); }
 .steps { display: flex; align-items: center; justify-content: center; gap: 2rem; }
@@ -247,6 +283,8 @@ a.banner-footer-value:hover { color: var(--color-primary-light); }
     .step-arrow { transform: rotate(90deg); }
     .step { width: 100%; }
 
+    .comparison-table { grid-template-columns: 1fr; }
+    .comparison-col-new { transform: none; }
     .pricing-inner { flex-direction: column; align-items: center; }
     .pricing-card { width: 100%; max-width: 40rem; }
     .pricing-card-featured { transform: none; }
@@ -256,6 +294,8 @@ a.banner-footer-value:hover { color: var(--color-primary-light); }
     .footer-grid { grid-template-columns: 1fr; gap: 3rem; }
     .lead-section-inner { grid-template-columns: 1fr; }
     .lead-form-row { grid-template-columns: 1fr; }
+    .feature-request-inner { flex-direction: column; text-align: center; padding: 2.5rem; }
+    .feature-request-inner .btn { width: 100%; justify-content: center; }
 }
 
 @media screen and (max-width: 480px) {

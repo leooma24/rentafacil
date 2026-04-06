@@ -71,11 +71,70 @@
                 <h3>Analytics de Negocio</h3>
                 <p>Tasa de ocupación, valor por cliente, proyección de ingresos y tasa de abandono para tomar mejores decisiones.</p>
             </div>
+            <div class="feature-card feature-card-highlight">
+                <div class="feature-icon feature-icon-highlight"><i class="fas fa-route"></i></div>
+                <h3>Planificador de Rutas</h3>
+                <p>Selecciona los clientes que necesitas visitar y el sistema calcula la mejor ruta. Abre directo en Google Maps para navegar.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-credit-card"></i></div>
+                <h3>Pagos con Stripe</h3>
+                <p>Genera links de pago y suscripciones automáticas. Tu cliente paga online y la renta se extiende sola.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-database"></i></div>
+                <h3>Backups Automáticos</h3>
+                <p>Tu información respaldada diariamente. Nunca pierdas tus datos de clientes, rentas ni pagos.</p>
+            </div>
         </div>
     </div>
 </section>
 
 @livewire('other-banner')
+
+<section class="comparison">
+    <div class="container">
+        <div class="section-header text-center">
+            <span class="section-tag">La diferencia es clara</span>
+            <h2 class="text-color-primary-dark">LIBRETA VS RENTA FÁCIL</h2>
+            <p>Deja de perder dinero y tiempo llevando tu negocio en una libreta</p>
+        </div>
+        <div class="comparison-table">
+            <div class="comparison-col comparison-col-old">
+                <div class="comparison-header comparison-header-old">
+                    <i class="fas fa-book"></i>
+                    <h3>A mano / Libreta</h3>
+                </div>
+                <ul>
+                    <li><i class="fas fa-times"></i> Anotas todo en papel y se pierde</li>
+                    <li><i class="fas fa-times"></i> No sabes quién te debe ni cuánto</li>
+                    <li><i class="fas fa-times"></i> Pierdes el control cuando tienes muchas lavadoras</li>
+                    <li><i class="fas fa-times"></i> Tienes que ir cliente por cliente a cobrar sin orden</li>
+                    <li><i class="fas fa-times"></i> No puedes ver nada si no estás en tu negocio</li>
+                    <li><i class="fas fa-times"></i> Contratos a mano, sin respaldo</li>
+                    <li><i class="fas fa-times"></i> No sabes cuánto ganas al mes realmente</li>
+                    <li><i class="fas fa-times"></i> Si pierdes la libreta, pierdes todo</li>
+                </ul>
+            </div>
+            <div class="comparison-col comparison-col-new">
+                <div class="comparison-header comparison-header-new">
+                    <i class="fas fa-laptop"></i>
+                    <h3>Renta Fácil</h3>
+                </div>
+                <ul>
+                    <li><i class="fas fa-check"></i> Todo digital, organizado y respaldado</li>
+                    <li><i class="fas fa-check"></i> Ves al instante quién debe y cuántos días de atraso</li>
+                    <li><i class="fas fa-check"></i> Maneja 5, 50 o 500 lavadoras sin problema</li>
+                    <li><i class="fas fa-check"></i> Planificador de rutas te dice el mejor orden para visitar</li>
+                    <li><i class="fas fa-check"></i> Accede desde tu celular, tablet o computadora</li>
+                    <li><i class="fas fa-check"></i> Contratos PDF automáticos con un clic</li>
+                    <li><i class="fas fa-check"></i> Gráficas de ingresos, proyecciones y análisis</li>
+                    <li><i class="fas fa-check"></i> Backups automáticos diarios, nunca pierdes nada</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
 
 <section id="como-funciona" class="how-it-works">
     <div class="container">
@@ -124,6 +183,23 @@
             <div class="lead-section-form">
                 @livewire('lead-form')
             </div>
+        </div>
+    </div>
+</section>
+
+<section class="feature-request-banner">
+    <div class="container">
+        <div class="feature-request-inner">
+            <div class="feature-request-icon">
+                <i class="fas fa-lightbulb"></i>
+            </div>
+            <div class="feature-request-content">
+                <h3>¿Tu negocio necesita algo que no ves aquí?</h3>
+                <p>Construimos la plataforma escuchando a propietarios como tú. Si tienes una idea o necesitas una función especial, escríbenos y la desarrollamos para ti.</p>
+            </div>
+            <a href="https://wa.me/6682493398?text=Hola%2C%20tengo%20una%20sugerencia%20para%20Renta%20Fácil%3A%20" target="_blank" class="btn btn-primary btn-lg">
+                <i class="fab fa-whatsapp"></i> Sugerir función
+            </a>
         </div>
     </div>
 </section>
