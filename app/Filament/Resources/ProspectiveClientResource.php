@@ -96,7 +96,9 @@ class ProspectiveClientResource extends Resource
                             ->options([
                                 'nuevo' => 'Nuevo',
                                 'contactado' => 'Contactado',
+                                'seguimiento' => 'En Seguimiento',
                                 'interesado' => 'Interesado',
+                                'demo' => 'Demo Agendada',
                                 'no_interesado' => 'No Interesado',
                                 'cliente' => 'Cliente',
                             ])
@@ -154,7 +156,9 @@ class ProspectiveClientResource extends Resource
                     ->color(fn (string $state): string => match ($state) {
                         'nuevo' => 'info',
                         'contactado' => 'warning',
+                        'seguimiento' => 'warning',
                         'interesado' => 'success',
+                        'demo' => 'success',
                         'no_interesado' => 'danger',
                         'cliente' => 'primary',
                         default => 'gray',
@@ -175,7 +179,9 @@ class ProspectiveClientResource extends Resource
                     ->options([
                         'nuevo' => 'Nuevo',
                         'contactado' => 'Contactado',
+                        'seguimiento' => 'En Seguimiento',
                         'interesado' => 'Interesado',
+                        'demo' => 'Demo Agendada',
                         'no_interesado' => 'No Interesado',
                         'cliente' => 'Cliente',
                     ]),
