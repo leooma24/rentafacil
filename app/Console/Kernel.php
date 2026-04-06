@@ -18,6 +18,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('prospects:contact --limit=10')->hourly()->between('8:00', '20:00');
         $schedule->command('prospects:followup --limit=10')->hourly()->between('8:00', '20:00');
         $schedule->command('users:check-inactive')->dailyAt('10:00');
+        $schedule->command('users:lifecycle-emails')->dailyAt('09:30');
         $schedule->command('backup:clean')->daily()->at('01:00');
         $schedule->command('backup:run --only-db')->daily()->at('02:00');
     }

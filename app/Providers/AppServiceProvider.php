@@ -26,5 +26,6 @@ class AppServiceProvider extends ServiceProvider
         Company::observe(\App\Observers\CompanyObserver::class);
         Payment::observe(\App\Observers\PaymentObserver::class);
         User::observe(\App\Observers\UserObserver::class);
+        \App\Models\Rental::observe(\App\Observers\RentalObserver::class);
     }
 }
