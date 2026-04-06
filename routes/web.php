@@ -7,7 +7,9 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\QrCodeController;
 use App\Http\Controllers\PlanCheckoutController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\StripeWebhookController;
+use App\Livewire\CityLanding;
 use App\Livewire\ShowPackage;
 
 /*
@@ -30,6 +32,9 @@ Route::get('/', ShowHome::class);
 Route::get('/contratar/{package}', ShowPackage::class);
 
 Route::post('/create-payment-intent', [PaymentController::class, 'createPaymentIntent']);
+
+Route::get('/sitemap.xml', [SitemapController::class, 'index']);
+Route::get('/renta-lavadoras/{city}', CityLanding::class)->name('city.landing');
 
 Route::get('/contrato/{rental}/descargar', [ContractController::class, 'download'])
     ->name('contract.download')

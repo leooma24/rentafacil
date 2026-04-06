@@ -1,2 +1,8 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /propietario/
+Disallow: /cliente/
+Disallow: /livewire/
+Disallow: /storage/
+
+Sitemap: https://rentafacil.tu-app.co/sitemap.xml

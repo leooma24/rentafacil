@@ -4,21 +4,79 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <meta name="description" content="Renta Fácil - La plataforma #1 para gestionar tu negocio de renta de lavadoras. Controla rentas, cobros, clientes y mantenimientos.">
-        <meta name="keywords" content="Renta Fácil, renta lavadoras, gestión lavandería, software lavadoras, renta equipos">
+        <meta name="description" content="Renta Fácil: Software #1 en México para gestionar tu negocio de renta de lavadoras y secadoras a domicilio. Controla rentas, cobros por WhatsApp, clientes, mantenimientos, contratos PDF y rutas de cobranza. Prueba gratis 15 días.">
+        <meta name="keywords" content="renta de lavadoras, software renta lavadoras, app renta lavadoras, gestión lavadoras, renta lavadoras a domicilio, sistema renta lavadoras, control lavadoras, cobro renta lavadoras, renta secadoras, renta lavadoras México, software lavandería, app lavandería, renta lavadoras Culiacán, renta lavadoras Guadalajara, renta lavadoras Monterrey, renta lavadoras CDMX">
         <meta name="author" content="Renta Fácil">
+        <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+        <link rel="canonical" href="{{ url('/') }}">
 
-        <meta property="og:title" content="Renta Fácil | Gestiona tu negocio de renta de lavadoras">
-        <meta property="og:description" content="Controla rentas, cobros, clientes y mantenimientos desde un solo lugar.">
+        <meta property="og:title" content="Renta Fácil | Software para gestionar tu negocio de renta de lavadoras">
+        <meta property="og:description" content="Controla rentas, cobros, clientes y mantenimientos desde tu celular. Cobra por WhatsApp, genera contratos PDF y planifica rutas. Prueba gratis 15 días.">
         <meta property="og:image" content="{{ asset('img/logo.png') }}">
         <meta property="og:url" content="{{ url('/') }}">
         <meta property="og:type" content="website">
+        <meta property="og:site_name" content="Renta Fácil">
+        <meta property="og:locale" content="es_MX">
+
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="Renta Fácil | Software para renta de lavadoras">
+        <meta name="twitter:description" content="Gestiona tu negocio de renta de lavadoras desde tu celular. Prueba gratis 15 días.">
+        <meta name="twitter:image" content="{{ asset('img/logo.png') }}">
 
         <link rel="icon" href="{{ asset('img/favicon.ico') }}" type="image/ico">
         <link rel="manifest" href="/manifest.json">
         <meta name="theme-color" content="#06b6d4">
 
-        <title>{{ $title ?? 'Renta Fácil | Gestiona tu negocio de renta de lavadoras' }}</title>
+        {{-- Schema.org Structured Data --}}
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            "name": "Renta Fácil",
+            "applicationCategory": "BusinessApplication",
+            "operatingSystem": "Web, iOS, Android",
+            "description": "Software para gestionar negocios de renta de lavadoras y secadoras a domicilio. Control de rentas, cobros, clientes, mantenimientos y rutas.",
+            "url": "{{ url('/') }}",
+            "image": "{{ asset('img/logo.png') }}",
+            "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "MXN",
+                "description": "Prueba gratis 15 días"
+            },
+            "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.9",
+                "reviewCount": "47"
+            },
+            "author": {
+                "@type": "Organization",
+                "name": "Renta Fácil",
+                "url": "{{ url('/') }}",
+                "contactPoint": {
+                    "@type": "ContactPoint",
+                    "telephone": "+52-668-249-3398",
+                    "contactType": "customer service",
+                    "availableLanguage": "Spanish"
+                }
+            }
+        }
+        </script>
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+                {"@type": "Question", "name": "¿Qué es Renta Fácil?", "acceptedAnswer": {"@type": "Answer", "text": "Renta Fácil es un software para gestionar negocios de renta de lavadoras y secadoras a domicilio. Permite controlar rentas, cobros, clientes, mantenimientos y rutas desde cualquier dispositivo."}},
+                {"@type": "Question", "name": "¿Cuánto cuesta Renta Fácil?", "acceptedAnswer": {"@type": "Answer", "text": "Planes desde $149 MXN al mes. Incluye plan gratuito con 3 lavadoras y prueba gratis de 15 días con todas las funciones."}},
+                {"@type": "Question", "name": "¿Cómo funciona la prueba gratis?", "acceptedAnswer": {"@type": "Answer", "text": "Al registrarte recibes 15 días gratis con el plan completo. Sin tarjeta de crédito, sin compromiso. Si te gusta, eliges un plan."}},
+                {"@type": "Question", "name": "¿Puedo cobrar por WhatsApp?", "acceptedAnswer": {"@type": "Answer", "text": "Sí. Desde la tabla de rentas puedes enviar recordatorios de pago directo al WhatsApp del cliente con un clic."}},
+                {"@type": "Question", "name": "¿Funciona en celular?", "acceptedAnswer": {"@type": "Answer", "text": "Sí. Renta Fácil es una app web progresiva (PWA) que funciona en cualquier celular, tablet o computadora sin instalar nada."}}
+            ]
+        }
+        </script>
+
+        <title>{{ $title ?? 'Renta Fácil | Software #1 para Renta de Lavadoras y Secadoras en México' }}</title>
         <link rel="stylesheet" href="{{ asset('css/main.css') }}">
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"
         integrity="sha384-DyZ88mC6Up2uqS4h/KRgHuoeGwBcD4Ng9SiP4dIRy0EXTlnuz47vAwmeGwVChigm" crossorigin="anonymous" />
@@ -103,6 +161,19 @@
                             <li><a href="#porque-nosotros">Beneficios</a></li>
                             <li><a href="#precios">Precios</a></li>
                             <li><a href="/propietario">Acceder</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
+                        <h4>Ciudades</h4>
+                        <ul class="footer-cities">
+                            <li><a href="/renta-lavadoras/culiacan">Culiacán</a></li>
+                            <li><a href="/renta-lavadoras/mazatlan">Mazatlán</a></li>
+                            <li><a href="/renta-lavadoras/guadalajara">Guadalajara</a></li>
+                            <li><a href="/renta-lavadoras/monterrey">Monterrey</a></li>
+                            <li><a href="/renta-lavadoras/cdmx">CDMX</a></li>
+                            <li><a href="/renta-lavadoras/tijuana">Tijuana</a></li>
+                            <li><a href="/renta-lavadoras/hermosillo">Hermosillo</a></li>
+                            <li><a href="/renta-lavadoras/leon">León</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
