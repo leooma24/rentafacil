@@ -9,7 +9,23 @@ class Address extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['street', 'city', 'number', 'interior_number', 'state_id', 'postal_code', 'township_id', 'country_id', 'neighborhood_id'];
+    protected $fillable = ['street', 'city', 'number', 'interior_number', 'state_id', 'postal_code', 'township_id', 'country_id', 'neighborhood_id', 'latitude', 'longitude'];
+
+    public function getFullAddressAttribute(): string
+    {
+        $parts = array_filter([
+            $this->street,
+            $this->number ? "#{$this->number}" : null,
+            $this->city,
+            $this->postal_code ? "CP {$this->postal_code}" : null,
+        ]);
+        return implode(', ', $parts);
+    }
+
+    public function hasCoordinates(): bool
+    {
+        return $this->latitude !== null && $this->longitude !== null;
+    }
 
 
     public function addressable()

@@ -93,7 +93,16 @@ class AddressForm
                     ->label('Colonia')
                     ->searchable()
                     ->required(),
-
+                Forms\Components\TextInput::make('latitude')
+                    ->label('Latitud')
+                    ->numeric()
+                    ->placeholder('24.8049')
+                    ->hint('Opcional - para rutas'),
+                Forms\Components\TextInput::make('longitude')
+                    ->label('Longitud')
+                    ->numeric()
+                    ->placeholder('-107.3939')
+                    ->hint('Opcional - para rutas'),
             ]);
     }
 }
