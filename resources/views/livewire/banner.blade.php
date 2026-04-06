@@ -2,11 +2,11 @@
     <div class="container">
         <div class="banner-inner">
             <div class="banner-content">
-                <span class="banner-tag">Plataforma #1 en renta de lavadoras</span>
+                <span class="banner-tag">15 días gratis con todas las funciones</span>
                 <h1>Gestiona tus lavadoras en renta de forma inteligente</h1>
-                <p>Controla rentas, cobros, clientes y mantenimientos desde un solo lugar. Automatiza tu negocio y enfócate en crecer.</p>
+                <p>Controla rentas, cobros, clientes y mantenimientos desde un solo lugar. Prueba el plan completo gratis por 15 días, sin tarjeta de crédito.</p>
                 <div class="banner-buttons">
-                    <a href="/propietario/registrar" class="btn btn-primary btn-lg">Empieza Gratis</a>
+                    <a href="/propietario/registrar" class="btn btn-primary btn-lg">Probar 15 Días Gratis</a>
                     <a href="#como-funciona" class="btn btn-outline btn-lg">Ver cómo funciona</a>
                 </div>
                 <div class="banner-trust">

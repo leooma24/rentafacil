@@ -86,4 +86,23 @@ class Company extends Model
     {
         return $this->hasOne(Setting::class);
     }
+
+    public function isOnTrial(): bool
+    {
+        $cp = $this->companyPackage;
+        return $cp && $cp->end_date && $cp->end_date >= now() && $cp->start_date >= now()->subDays(15);
+    }
+
+    public function trialDaysLeft(): int
+    {
+        $cp = $this->companyPackage;
+        if (!$cp || !$cp->end_date) return 0;
+        return max(0, (int) now()->diffInDays($cp->end_date, false));
+    }
+
+    public function hasActivePackage(): bool
+    {
+        $cp = $this->companyPackage;
+        return $cp && $cp->end_date && $cp->end_date >= now();
+    }
 }

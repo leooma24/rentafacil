@@ -110,10 +110,10 @@
 
 <section class="cta-final">
     <div class="container text-center">
-        <h2>Empieza a gestionar tus lavadoras hoy</h2>
-        <p>Únete a los propietarios que ya automatizan su negocio con Renta Fácil</p>
+        <h2>Prueba gratis por 15 días, sin compromiso</h2>
+        <p>Accede al plan más completo sin pagar. Sin tarjeta de crédito. Cancela cuando quieras.</p>
         <div class="cta-buttons">
-            <a href="/propietario/registrar" class="btn btn-primary btn-lg">Crear Cuenta Gratis</a>
+            <a href="/propietario/registrar" class="btn btn-primary btn-lg">Empezar Prueba Gratis</a>
             <a href="https://wa.me/6682493398?text=Quiero%20una%20demo%20de%20Renta%20Fácil" target="_blank" class="btn btn-outline btn-lg">Solicitar Demo</a>
         </div>
     </div>

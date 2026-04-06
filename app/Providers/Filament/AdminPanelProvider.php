@@ -89,6 +89,29 @@ class AdminPanelProvider extends PanelProvider
                 '<meta name="theme-color" content="#06b6d4">' .
                 '<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js")}</script>'
             ))
+            ->renderHook('panels::body.start', function () {
+                $tenant = \Filament\Facades\Filament::getTenant();
+                if (!$tenant) return '';
+                if ($tenant->isOnTrial()) {
+                    $days = $tenant->trialDaysLeft();
+                    $color = $days <= 3 ? '#ef4444' : ($days <= 7 ? '#f59e0b' : '#06b6d4');
+                    return new HtmlString(
+                        "<div style=\"background:{$color};color:#fff;text-align:center;padding:8px 16px;font-size:14px;font-weight:600;\">" .
+                        "Prueba gratuita: te quedan <strong>{$days} días</strong>. " .
+                        "<a href=\"https://wa.me/6682493398?text=Quiero%20contratar%20un%20plan\" target=\"_blank\" style=\"color:#fff;text-decoration:underline;margin-left:8px;\">Contratar plan</a>" .
+                        "</div>"
+                    );
+                }
+                if (!$tenant->hasActivePackage()) {
+                    return new HtmlString(
+                        '<div style="background:#ef4444;color:#fff;text-align:center;padding:8px 16px;font-size:14px;font-weight:600;">' .
+                        'Tu prueba gratuita ha expirado. ' .
+                        '<a href="https://wa.me/6682493398?text=Quiero%20contratar%20un%20plan" target="_blank" style="color:#fff;text-decoration:underline;margin-left:8px;">Contratar plan para continuar</a>' .
+                        '</div>'
+                    );
+                }
+                return '';
+            })
             ->tenant(Company::class)
             ->tenantRegistration(RegisterCompany::class)
             ->tenantProfile(EditCompanyProfile::class);
