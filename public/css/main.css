@@ -181,8 +181,19 @@ a.banner-footer-value:hover { color: var(--color-primary-light); }
 .comparison-col-new li i { color: var(--color-success); font-size: 1.3rem; margin-top: 0.3rem; flex-shrink: 0; }
 .comparison-col-new { transform: scale(1.03); box-shadow: var(--shadow-xl); }
 
+/* ==================== TESTIMONIALS ==================== */
+.testimonials { padding: 8rem 0; background: var(--color-gray); }
+.testimonials-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.5rem; }
+.testimonial-card { background: var(--color-white); border-radius: var(--radius-lg); padding: 3rem; box-shadow: var(--shadow); }
+.testimonial-stars { margin-bottom: 1.5rem; color: #f59e0b; font-size: 1.6rem; }
+.testimonial-text { font-size: 1.5rem; color: var(--color-gray-700); line-height: 1.8; font-style: italic; margin-bottom: 2rem; }
+.testimonial-author { display: flex; align-items: center; gap: 1.2rem; }
+.testimonial-avatar { width: 4.5rem; height: 4.5rem; border-radius: 50%; background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)); color: var(--color-white); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 700; flex-shrink: 0; }
+.testimonial-author strong { display: block; font-size: 1.5rem; color: var(--color-gray-900); }
+.testimonial-author span { font-size: 1.3rem; color: var(--color-gray-500); }
+
 /* ==================== HOW IT WORKS ==================== */
-.how-it-works { padding: 8rem 0; background: var(--color-gray); }
+.how-it-works { padding: 8rem 0; }
 .steps { display: flex; align-items: center; justify-content: center; gap: 2rem; }
 .step { background: var(--color-white); border-radius: var(--radius-lg); padding: 4rem 3rem; text-align: center; flex: 0 0 28rem; box-shadow: var(--shadow); }
 .step-number { width: 6rem; height: 6rem; border-radius: 50%; background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)); color: var(--color-white); font-size: 2.4rem; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; }
@@ -299,6 +310,7 @@ a.banner-footer-value:hover { color: var(--color-primary-light); }
     .step-arrow { transform: rotate(90deg); }
     .step { width: 100%; }
 
+    .testimonials-grid { grid-template-columns: 1fr; }
     .comparison-table { grid-template-columns: 1fr; }
     .comparison-col-new { transform: none; }
     .pricing-inner { flex-direction: column; align-items: center; }

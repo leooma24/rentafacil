@@ -22,8 +22,33 @@ class User extends Authenticatable implements FilamentUser, HasTenants
         'name',
         'email',
         'password',
+        'referral_code',
+        'referred_by',
     ];
 
+    protected static function booted(): void
+    {
+        static::creating(function (User $user) {
+            if (!$user->referral_code) {
+                $user->referral_code = strtoupper(substr(md5(uniqid()), 0, 8));
+            }
+        });
+    }
+
+    public function referrer()
+    {
+        return $this->belongsTo(User::class, 'referred_by');
+    }
+
+    public function referrals()
+    {
+        return $this->hasMany(User::class, 'referred_by');
+    }
+
+    public function getReferralUrlAttribute(): string
+    {
+        return url("/propietario/registrar?ref={$this->referral_code}");
+    }
 
     public function companies(): BelongsToMany
     {

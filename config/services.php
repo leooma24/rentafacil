@@ -43,4 +43,19 @@ return [
         'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
     ],
 
+    'tawkto' => [
+        'enabled' => env('TAWKTO_ENABLED', false),
+        'id' => env('TAWKTO_ID'),
+    ],
+
+    'google_analytics' => [
+        'enabled' => env('GA_ENABLED', false),
+        'id' => env('GA_MEASUREMENT_ID'),
+    ],
+
+    'meta_pixel' => [
+        'enabled' => env('META_PIXEL_ENABLED', false),
+        'id' => env('META_PIXEL_ID'),
+    ],
+
 ];

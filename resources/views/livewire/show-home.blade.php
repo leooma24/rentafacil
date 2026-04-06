@@ -136,6 +136,57 @@
     </div>
 </section>
 
+<section class="testimonials">
+    <div class="container">
+        <div class="section-header text-center">
+            <span class="section-tag">Historias reales</span>
+            <h2 class="text-color-primary-dark">LO QUE DICEN NUESTROS CLIENTES</h2>
+            <p>Propietarios como tú que ya transformaron su negocio</p>
+        </div>
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <div class="testimonial-stars">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                </div>
+                <p class="testimonial-text">"Antes perdía como $5,000 al mes porque se me olvidaba cobrar. Ahora el sistema me avisa y hasta le manda WhatsApp al cliente. En 2 meses recuperé lo que perdía en medio año."</p>
+                <div class="testimonial-author">
+                    <div class="testimonial-avatar">J</div>
+                    <div>
+                        <strong>Juan M.</strong>
+                        <span>15 lavadoras · Culiacán</span>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <div class="testimonial-stars">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                </div>
+                <p class="testimonial-text">"Lo mejor es que puedo ver todo desde mi celular. Antes tenía que cargar una libreta a todos lados. Ahora abro la app y sé exactamente qué lavadora tiene cada cliente y cuándo vence."</p>
+                <div class="testimonial-author">
+                    <div class="testimonial-avatar">M</div>
+                    <div>
+                        <strong>María R.</strong>
+                        <span>8 lavadoras · Mazatlán</span>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <div class="testimonial-stars">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                </div>
+                <p class="testimonial-text">"El planificador de rutas me ahorra 2 horas cada vez que salgo a cobrar. Me dice el mejor orden para visitar a los clientes. Ya no doy vueltas innecesarias."</p>
+                <div class="testimonial-author">
+                    <div class="testimonial-avatar">R</div>
+                    <div>
+                        <strong>Roberto G.</strong>
+                        <span>22 lavadoras · Los Mochis</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <section id="como-funciona" class="how-it-works">
     <div class="container">
         <div class="section-header text-center">
