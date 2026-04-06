@@ -107,10 +107,25 @@
                             Pagar con tarjeta
                         </a>
                         @endif
-                        <a href="https://wa.me/6682493398?text=Quiero%20contratar%20el%20plan%20{{ urlencode($package->name) }}%20%28%24{{ $package->price }}%2Fmes%29.%20Quiero%20pagar%20por%20SPEI." target="_blank"
-                           style="display: block; text-align: center; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; background: #25D366; color: white;">
+                        <button onclick="document.getElementById('spei-info-{{ $package->id }}').style.display = document.getElementById('spei-info-{{ $package->id }}').style.display === 'none' ? 'block' : 'none'"
+                           style="display: block; width: 100%; text-align: center; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; background: #0e7490; color: white; border: none; cursor: pointer;">
                             Pagar por SPEI / Transferencia
-                        </a>
+                        </button>
+                        <div id="spei-info-{{ $package->id }}" style="display: none; margin-top: 12px; background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 8px; padding: 16px; font-size: 13px; color: #334155;">
+                            <p style="font-weight: 700; margin-bottom: 8px; color: #0e7490;">Datos para transferencia SPEI:</p>
+                            <table style="width: 100%; font-size: 13px;">
+                                <tr><td style="padding: 3px 0; color: #64748b;">Banco:</td><td style="padding: 3px 0; font-weight: 600;">Banco del Bajío</td></tr>
+                                <tr><td style="padding: 3px 0; color: #64748b;">Beneficiario:</td><td style="padding: 3px 0; font-weight: 600;">Omar Alonso Lerma Orduño</td></tr>
+                                <tr><td style="padding: 3px 0; color: #64748b;">CLABE:</td><td style="padding: 3px 0; font-weight: 600; font-family: monospace;">030743900001300398</td></tr>
+                                <tr><td style="padding: 3px 0; color: #64748b;">Cuenta:</td><td style="padding: 3px 0; font-weight: 600;">10004125</td></tr>
+                                <tr><td style="padding: 3px 0; color: #64748b;">Monto:</td><td style="padding: 3px 0; font-weight: 700; color: #0e7490;">${{ number_format($package->price, 2) }} MXN</td></tr>
+                                <tr><td style="padding: 3px 0; color: #64748b;">Concepto:</td><td style="padding: 3px 0; font-weight: 600;">Plan {{ $package->name }} - Renta Fácil</td></tr>
+                            </table>
+                            <a href="https://wa.me/6682493398?text=Ya%20hice%20mi%20transferencia%20SPEI%20por%20el%20plan%20{{ urlencode($package->name) }}%20%28%24{{ $package->price }}%29.%20Mi%20empresa%3A%20" target="_blank"
+                               style="display: block; text-align: center; margin-top: 12px; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; background: #25D366; color: white;">
+                                Ya hice mi pago, confirmar por WhatsApp
+                            </a>
+                        </div>
                     </div>
                 @endif
             @else
