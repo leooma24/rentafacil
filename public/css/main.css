@@ -248,8 +248,8 @@ a.banner-footer-value:hover { color: var(--color-primary-light); }
 .floating-btn:hover { transform: scale(1.1); box-shadow: var(--shadow-xl); }
 .floating-btn-whatsapp { background: #25D366; }
 .floating-btn-whatsapp:hover { background: #128C7E; }
-.floating-btn-register { background: var(--color-primary); }
-.floating-btn-register:hover { background: var(--color-primary-dark); }
+.floating-btn-chat { background: var(--color-primary-dark); }
+.floating-btn-chat:hover { background: var(--color-primary-darker); }
 
 /* WhatsApp pulse animation */
 .floating-btn-whatsapp { animation: pulse-whatsapp 2s infinite; }
@@ -322,6 +322,7 @@ a.banner-footer-value:hover { color: var(--color-primary-light); }
     .footer-grid { grid-template-columns: 1fr; gap: 3rem; }
     .lead-section-inner { grid-template-columns: 1fr; }
     .lead-form-row { grid-template-columns: 1fr; }
+    #chatbot { width: 300px !important; right: 1rem !important; bottom: 8rem !important; }
     .feature-request-inner { flex-direction: column; text-align: center; padding: 2.5rem; }
     .feature-request-inner .btn { width: 100%; justify-content: center; }
 }

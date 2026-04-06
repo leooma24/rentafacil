@@ -125,10 +125,113 @@
             <a href="https://wa.me/6682493398?text=Hola%2C%20quiero%20más%20información%20sobre%20Renta%20Fácil" target="_blank" class="floating-btn floating-btn-whatsapp" title="WhatsApp">
                 <i class="fab fa-whatsapp"></i>
             </a>
-            <a href="/propietario/registrar" class="floating-btn floating-btn-register" title="Registrarse">
-                <i class="fas fa-user-plus"></i>
-            </a>
+            <button class="floating-btn floating-btn-chat" title="Ayuda" onclick="document.getElementById('chatbot').style.display = document.getElementById('chatbot').style.display === 'none' ? 'flex' : 'none'">
+                <i class="fas fa-comment-dots"></i>
+            </button>
         </div>
+
+        <!-- Chatbot -->
+        <div id="chatbot" style="display: none; position: fixed; bottom: 9rem; right: 2.5rem; width: 360px; max-height: 500px; background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); flex-direction: column; z-index: 1001; overflow: hidden;">
+            <div style="background: linear-gradient(135deg, #0e7490, #06b6d4); color: white; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong style="font-size: 15px;">Asistente Renta Fácil</strong>
+                    <div style="font-size: 12px; opacity: 0.85;">Respuestas instantáneas</div>
+                </div>
+                <button onclick="document.getElementById('chatbot').style.display='none'" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">&times;</button>
+            </div>
+            <div id="chat-messages" style="flex: 1; overflow-y: auto; padding: 16px; max-height: 300px; font-size: 14px;"></div>
+            <div style="padding: 12px 16px; border-top: 1px solid #e2e8f0;">
+                <div style="display: flex; flex-wrap: wrap; gap: 6px;" id="chat-options"></div>
+                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..." style="flex: 1; padding: 10px 14px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 13px; outline: none;" onkeydown="if(event.key==='Enter')sendChatMessage()">
+                    <button onclick="sendChatMessage()" style="background: #06b6d4; color: white; border: none; border-radius: 8px; padding: 0 14px; cursor: pointer; font-size: 14px;"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        const chatFAQ = [
+            {q: "¿Qué es Renta Fácil?", a: "Renta Fácil es una plataforma para gestionar tu negocio de renta de lavadoras y secadoras. Controla rentas, cobros, clientes y mantenimientos desde tu celular o computadora."},
+            {q: "¿Cuánto cuesta?", a: "Tenemos planes desde <strong>$149/mes</strong>. También hay un plan gratuito con hasta 3 lavadoras. Y puedes probar el plan completo <strong>gratis por 15 días</strong> sin tarjeta de crédito."},
+            {q: "¿Cómo funciona el trial?", a: "Al registrarte, automáticamente recibes <strong>15 días gratis</strong> con el plan más completo. Sin tarjeta, sin compromiso. Si te gusta, eliges un plan. Si no, no se cobra nada."},
+            {q: "¿Qué incluye?", a: "Dashboard con gráficas, cobros por WhatsApp, contratos PDF, recibos, calendario de vencimientos, planificador de rutas, códigos QR, portal del cliente, reportes Excel, notificaciones automáticas y mucho más."},
+            {q: "¿Puedo cobrar por WhatsApp?", a: "¡Sí! Desde la tabla de rentas puedes enviar un recordatorio de pago directo al WhatsApp del cliente con un solo clic. El mensaje ya viene escrito con los datos."},
+            {q: "¿Funciona en celular?", a: "Sí, funciona perfecto desde cualquier celular, tablet o computadora. Es una app web progresiva (PWA) que puedes instalar en tu celular sin ir a la tienda de apps."},
+            {q: "¿Cómo me registro?", a: "Es muy fácil: <a href='/propietario/registrar' style='color: #06b6d4; font-weight: 600;'>clic aquí para registrarte</a>. Solo necesitas nombre, email y contraseña. En 2 minutos estarás listo."},
+            {q: "¿Cómo pago?", a: "Puedes pagar con <strong>tarjeta de crédito/débito</strong> o por <strong>transferencia SPEI</strong>. Dentro de la plataforma en la sección 'Mi Plan' encontrarás todas las opciones."},
+            {q: "¿Necesito instalar algo?", a: "No. Renta Fácil funciona directamente desde tu navegador. Opcionalmente puedes 'instalar' la app en tu celular desde el navegador para acceso más rápido."},
+            {q: "¿Mis datos están seguros?", a: "Sí. Usamos encriptación, backups automáticos diarios y servidores seguros. Tu información siempre está protegida y respaldada."},
+        ];
+        const quickOptions = ["¿Qué es Renta Fácil?", "¿Cuánto cuesta?", "¿Cómo funciona el trial?", "¿Qué incluye?", "¿Cómo me registro?"];
+
+        function initChat() {
+            addBotMessage("¡Hola! 👋 Soy el asistente de Renta Fácil. ¿En qué te puedo ayudar?");
+            showQuickOptions();
+        }
+
+        function showQuickOptions() {
+            const container = document.getElementById('chat-options');
+            container.innerHTML = '';
+            quickOptions.forEach(q => {
+                const btn = document.createElement('button');
+                btn.textContent = q;
+                btn.style.cssText = 'background: #ecfeff; color: #0e7490; border: 1px solid #67e8f9; border-radius: 20px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 500;';
+                btn.onclick = () => handleQuestion(q);
+                container.appendChild(btn);
+            });
+        }
+
+        function handleQuestion(question) {
+            addUserMessage(question);
+            const match = chatFAQ.find(f => f.q.toLowerCase() === question.toLowerCase());
+            if (match) {
+                setTimeout(() => addBotMessage(match.a), 500);
+            } else {
+                findBestMatch(question);
+            }
+            setTimeout(showQuickOptions, 600);
+        }
+
+        function findBestMatch(input) {
+            const words = input.toLowerCase().split(/\s+/);
+            let bestMatch = null, bestScore = 0;
+            chatFAQ.forEach(f => {
+                const target = (f.q + ' ' + f.a).toLowerCase();
+                let score = words.filter(w => w.length > 2 && target.includes(w)).length;
+                if (score > bestScore) { bestScore = score; bestMatch = f; }
+            });
+            if (bestMatch && bestScore >= 1) {
+                setTimeout(() => addBotMessage(bestMatch.a), 500);
+            } else {
+                setTimeout(() => addBotMessage("No tengo una respuesta exacta para eso. 😅 ¿Te gustaría hablar con alguien de nuestro equipo?<br><br><a href='https://wa.me/6682493398?text=Hola%2C%20tengo%20una%20pregunta%20sobre%20Renta%20Fácil' target='_blank' style='display: inline-block; background: #25D366; color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 13px;'>Hablar por WhatsApp</a>"), 500);
+            }
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            if (!input.value.trim()) return;
+            handleQuestion(input.value.trim());
+            input.value = '';
+        }
+
+        function addBotMessage(text) {
+            const div = document.createElement('div');
+            div.style.cssText = 'background: #f0fdfa; border-radius: 12px 12px 12px 4px; padding: 10px 14px; margin-bottom: 10px; font-size: 13px; color: #334155; line-height: 1.6; max-width: 90%;';
+            div.innerHTML = text;
+            document.getElementById('chat-messages').appendChild(div);
+            document.getElementById('chat-messages').scrollTop = 99999;
+        }
+
+        function addUserMessage(text) {
+            const div = document.createElement('div');
+            div.style.cssText = 'background: #06b6d4; color: white; border-radius: 12px 12px 4px 12px; padding: 10px 14px; margin-bottom: 10px; font-size: 13px; line-height: 1.6; max-width: 90%; margin-left: auto;';
+            div.textContent = text;
+            document.getElementById('chat-messages').appendChild(div);
+            document.getElementById('chat-messages').scrollTop = 99999;
+        }
+
+        document.addEventListener('DOMContentLoaded', initChat);
+        </script>
 
         @livewireScripts
 
