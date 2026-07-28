@@ -24,6 +24,17 @@ class PanelBanner
             );
         }
 
+        // Sin precio configurado, cobrar truena y el estado de cuenta no puede
+        // calcular. Rompe cosas en silencio, así que va antes que lo del plan.
+        if (Onboarding::for($tenant)->needsPrice()) {
+            return self::bar(
+                '#f59e0b',
+                'Te falta configurar tu <strong>precio de renta</strong>. Sin eso no puedes registrar cobros.',
+                "/propietario/{$tenant->id}/configuracion",
+                'Configurarlo ahora'
+            );
+        }
+
         $planUrl = "/propietario/{$tenant->id}/mi-plan";
 
         if ($tenant->isOnTrial()) {

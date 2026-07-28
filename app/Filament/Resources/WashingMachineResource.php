@@ -203,6 +203,9 @@ class WashingMachineResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Estatus')
                     ->badge()
+                    ->formatStateUsing(fn (?string $state) => $state
+                        ? ucfirst(str_replace('_', ' ', $state))
+                        : '—')
                     ->searchable()
                     ->sortable()
                     ->color(fn(string $state): string => match ($state) {

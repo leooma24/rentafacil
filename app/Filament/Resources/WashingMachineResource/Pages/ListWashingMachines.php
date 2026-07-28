@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\WashingMachineResource\Pages;
 
+use App\Filament\Actions\CreateWithinPlanAction;
 use App\Filament\Resources\WashingMachineResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -16,13 +17,11 @@ class ListWashingMachines extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        $tenant = Filament::getTenant();
-        if($tenant->canAddMoreWashingMachines()) {
-            return [
-                Actions\CreateAction::make(),
-            ];
-        }
-        return [];
+        // El botón siempre está: si ya no hay cupo, explica el límite en vez de
+        // desaparecer y dejar al dueño pensando que la app se descompuso.
+        return [
+            CreateWithinPlanAction::make(Filament::getTenant(), 'lavadoras'),
+        ];
     }
 
     public function getTabs(): array

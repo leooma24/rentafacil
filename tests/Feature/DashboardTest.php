@@ -163,6 +163,7 @@ class DashboardTest extends TestCase
         $widgets = (new Dashboard())->getWidgets();
 
         $this->assertSame([
+            \App\Filament\Widgets\OnboardingWidget::class,
             \App\Filament\Widgets\TodayStats::class,
             \App\Filament\Widgets\CollectionsWidget::class,
             \App\Filament\Widgets\PaymentStats::class,
