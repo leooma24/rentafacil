@@ -302,9 +302,12 @@ class WashingMachineResource extends Resource
                     Actions\RentAction::make($tenant),
                     Actions\ExtendRentAction::make($tenant),
 
+                    // "en_mantenimiento" no existe en el enum: el valor es
+                    // "mantenimiento". Esa mitad de la condición nunca se cumplía.
                     Tables\Actions\Action::make('make_available')
-                        ->visible(fn(WashingMachine $record) => in_array($record->status, ['rentada', 'en_mantenimiento']) && $record->activeRental?->status == 'activa')
+                        ->visible(fn(WashingMachine $record) => in_array($record->status, ['rentada', 'mantenimiento']) && in_array($record->activeRental?->status, ['activa', 'vencida']))
                         ->label('Cancelar Renta')
+                        ->color('danger')
                         ->icon('heroicon-s-check-circle')
                         ->requiresConfirmation()
                         ->action(function (array $data, WashingMachine $record) use ($tenant) {
@@ -315,14 +318,22 @@ class WashingMachineResource extends Resource
                                 ->success()
                                 ->send();
                         }),
+                    // Antes solo aparecía con la renta vencida: si el cliente
+                    // estaba al corriente y devolvía la lavadora, la única
+                    // salida era cancelar, y esa renta sí se cumplió.
                     Tables\Actions\Action::make('pick_up')
-                        ->visible(fn(WashingMachine $record) => in_array($record->status, ['rentada', 'en_mantenimiento']) && $record->activeRental?->status == 'vencida')
+                        ->visible(fn(WashingMachine $record) => in_array($record->status, ['rentada', 'mantenimiento']) && in_array($record->activeRental?->status, ['activa', 'vencida']))
                         ->label('Recoger Lavadora')
                         ->icon('heroicon-s-check-circle')
+                        ->color('success')
                         ->requiresConfirmation()
+                        ->modalHeading('Recoger la lavadora')
+                        ->modalDescription('La renta queda como completada y la lavadora vuelve a estar disponible.')
                         ->action(function (array $data, WashingMachine $record) use ($tenant) {
                             $record->update(['status' => 'disponible']);
-                            $record->rentals()->where('status', 'vencida')->update(['status' => 'completada']);
+                            $record->rentals()
+                                ->whereIn('status', ['activa', 'vencida'])
+                                ->update(['status' => 'completada', 'end_date' => now()->toDateString()]);
                             Notification::make()
                                 ->title('La lavadora esta disponible y la lavadora ha sido recogida')
                                 ->success()
