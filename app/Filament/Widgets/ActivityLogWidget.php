@@ -17,9 +17,10 @@ class ActivityLogWidget extends BaseWidget
     {
         return $table
             ->query(
-                Activity::query()->latest()->limit(20)
+                Activity::query()->latest()
             )
-            ->paginated(false)
+            ->paginated([5, 10, 25])
+            ->defaultPaginationPageOption(5)
             ->columns([
                 Tables\Columns\TextColumn::make('description')
                     ->label('Actividad'),

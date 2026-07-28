@@ -84,6 +84,13 @@ class CustomerResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            // La columna "Debe" necesita rentas y pagos de cada fila; sin esto son
+            // tres consultas por cliente.
+            ->modifyQueryUsing(fn ($query) => $query->with([
+                'rentals.payments',
+                'rentals.washingMachine',
+                'company.settings',
+            ]))
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nombre')
@@ -94,6 +101,16 @@ class CustomerResource extends Resource
                 Tables\Columns\TextColumn::make('phone')
                     ->label('Teléfono')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('debt')
+                    ->label('Debe')
+                    // El saldo se calcula, no vive en la base de datos, así que esta
+                    // columna no se puede ordenar. Para ver quién debe más está el
+                    // widget "Clientes con adeudo" del escritorio.
+                    ->state(fn (Customer $record) => app(\App\Support\AccountStatement::class)
+                        ->forCustomer($record)->total)
+                    ->formatStateUsing(fn ($state) => '$' . number_format((float) $state, 2))
+                    ->color(fn ($state) => $state > 0 ? 'danger' : 'gray')
+                    ->weight(fn ($state) => $state > 0 ? 'bold' : 'normal'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Fecha de Registro')
                     ->dateTime()
@@ -134,8 +151,19 @@ class CustomerResource extends Resource
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\Filter::make('con_adeudo')
+                    ->label('Solo con adeudo')
+                    ->query(fn (\Illuminate\Database\Eloquent\Builder $query) => $query
+                        ->whereHas('rentals', fn ($rentals) => $rentals
+                            ->whereIn('status', ['activa', 'vencida'])
+                            ->whereDate('end_date', '<', \Carbon\Carbon::today()))),
             ])
             ->actions([
+                Tables\Actions\Action::make('estado_de_cuenta')
+                    ->label('Estado de cuenta')
+                    ->icon('heroicon-o-banknotes')
+                    ->color('warning')
+                    ->url(fn (Customer $record) => static::getUrl('estado-de-cuenta', ['record' => $record])),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
                 Tables\Actions\RestoreAction::make(),
@@ -162,6 +190,7 @@ class CustomerResource extends Resource
             'index' => Pages\ListCustomers::route('/'),
             'create' => Pages\CreateCustomer::route('/create'),
             'edit' => Pages\EditCustomer::route('/{record}/edit'),
+            'estado-de-cuenta' => Pages\AccountStatementPage::route('/{record}/estado-de-cuenta'),
         ];
     }
 }

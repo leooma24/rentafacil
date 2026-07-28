@@ -18,8 +18,8 @@ class LatestWashingMachines extends BaseWidget
             ->query(
                 WashingMachineResource::getEloquentQuery(),
             )
+            ->paginated([5, 10, 25])
             ->defaultPaginationPageOption(5)
-            ->paginated(false)
             ->defaultSort('created_at', 'desc')
             ->columns([
                 // ...

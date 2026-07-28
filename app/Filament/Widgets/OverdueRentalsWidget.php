@@ -23,8 +23,8 @@ class OverdueRentalsWidget extends BaseWidget
                             ->whereIn('status', ['activa', 'vencida'])
                     )
             )
+            ->paginated([5, 10, 25])
             ->defaultPaginationPageOption(5)
-            ->paginated(false)
             ->defaultSort('created_at', 'desc')
             ->columns([
                 // ...

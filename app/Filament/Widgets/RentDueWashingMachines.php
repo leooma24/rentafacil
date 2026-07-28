@@ -25,7 +25,8 @@ class RentDueWashingMachines extends BaseWidget
                     ->where('end_date', '>=', Carbon::now())
                     ->where('end_date', '<=', Carbon::now()->addDays(3))
             )
-            ->paginated(false)
+            ->paginated([5, 10, 25])
+            ->defaultPaginationPageOption(5)
             ->defaultSort('end_date', 'asc')
             ->columns([
                 Tables\Columns\TextColumn::make('customer.name')
