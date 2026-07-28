@@ -15,9 +15,12 @@
             @foreach ($onboarding->steps as $paso)
                 <li class="flex items-start gap-3">
                     @if ($paso['hecho'])
+                        {{-- Color en línea: text-success-600 no entra en el CSS
+                             compilado de Filament y la palomita saldría gris. --}}
                         <x-filament::icon
                             icon="heroicon-s-check-circle"
-                            class="mt-0.5 h-5 w-5 flex-shrink-0 text-success-600"
+                            class="mt-0.5 h-5 w-5 flex-shrink-0"
+                            style="color: rgb(22 163 74);"
                         />
                     @else
                         <x-filament::icon
@@ -28,7 +31,8 @@
 
                     <div class="min-w-0">
                         @if ($paso['hecho'])
-                            <p class="text-sm font-medium text-gray-400 line-through dark:text-gray-500">
+                            <p class="text-sm font-medium text-gray-400 dark:text-gray-500"
+                               style="text-decoration: line-through;">
                                 {{ $paso['titulo'] }}
                             </p>
                         @else
