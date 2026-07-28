@@ -61,6 +61,27 @@ class DemoAccessTest extends TestCase
         $this->postJson('/demo/iniciar')->assertStatus(429);
     }
 
+    public function test_un_segundo_demo_funciona_aunque_el_primero_ya_se_haya_borrado(): void
+    {
+        $this->seedPackage();
+
+        $this->postJson('/demo/iniciar')->assertOk();
+        $primero = Company::demo()->first();
+
+        // demo:cleanup borra al usuario del primer sandbox mientras el visitante
+        // sigue con esa cookie de sesión.
+        $primero->update(['demo_expires_at' => now()->subHour()]);
+        $this->artisan('demo:cleanup')->assertSuccessful();
+
+        $response = $this->postJson('/demo/iniciar');
+
+        $response->assertOk();
+        $this->assertAuthenticated();
+        $segundo = Company::demo()->first();
+        $this->assertNotNull($segundo);
+        $this->assertStringContainsString("/propietario/{$segundo->id}", $response->json('url'));
+    }
+
     public function test_la_home_ofrece_el_demo(): void
     {
         $response = $this->get('/');
