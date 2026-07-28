@@ -20,12 +20,13 @@ class StatsOverview extends BaseWidget
         $washingMachinesAvailable = $tenant->washingMachines()->where('status', 'disponible')->count();
         $washingMachinesMaintenance = $tenant->washingMachines()->where('status', 'mantenimiento')->count();
 
+        // Un solo recuadro en vez de cuatro: en el celular cada uno ocupaba
+        // un renglón completo y el escritorio se volvía interminable.
         return [
-            //
-            Stat::make('Lavadoras', $washingMachines),
-            Stat::make('Rentadas', $washingMachinesRented),
-            Stat::make('Disponibles', $washingMachinesAvailable),
-            Stat::make('En Mantenimiento', $washingMachinesMaintenance),
+            Stat::make('Lavadoras', $washingMachines)
+                ->description("{$washingMachinesRented} rentadas · {$washingMachinesAvailable} libres · {$washingMachinesMaintenance} en mantenimiento")
+                ->descriptionIcon('heroicon-m-archive-box')
+                ->color('info'),
         ];
     }
 }

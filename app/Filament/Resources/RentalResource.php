@@ -123,27 +123,38 @@ class RentalResource extends Resource
         return $table
             ->columns([
                 //
+                // En celular esta columna carga sola con la lavadora y el estatus
+                // como subtítulo, para que la fila quepa y el botón de Cobrar
+                // no se salga de la pantalla.
                 Tables\Columns\TextColumn::make('customer.name')
                     ->label('Cliente')
+                    ->description(fn (Rental $record): string => collect([
+                        $record->washingMachine?->machine_code,
+                        ucfirst((string) $record->status),
+                    ])->filter()->join(' · '))
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('washingMachine.machine_code')
                     ->label('Lavadora')
+                    ->visibleFrom('md')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('start_date')
                     ->label('Fecha de Inicio')
                     ->date('d/m/Y')
+                    ->visibleFrom('md')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('end_date')
                     ->label('Fecha de Fin')
                     ->date('d/m/Y')
+                    ->visibleFrom('md')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Estatus')
                     ->badge()
+                    ->visibleFrom('md')
                     ->formatStateUsing(fn (?string $state) => $state ? ucfirst($state) : '—')
                     ->searchable()
                     ->sortable(),
