@@ -11,6 +11,7 @@ class OverdueRentalsWidget extends BaseWidget
 {
     protected static ?int $sort = 5;
     protected static ?string $heading = 'Rentas Vencidas';
+    protected static bool $isLazy = false;
     public function table(Table $table): Table
     {
         return $table

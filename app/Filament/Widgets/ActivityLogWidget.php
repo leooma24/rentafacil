@@ -10,6 +10,8 @@ use Spatie\Activitylog\Models\Activity;
 class ActivityLogWidget extends BaseWidget
 {
     protected static ?int $sort = 7;
+    // Sin esto el widget se queda en el placeholder de carga y nunca aparece.
+    protected static bool $isLazy = false;
     protected static ?string $heading = 'Actividad Reciente';
     protected int | string | array $columnSpan = 'full';
 

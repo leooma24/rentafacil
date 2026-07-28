@@ -10,6 +10,8 @@ use Filament\Widgets\TableWidget as BaseWidget;
 class LatestWashingMachines extends BaseWidget
 {
     protected static ?int $sort = 5;
+    // Sin esto el widget se queda en el placeholder de carga y nunca aparece.
+    protected static bool $isLazy = false;
     protected static ?string $heading = 'Últimas Lavadoras';
 
     public function table(Table $table): Table

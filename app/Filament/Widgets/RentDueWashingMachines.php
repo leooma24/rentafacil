@@ -13,6 +13,8 @@ use Filament\Widgets\TableWidget as BaseWidget;
 class RentDueWashingMachines extends BaseWidget
 {
     protected static ?int $sort = 6;
+    // Sin esto el widget se queda en el placeholder de carga y nunca aparece.
+    protected static bool $isLazy = false;
     protected static ?string $heading = 'Rentas por Vencer';
     //protected int | string | array $columnSpan = 'full';
 

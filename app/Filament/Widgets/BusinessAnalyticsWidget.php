@@ -12,6 +12,8 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 class BusinessAnalyticsWidget extends BaseWidget
 {
     protected static ?int $sort = 10;
+    // Sin esto el widget se queda en el placeholder de carga y nunca aparece.
+    protected static bool $isLazy = false;
     protected static ?string $pollingInterval = '60s';
 
     protected function getStats(): array

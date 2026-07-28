@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Builder;
 class MachineProfitabilityWidget extends BaseWidget
 {
     protected static ?int $sort = 9;
+    // Sin esto el widget se queda en el placeholder de carga y nunca aparece.
+    protected static bool $isLazy = false;
     protected static ?string $heading = 'Rentabilidad por Lavadora';
     protected int | string | array $columnSpan = 'full';
 

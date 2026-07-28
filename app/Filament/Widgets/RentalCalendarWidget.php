@@ -10,6 +10,8 @@ use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 class RentalCalendarWidget extends FullCalendarWidget
 {
     protected static ?int $sort = 8;
+    // Sin esto el widget se queda en el placeholder de carga y nunca aparece.
+    protected static bool $isLazy = false;
 
     public function fetchEvents(array $fetchInfo): array
     {
