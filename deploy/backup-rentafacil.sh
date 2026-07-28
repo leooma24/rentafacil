@@ -12,9 +12,15 @@
 # es otro proyecto en el mismo servidor, y no conviene que los dos mysqldump se
 # encimen.
 #
-# OJO: esto deja los respaldos en el MISMO disco. Sirve contra un borrado o una
+# Qué agrega esto sobre lo que ya había:
+#
+# La app ya corría `backup:run --only-db` todos los días a las 2am con
+# spatie/laravel-backup. Aquello no comprueba que el volcado sirva, no guarda
+# los archivos subidos y no deja copias mensuales. Esto sí las tres cosas.
+#
+# OJO: los dos quedan en el MISMO disco. Sirven contra un borrado o una
 # migración mala, que es lo común, pero no contra la pérdida del servidor. Para
-# eso hace falta copiarlos fuera.
+# eso hace falta copiarlos fuera, y eso todavía no está.
 
 set -euo pipefail
 
@@ -112,9 +118,17 @@ FILAS=$(mysql --defaults-extra-file="$CREDENCIALES" -N -B -e \
     "SELECT COUNT(*) FROM companies" "$DB_NAME" 2>/dev/null || echo '?')
 
 # --- Archivos subidos (fotos de incidencias, logos) ---
+#
+# La app ya guarda sus propios respaldos de base con spatie/laravel-backup en
+# storage/app/<nombre de la app>/, y esa carpeta pesa 57 MB. Sin excluirla, esto
+# estaría respaldando respaldos todos los días: 800 MB en dos semanas, sobre un
+# disco que va al 74%.
 
 if [ -d "$APP_DIR/storage/app" ]; then
-    tar -czf "$BACKUP_DIR/storage_${DATE}.tar.gz" -C "$APP_DIR" storage/app
+    tar -czf "$BACKUP_DIR/storage_${DATE}.tar.gz" \
+        --exclude='storage/app/Renta Facil - Lavadoras' \
+        --exclude='storage/app/backup-temp' \
+        -C "$APP_DIR" storage/app
 fi
 
 # --- Rotación ---
