@@ -22,4 +22,9 @@ class ListPayments extends ListRecords
     {
         return [PagosStats::class];
     }
+
+    public function getSubheading(): ?string
+    {
+        return 'Todo lo que has cobrado. Cada cobro trae su recibo para mandárselo al cliente por WhatsApp.';
+    }
 }

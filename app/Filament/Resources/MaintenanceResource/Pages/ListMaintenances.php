@@ -22,4 +22,9 @@ class ListMaintenances extends ListRecords
     {
         return [MantenimientosStats::class];
     }
+
+    public function getSubheading(): ?string
+    {
+        return 'El historial de servicio de cada lavadora y lo que te ha costado. Con eso decides cuál ya no conviene reparar.';
+    }
 }

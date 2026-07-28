@@ -30,6 +30,11 @@ class ListWashingMachines extends ListRecords
         return [LavadorasStats::class];
     }
 
+    public function getSubheading(): ?string
+    {
+        return 'Tu inventario. Cada lavadora te dice si está rentada, libre o parada, y cuánto te ha dado.';
+    }
+
     public function getTabs(): array
     {
         return [

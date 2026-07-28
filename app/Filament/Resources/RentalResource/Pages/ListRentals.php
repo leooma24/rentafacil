@@ -22,4 +22,9 @@ class ListRentals extends ListRecords
     {
         return [RentasStats::class];
     }
+
+    public function getSubheading(): ?string
+    {
+        return 'Quién trae qué lavadora y hasta cuándo pagó. Al registrar un cobro, la fecha se recorre sola.';
+    }
 }

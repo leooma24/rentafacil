@@ -22,4 +22,9 @@ class ListIncidents extends ListRecords
     {
         return [IncidenciasStats::class];
     }
+
+    public function getSubheading(): ?string
+    {
+        return 'Las fallas que te reportan tus clientes, para que no se te pase ninguna y sepas cuánto tardas en resolverlas.';
+    }
 }

@@ -27,4 +27,12 @@ class ListCustomers extends ListRecords
     {
         return [ClientesStats::class];
     }
+
+    // Dice para qué sirve la pantalla en términos de lo que el dueño gana. De
+    // 17 cuentas reales, la mitad nunca pasó de aquí: el catálogo se explicaba
+    // solo a quien ya sabía qué buscar.
+    public function getSubheading(): ?string
+    {
+        return 'A quién le rentas. Abre uno para ver su estado de cuenta y mandárselo por WhatsApp.';
+    }
 }

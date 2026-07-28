@@ -306,3 +306,196 @@
     font-weight: 600 !important;
     box-shadow: 0 1px 2px rgba(15, 23, 42, .06);
 }
+
+/* ---------------------------------------------------------------
+   7. La guía "Sácale provecho"
+   Con prefijo propio porque las utilidades de Tailwind que Filament
+   no usa no están en su CSS compilado.
+   --------------------------------------------------------------- */
+
+.rf-provecho-aviso {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.15rem 1.35rem;
+    border-radius: 14px;
+    border: 1px solid rgba(249, 115, 22, .28);
+    background: linear-gradient(135deg, #fffbf5 40%, rgba(249, 115, 22, .09));
+}
+
+.rf-provecho-aviso-ok {
+    border-color: rgba(16, 185, 129, .3);
+    background: linear-gradient(135deg, #f6fefb 40%, rgba(16, 185, 129, .1));
+}
+
+.rf-provecho-aviso-num {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 14px;
+    background: #f97316;
+    color: #fff;
+    font-size: 1.4rem;
+    font-weight: 800;
+}
+
+.rf-provecho-aviso-ok .rf-provecho-aviso-num {
+    background: #10b981;
+}
+
+.rf-provecho-aviso-titulo {
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -.01em;
+}
+
+.rf-provecho-aviso-texto {
+    margin-top: .15rem;
+    font-size: .875rem;
+    color: #64748b;
+}
+
+.rf-provecho-seccion {
+    margin-top: 1.75rem;
+    margin-bottom: -.35rem;
+    font-size: .6875rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+.rf-provecho-lista {
+    display: grid;
+    gap: 1rem;
+}
+
+@media (min-width: 1024px) {
+    .rf-provecho-lista {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.rf-herramienta {
+    display: flex;
+    gap: 1rem;
+    padding: 1.25rem;
+    border-radius: 14px;
+    border: 1px solid rgba(148, 163, 184, .18);
+    background: #fff;
+    box-shadow:
+        0 1px 2px rgba(15, 23, 42, .04),
+        0 8px 24px -14px rgba(15, 23, 42, .14);
+}
+
+/* Las sin estrenar traen filo cyan: son las que queremos que abra */
+.rf-herramienta-destacada {
+    border-color: rgba(6, 182, 212, .3);
+    background: linear-gradient(135deg, #fff 62%, rgba(6, 182, 212, .05));
+    box-shadow:
+        0 1px 2px rgba(15, 23, 42, .05),
+        0 10px 28px -14px rgba(6, 182, 212, .35);
+}
+
+.rf-herramienta-icono {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 12px;
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.rf-herramienta-destacada .rf-herramienta-icono {
+    background: rgba(6, 182, 212, .13);
+    color: #0e7490;
+}
+
+.rf-herramienta-svg {
+    width: 1.4rem;
+    height: 1.4rem;
+}
+
+.rf-herramienta-cuerpo {
+    min-width: 0;
+}
+
+.rf-herramienta-encabezado {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+}
+
+.rf-herramienta-titulo {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -.015em;
+}
+
+.rf-etiqueta {
+    padding: .12rem .5rem;
+    border-radius: 999px;
+    font-size: .6875rem;
+    font-weight: 700;
+    letter-spacing: .02em;
+}
+
+.rf-etiqueta-ok {
+    background: rgba(16, 185, 129, .13);
+    color: #047857;
+}
+
+.rf-etiqueta-nueva {
+    background: rgba(6, 182, 212, .15);
+    color: #0e7490;
+}
+
+.rf-herramienta-beneficio {
+    margin-top: .4rem;
+    font-size: .875rem;
+    line-height: 1.5;
+    color: #334155;
+}
+
+/* La frase con sus propios números: es la que convence */
+.rf-herramienta-pista {
+    margin-top: .55rem;
+    padding: .5rem .7rem;
+    border-left: 3px solid #06b6d4;
+    border-radius: 0 8px 8px 0;
+    background: rgba(6, 182, 212, .07);
+    font-size: .8125rem;
+    line-height: 1.45;
+    color: #0f172a;
+}
+
+.rf-herramienta-como {
+    margin-top: .55rem;
+    font-size: .8125rem;
+    line-height: 1.45;
+    color: #64748b;
+}
+
+.rf-herramienta-como-rotulo {
+    font-weight: 700;
+    color: #475569;
+}
+
+.rf-herramienta-accion {
+    margin-top: .8rem;
+}
+
+.rf-provecho-pie {
+    margin-top: 1.75rem;
+    padding-top: 1.15rem;
+    border-top: 1px solid rgba(148, 163, 184, .22);
+    font-size: .8125rem;
+    line-height: 1.55;
+    color: #64748b;
+}

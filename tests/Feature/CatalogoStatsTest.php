@@ -327,4 +327,32 @@ class CatalogoStatsTest extends TestCase
             );
         }
     }
+
+    /**
+     * Cada catálogo explica para qué sirve. Sin esto la pantalla se explicaba
+     * sola nada más a quien ya sabía qué buscar, y la mitad de las cuentas
+     * reales nunca pasó de ahí.
+     */
+    public function test_cada_catalogo_dice_para_que_sirve(): void
+    {
+        $paginas = [
+            \App\Filament\Resources\CustomerResource\Pages\ListCustomers::class,
+            \App\Filament\Resources\WashingMachineResource\Pages\ListWashingMachines::class,
+            \App\Filament\Resources\RentalResource\Pages\ListRentals::class,
+            \App\Filament\Resources\PaymentResource\Pages\ListPayments::class,
+            \App\Filament\Resources\MaintenanceResource\Pages\ListMaintenances::class,
+            \App\Filament\Resources\IncidentResource\Pages\ListIncidents::class,
+        ];
+
+        foreach ($paginas as $pagina) {
+            $texto = (new $pagina())->getSubheading();
+
+            $this->assertNotNull($texto, "{$pagina} no explica para qué sirve.");
+            $this->assertGreaterThan(
+                40,
+                mb_strlen($texto),
+                "{$pagina} sólo repite su nombre en vez de decir qué se gana."
+            );
+        }
+    }
 }
