@@ -26,6 +26,9 @@ class DemoCompanyBuilder
     /** Horas que vive un sandbox antes de que demo:cleanup lo borre. */
     public const LIFETIME_HOURS = 24;
 
+    /** Quién aparece cobrando los pagos del demo. Se resuelve una sola vez. */
+    private ?int $cobradorDemo = null;
+
     private const MACHINE_MODELS = [
         ['brand' => 'Whirlpool', 'model' => '7MWTW1602BM', 'capacity' => 16, 'price' => 8900],
         ['brand' => 'Mabe', 'model' => 'LMA6123PBAB0', 'capacity' => 12, 'price' => 7200],
@@ -260,6 +263,11 @@ class DemoCompanyBuilder
         $now = now();
         $n = 0;
 
+        // El insert masivo no pasa por el modelo, así que quién cobró se pone a
+        // mano: sin eso el corte de caja del demo saldría en cero y parecería
+        // descompuesto. Se resuelve una vez y no en cada una de las 13 rentas.
+        $cobrador = $this->cobradorDemo ??= $company->members()->first()?->id;
+
         while ($date->lte($until)) {
             $rows[] = [
                 'company_id' => $company->id,
@@ -269,6 +277,7 @@ class DemoCompanyBuilder
                 'payment_method' => $n % 3 === 0 ? 'transferencia' : 'efectivo',
                 'reference' => 'DEMO-' . $rental->id . '-' . ($n + 1),
                 'status' => 'completado',
+                'collected_by' => $cobrador,
                 'created_at' => $now,
                 'updated_at' => $now,
             ];

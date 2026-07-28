@@ -49,6 +49,14 @@ class Provecho
         $abonos = Payment::where('company_id', $company->id)->where('applied', false)->count();
         $mantenimientos = $company->maintenances()->count();
         $incidencias = $company->incidents()->count();
+        $cortes = \App\Models\CashClosing::where('company_id', $company->id)->count();
+
+        $efectivoDelMes = (float) Payment::where('company_id', $company->id)
+            ->where('status', 'completado')
+            ->whereYear('payment_date', now()->year)
+            ->whereMonth('payment_date', now()->month)
+            ->where('payment_method', 'like', '%fectivo%')
+            ->sum('amount');
 
         $porVencer = $company->rentals()
             ->where('status', 'activa')
@@ -87,6 +95,21 @@ class Provecho
                 ruta: 'filament.propietario.pages.rutas',
                 accion: 'Abrir el planificador',
                 peso: 95,
+            ),
+
+            new Herramienta(
+                clave: 'corte-de-caja',
+                titulo: 'Cierra el día y cuadra tu efectivo',
+                beneficio: 'Te dice cuánto efectivo deberías traer encima al terminar el día. Cuentas, lo anotas, y si no cuadra queda registrada la diferencia con su nota.',
+                comoSeUsa: 'En Finanzas, entra a Corte de caja y toca "Cerrar el día".',
+                pista: $efectivoDelMes > 0
+                    ? 'Este mes has cobrado $' . number_format($efectivoDelMes, 2) . ' en efectivo. Eso es lo que pasa por tus manos sin dejar rastro en el banco.'
+                    : 'Sirve para los días en que cobras en efectivo.',
+                estado: $cortes > 0 ? self::USANDO : self::SIN_ESTRENAR,
+                icono: 'heroicon-o-calculator',
+                ruta: 'filament.propietario.pages.corte-de-caja',
+                accion: 'Abrir el corte de caja',
+                peso: 92,
             ),
 
             new Herramienta(

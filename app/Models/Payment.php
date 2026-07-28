@@ -28,11 +28,32 @@ class Payment extends Model
         'reference',
         'status',
         'applied',
+        'collected_by',
     ];
 
     protected $casts = [
         'applied' => 'boolean',
     ];
+
+    /**
+     * Quién registró el cobro se anota solo.
+     *
+     * Va aquí y no en el observador porque tiene que estar puesto antes de
+     * guardar: el corte de caja se arma con esta columna y un cobro sin dueño
+     * no se le puede cargar a nadie.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (Payment $payment) {
+            $payment->collected_by ??= auth()->id();
+        });
+    }
+
+    /** Quien lo cobró. Nulo en los cobros anteriores a que se registrara. */
+    public function collector()
+    {
+        return $this->belongsTo(User::class, 'collected_by');
+    }
 
     /**
      * Get the rental that owns the payment.

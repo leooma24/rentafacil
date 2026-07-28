@@ -491,6 +491,159 @@
     margin-top: .8rem;
 }
 
+/* ---------------------------------------------------------------
+   8. El corte de caja
+   --------------------------------------------------------------- */
+
+.rf-corte-cifras {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .rf-corte-cifras {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+.rf-corte-cifra {
+    padding: 1.25rem 1.35rem;
+    border-radius: 14px;
+    border: 1px solid rgba(148, 163, 184, .18);
+    background: #fff;
+    box-shadow:
+        0 1px 2px rgba(15, 23, 42, .04),
+        0 8px 24px -14px rgba(15, 23, 42, .14);
+}
+
+/* El efectivo es el que hay que contar: va marcado */
+.rf-corte-cifra-efectivo {
+    border-color: rgba(16, 185, 129, .32);
+    background: linear-gradient(135deg, #fff 58%, rgba(16, 185, 129, .08));
+}
+
+.rf-corte-rotulo {
+    font-size: .6875rem;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+.rf-corte-monto {
+    margin-top: .3rem;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -.03em;
+    color: #0f172a;
+}
+
+.rf-corte-cifra-efectivo .rf-corte-monto {
+    color: #047857;
+}
+
+.rf-corte-nota {
+    margin-top: .3rem;
+    font-size: .8125rem;
+    color: #64748b;
+}
+
+.rf-corte-cerrado {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding: 1.1rem 1.35rem;
+    border-radius: 14px;
+    border: 1px solid rgba(16, 185, 129, .3);
+    background: linear-gradient(135deg, #f6fefb 40%, rgba(16, 185, 129, .1));
+}
+
+.rf-corte-cerrado-mal {
+    border-color: rgba(249, 115, 22, .32);
+    background: linear-gradient(135deg, #fffbf5 40%, rgba(249, 115, 22, .1));
+}
+
+.rf-corte-cerrado-titulo {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.rf-corte-cerrado-texto {
+    margin-top: .2rem;
+    font-size: .8125rem;
+    color: #475569;
+}
+
+.rf-corte-vacio {
+    margin-top: 1.5rem;
+    padding: 2rem 1.35rem;
+    border-radius: 14px;
+    border: 1px dashed rgba(148, 163, 184, .4);
+    text-align: center;
+    color: #64748b;
+    font-size: .875rem;
+}
+
+.rf-corte-tabla-caja {
+    margin-top: 1.75rem;
+    border-radius: 14px;
+    border: 1px solid rgba(148, 163, 184, .18);
+    background: #fff;
+    box-shadow:
+        0 1px 2px rgba(15, 23, 42, .04),
+        0 8px 24px -14px rgba(15, 23, 42, .14);
+    overflow: hidden;
+}
+
+.rf-corte-seccion {
+    padding: 1rem 1.35rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -.015em;
+    border-bottom: 1px solid rgba(148, 163, 184, .16);
+}
+
+/* La tabla se desplaza sola en celular en vez de estirar la página */
+.rf-corte-scroll {
+    overflow-x: auto;
+}
+
+.rf-corte-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .875rem;
+}
+
+.rf-corte-tabla th {
+    padding: .7rem 1.35rem;
+    background: #f8fafc;
+    color: #475569;
+    font-size: .6875rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.rf-corte-tabla td {
+    padding: .8rem 1.35rem;
+    border-top: 1px solid rgba(148, 163, 184, .14);
+    color: #334155;
+    white-space: nowrap;
+}
+
+.rf-corte-derecha {
+    text-align: right;
+}
+
+.rf-corte-monto-fila {
+    font-weight: 700;
+    color: #0f172a;
+}
+
 /* El botón de ubicación del planificador de rutas */
 .rf-ubicacion-nota {
     margin-top: .5rem;
