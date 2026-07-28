@@ -115,6 +115,28 @@ class DashboardTest extends TestCase
         $this->assertSame(['LAV-001', 'LAV-002', 'LAV-003'], $codigos);
     }
 
+    /**
+     * El calendario tronaba con 500 al abrirlo: el paquete declara $record sin
+     * valor inicial y como widget de encabezado nadie se lo pone.
+     */
+    public function test_la_pagina_del_calendario_abre_sin_reventar(): void
+    {
+        [$company, $user] = $this->makeCompanyWithOwner();
+
+        $this->actingAs($user)
+            ->get("/propietario/{$company->id}/calendario")
+            ->assertOk();
+    }
+
+    public function test_la_pagina_de_actividad_abre_sin_reventar(): void
+    {
+        [$company, $user] = $this->makeCompanyWithOwner();
+
+        $this->actingAs($user)
+            ->get("/propietario/{$company->id}/actividad")
+            ->assertOk();
+    }
+
     public function test_el_escritorio_declara_solo_los_widgets_previstos(): void
     {
         $widgets = (new Dashboard())->getWidgets();

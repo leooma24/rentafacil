@@ -11,12 +11,12 @@ class CompanyObserver
      */
     public function created(Company $company): void
     {
+        // Aquí se asignaba el paquete Gratuito a toda empresa nueva. Como
+        // RegisterCompany ya asigna la prueba de 15 días, quedaban dos planes y
+        // ganaba el Gratuito (3 lavadoras), dejando al cliente topado justo
+        // durante su prueba "con todas las funciones".
         //
-        $company->companyPackage()->create([
-            'package_id' => 1,
-            'start_date' => now(),
-            'end_date' => now()->addMonth(),
-        ]);
+        // Quién arranca con qué plan lo decide RegisterCompany y nadie más.
     }
 
     /**
