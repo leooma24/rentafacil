@@ -105,7 +105,32 @@ class ProspectOutreachTest extends TestCase
         $url = ProspectOutreach::whatsappUrl($prospect, 'primero');
 
         $this->assertStringStartsWith('https://wa.me/526681234567?text=', $url);
-        $this->assertStringContainsString(urlencode('Don Chuy'), $url);
+        $this->assertStringContainsString(rawurlencode('Don Chuy'), $url);
+    }
+
+    /**
+     * urlencode manda los espacios como "+" y WhatsApp los muestra tal cual: el
+     * mensaje le llegaba al prospecto lleno de signos de más.
+     */
+    public function test_los_espacios_van_como_por_ciento_veinte_y_no_como_mas(): void
+    {
+        $prospect = $this->makeProspect(['name' => 'Don Chuy']);
+
+        $url = ProspectOutreach::whatsappUrl($prospect, 'primero');
+        $texto = substr($url, strpos($url, '?text=') + 6);
+
+        $this->assertStringNotContainsString('+', $texto, 'Los espacios no deben ir como "+".');
+        $this->assertStringContainsString('%20', $texto);
+    }
+
+    public function test_el_emoji_del_saludo_llega_completo(): void
+    {
+        $prospect = $this->makeProspect(['name' => 'Don Chuy']);
+
+        $url = ProspectOutreach::whatsappUrl($prospect, 'primero');
+        parse_str(parse_url($url, PHP_URL_QUERY), $query);
+
+        $this->assertStringContainsString('👋', $query['text']);
     }
 
     public function test_las_ciudades_salen_de_los_prospectos_pendientes(): void

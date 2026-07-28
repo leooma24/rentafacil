@@ -115,7 +115,10 @@ class ProspectOutreach
     /** La liga que abre WhatsApp con el mensaje ya escrito. */
     public static function whatsappUrl(ProspectiveClient $prospect, string $plantilla): string
     {
+        // rawurlencode y no urlencode: este último manda los espacios como "+"
+        // y WhatsApp los muestra tal cual, así que el mensaje le llegaba al
+        // prospecto lleno de signos de más.
         return 'https://wa.me/' . self::whatsappNumber($prospect->phone)
-            . '?text=' . urlencode(self::message($prospect, $plantilla));
+            . '?text=' . rawurlencode(self::message($prospect, $plantilla));
     }
 }

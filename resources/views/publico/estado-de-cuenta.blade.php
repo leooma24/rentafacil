@@ -9,6 +9,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
     <title>Estado de cuenta — {{ $negocio }}</title>
+    @include('publico.meta', [
+        'titulo' => 'Estado de cuenta — ' . $negocio,
+        'descripcion' => 'Consulta tu saldo y tus lavadoras.',
+    ])
     {{-- CSS propio, igual que el recibo: esta página vive fuera del panel. --}}
     <style>
         :root { color-scheme: light; }

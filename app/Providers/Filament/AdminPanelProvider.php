@@ -90,21 +90,12 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook('panels::head.end', fn () => new HtmlString(
                 '<link rel="manifest" href="/manifest.json">' .
                 '<meta name="theme-color" content="#06b6d4">' .
-                '<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js")}</script>'
-            ))
-            // Filament arranca el menú con isOpen persistido en true. En
-            // escritorio da igual porque la barra va fija, pero en celular eso
-            // es una cortina encima del contenido al entrar.
-            //
-            // Se fija según el tamaño de pantalla, no solo se cierra: como el
-            // valor se persiste, cerrarlo en el celular dejaba el menú encogido
-            // a puros iconos la próxima vez que se abriera en computadora.
-            ->renderHook('panels::body.end', fn () => new HtmlString(
-                '<script>document.addEventListener("alpine:initialized",function(){'
-                . 'if(!window.Alpine||!Alpine.store("sidebar"))return;'
-                . 'if(window.innerWidth<1024){Alpine.store("sidebar").close()}'
-                . 'else{Alpine.store("sidebar").open()}'
-                . '})</script>'
+                '<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js")}</script>' .
+                // El estado del menú se deja listo ANTES de que Alpine arranque:
+                // Alpine lo lee de aquí al iniciar, así que no hay parpadeo. Con
+                // el script después de la carga, el menú se dibujaba encogido un
+                // instante en cada visita de escritorio.
+                '<script>try{localStorage.setItem("isOpen",window.innerWidth<1024?"false":"true")}catch(e){}</script>'
             ))
             ->renderHook('panels::body.start', function () {
                 if (auth()->user()?->hasRole('super_admin')) {

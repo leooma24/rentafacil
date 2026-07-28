@@ -211,4 +211,31 @@ class LinksCompartiblesTest extends TestCase
 
         $this->assertStringStartsWith('https://wa.me/526681234567?text=', $url);
     }
+
+    public function test_el_mensaje_no_lleva_los_espacios_como_mas(): void
+    {
+        $url = ShareableLinks::whatsappUrl('6681234567', 'Hola María, aquí está tu recibo');
+        $texto = substr($url, strpos($url, '?text=') + 6);
+
+        $this->assertStringNotContainsString('+', $texto, 'WhatsApp muestra los "+" tal cual.');
+        $this->assertStringContainsString('%20', $texto);
+    }
+
+    /** Sin estas etiquetas, el link se comparte sin logo ni título. */
+    public function test_las_paginas_compartidas_traen_vista_previa_con_logo(): void
+    {
+        $cliente = $this->makeCustomer();
+        $pago = $this->makePayment($this->makeRental($cliente, now()->addDays(7)->toDateString()));
+
+        foreach ([
+            ShareableLinks::receiptUrl($pago),
+            ShareableLinks::statementUrl($cliente->fresh()),
+            '/demo',
+        ] as $ruta) {
+            $this->get($ruta)
+                ->assertOk()
+                ->assertSee('og:image', false)
+                ->assertSee('icon-512.png', false);
+        }
+    }
 }

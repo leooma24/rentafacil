@@ -4,8 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    {{-- Es una pantalla de espera que redirige: no tiene nada que indexar,
+         pero sí debe traer vista previa para cuando se comparte por WhatsApp. --}}
     <meta name="robots" content="noindex">
     <title>Preparando tu demo — Renta Fácil</title>
+    @include('publico.meta', [
+        'titulo' => 'Renta Fácil — Pruébalo ahora, sin registrarte',
+        'descripcion' => 'Entra a un negocio de ejemplo con lavadoras, clientes, rentas y cobros. Sin cuenta, sin tarjeta.',
+    ])
     <style>
         body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
                font-family:Roboto,system-ui,sans-serif; background:#0f172a; color:#fff; text-align:center; padding:24px; }

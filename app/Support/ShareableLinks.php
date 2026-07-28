@@ -76,7 +76,9 @@ class ShareableLinks
     /** La liga de WhatsApp con el mensaje ya escrito, lista para abrir. */
     public static function whatsappUrl(?string $phone, string $message): string
     {
+        // rawurlencode y no urlencode: este último manda los espacios como "+"
+        // y WhatsApp los muestra tal cual.
         return 'https://wa.me/' . ProspectOutreach::whatsappNumber($phone)
-            . '?text=' . urlencode($message);
+            . '?text=' . rawurlencode($message);
     }
 }

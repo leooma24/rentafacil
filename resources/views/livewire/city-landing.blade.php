@@ -8,7 +8,7 @@
                 <p>¿Tienes un negocio de renta de lavadoras y secadoras en {{ $city }}? Gestiona tus equipos, cobra por WhatsApp y controla todo desde tu celular con Renta Fácil.</p>
                 <div class="banner-buttons">
                     <a href="/propietario/registrar" class="btn btn-primary btn-lg">Probar 15 Días Gratis</a>
-                    <a href="https://wa.me/6682493398?text=Hola%2C%20tengo%20un%20negocio%20de%20lavadoras%20en%20{{ urlencode($city) }}%20y%20quiero%20saber%20más" target="_blank" class="btn btn-outline btn-lg">Contactar por WhatsApp</a>
+                    <a href="https://wa.me/6682493398?text=Hola%2C%20tengo%20un%20negocio%20de%20lavadoras%20en%20{{ rawurlencode($city) }}%20y%20quiero%20saber%20más" target="_blank" class="btn btn-outline btn-lg">Contactar por WhatsApp</a>
                 </div>
             </div>
         </div>
@@ -62,7 +62,7 @@
         <p>Únete a los propietarios en {{ $state }} que ya automatizan su negocio con Renta Fácil</p>
         <div class="cta-buttons">
             <a href="/propietario/registrar" class="btn btn-primary btn-lg">Empezar Prueba Gratis</a>
-            <a href="https://wa.me/6682493398?text=Hola%2C%20tengo%20lavadoras%20en%20{{ urlencode($city) }}%20y%20quiero%20una%20demo" target="_blank" class="btn btn-outline btn-lg">Solicitar Demo</a>
+            <a href="https://wa.me/6682493398?text=Hola%2C%20tengo%20lavadoras%20en%20{{ rawurlencode($city) }}%20y%20quiero%20una%20demo" target="_blank" class="btn btn-outline btn-lg">Solicitar Demo</a>
         </div>
     </div>
 </section>

@@ -8,6 +8,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
     <title>Recibo de pago — {{ $negocio }}</title>
+    @include('publico.meta', [
+        'titulo' => 'Recibo de pago — ' . $negocio,
+        'descripcion' => 'Tu comprobante de pago.',
+    ])
     {{-- CSS propio: esta página la abre el cliente desde WhatsApp y no debe
          depender del CSS de Filament, que no compila lo que no usa. --}}
     <style>

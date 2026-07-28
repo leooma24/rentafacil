@@ -121,7 +121,7 @@
                                 <tr><td style="padding: 3px 0; color: #64748b;">Monto:</td><td style="padding: 3px 0; font-weight: 700; color: #0e7490;">${{ number_format($package->price, 2) }} MXN</td></tr>
                                 <tr><td style="padding: 3px 0; color: #64748b;">Concepto:</td><td style="padding: 3px 0; font-weight: 600;">Plan {{ $package->name }} - Renta Fácil</td></tr>
                             </table>
-                            <a href="https://wa.me/6682493398?text=Ya%20hice%20mi%20transferencia%20SPEI%20por%20el%20plan%20{{ urlencode($package->name) }}%20%28%24{{ $package->price }}%29.%20Mi%20empresa%3A%20" target="_blank"
+                            <a href="https://wa.me/6682493398?text=Ya%20hice%20mi%20transferencia%20SPEI%20por%20el%20plan%20{{ rawurlencode($package->name) }}%20%28%24{{ $package->price }}%29.%20Mi%20empresa%3A%20" target="_blank"
                                style="display: block; text-align: center; margin-top: 12px; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; background: #25D366; color: white;">
                                 Ya hice mi pago, confirmar por WhatsApp
                             </a>
