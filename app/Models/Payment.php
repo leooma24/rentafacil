@@ -27,6 +27,11 @@ class Payment extends Model
         'payment_method',
         'reference',
         'status',
+        'applied',
+    ];
+
+    protected $casts = [
+        'applied' => 'boolean',
     ];
 
     /**

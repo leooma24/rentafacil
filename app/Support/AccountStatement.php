@@ -127,20 +127,41 @@ class AccountStatement
         $end = Carbon::parse($rental->end_date)->startOfDay();
         $today = Carbon::today();
 
+        // Lo abonado que todavía no compra tiempo baja el adeudo.
+        $credit = $this->creditFor($rental);
+
         if ($end->gte($today)) {
-            return new RentalDebt($rental, 0, $price, 0.0);
+            return new RentalDebt($rental, 0, $price, 0.0, $credit);
         }
 
         $daysOverdue = $end->diffInDays($today);
         $periods = (int) ceil($daysOverdue / $daysPerPeriod);
 
-        return new RentalDebt($rental, $periods, $price, $periods * $price);
+        // Nunca baja de cero: un abono grande no vuelve el saldo negativo.
+        $amount = max(0.0, $periods * $price - $credit);
+
+        return new RentalDebt($rental, $periods, $price, $amount, $credit);
+    }
+
+    private function creditFor(Rental $rental): float
+    {
+        if ($rental->relationLoaded('payments')) {
+            return (float) $rental->payments
+                ->where('status', 'completado')
+                ->where('applied', false)
+                ->sum('amount');
+        }
+
+        return Abonos::creditFor($rental);
     }
 
     private function priceFor(Rental $rental, float $defaultPrice): float
     {
+        // Solo los pagos aplicados dicen a cuánto se le cobra a este cliente.
+        // Un abono de $150 no es su tarifa: es un pedazo de ella.
         $last = $rental->payments
             ->where('status', 'completado')
+            ->where('applied', true)
             ->sortBy([['payment_date', 'desc'], ['id', 'desc']])
             ->first();
 

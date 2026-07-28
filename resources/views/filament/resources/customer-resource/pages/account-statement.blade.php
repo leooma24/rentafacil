@@ -58,6 +58,12 @@
                                 <td class="py-2 pr-4">{{ $line->overduePeriods }}</td>
                                 <td @class(['py-2 font-semibold', 'text-danger-600' => $line->amount > 0])>
                                     ${{ number_format($line->amount, 2) }}
+                                    @if ($line->hasCredit())
+                                        <div class="text-xs font-normal text-gray-500">
+                                            Abonó ${{ number_format($line->credit, 2) }} ·
+                                            faltan ${{ number_format($line->missingForNextPeriod(), 2) }}
+                                        </div>
+                                    @endif
                                 </td>
                             </tr>
                         @empty

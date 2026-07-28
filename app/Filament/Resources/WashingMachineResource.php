@@ -297,6 +297,10 @@ class WashingMachineResource extends Resource
                     ->url(fn ($record) => route('qr.download', $record))
                     ->openUrlInNewTab(),
                 ActionGroup::make([
+                    \App\Filament\Resources\RentalResource\Actions\AbonarAction::make(
+                        $tenant,
+                        fn (WashingMachine $record) => $record->activeRental,
+                    ),
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\RestoreAction::make(),
                     Actions\RentAction::make($tenant),
