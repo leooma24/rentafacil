@@ -16,6 +16,8 @@ class Dashboard extends BaseDashboard
     public function getWidgets(): array
     {
         return [
+            // Primeros pasos: se esconde solo cuando ya no hay pendientes.
+            \App\Filament\Widgets\OnboardingWidget::class,
             // Hoy
             \App\Filament\Widgets\TodayStats::class,
             // A quién cobrar

@@ -27,6 +27,10 @@ class PanelBannerTest extends TestCase
 
         $company->companyPackage()->delete();
 
+        // Sin precio, la barra avisa de eso antes que de nada del plan, que es
+        // justo lo que estos tests quieren comprobar.
+        $company->settings()->create(['price' => 250, 'days_per_payment' => 7]);
+
         if ($trialDays !== null) {
             $company->companyPackage()->create([
                 'package_id' => $package->id,
