@@ -67,25 +67,32 @@ class BusinessAnalyticsWidget extends BaseWidget
         $ltv = $totalCustomers > 0 ? round($totalRevenue / $totalCustomers, 2) : 0;
 
         return [
+            // El icono no es adorno: la hoja del panel lo sube a una insignia
+            // en la esquina, y sin él la tarjeta queda coja frente a las demás.
             Stat::make('Tasa de Ocupación', $occupancyRate . '%')
                 ->description("{$rentedMachines}/{$totalMachines} lavadoras rentadas")
+                ->descriptionIcon('heroicon-m-chart-pie')
                 ->color($occupancyRate >= 70 ? 'success' : ($occupancyRate >= 40 ? 'warning' : 'danger'))
                 ->chart($this->getOccupancyTrend($tenant)),
 
             Stat::make('Días Prom. de Atraso', $avgDaysOverdue)
                 ->description($overdueRentals->count() . ' rentas vencidas')
+                ->descriptionIcon('heroicon-m-clock')
                 ->color($avgDaysOverdue <= 3 ? 'success' : ($avgDaysOverdue <= 7 ? 'warning' : 'danger')),
 
             Stat::make('Tasa de Abandono', $churnRate . '%')
                 ->description('Últimos 30 días')
+                ->descriptionIcon('heroicon-m-arrow-trending-down')
                 ->color($churnRate <= 10 ? 'success' : ($churnRate <= 25 ? 'warning' : 'danger')),
 
             Stat::make('Proyección 3 Meses', '$' . number_format($projection3m, 0))
                 ->description('Basado en rentas activas')
+                ->descriptionIcon('heroicon-m-presentation-chart-line')
                 ->color('info'),
 
             Stat::make('Valor por Cliente', '$' . number_format($ltv, 2))
                 ->description('Lifetime value promedio')
+                ->descriptionIcon('heroicon-m-user-circle')
                 ->color('success'),
         ];
     }

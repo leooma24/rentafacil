@@ -7,7 +7,9 @@
 
     currentColor en el texto para que se adapte al tema claro y oscuro.
 --}}
-<div class="flex items-center gap-2.5">
+{{-- Estilo en línea: gap-2.5 no está en el CSS compilado de Filament y el
+     logotipo salía pegado a las letras. --}}
+<div style="display: flex; align-items: center; gap: .625rem;">
     <svg width="34" height="34" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <rect width="40" height="40" rx="11" fill="#06b6d4"/>
         {{-- El tambor --}}

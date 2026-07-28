@@ -75,6 +75,41 @@ class PulidoVisualTest extends TestCase
         $this->assertStringContainsString('Cómo va el mes.', $html);
     }
 
+    public function test_la_hoja_de_estilos_del_panel_se_carga(): void
+    {
+        $this->assertFileExists(public_path('css/panel.css'));
+
+        $provider = file_get_contents(app_path('Providers/Filament/AdminPanelProvider.php'));
+        $this->assertStringContainsString("url('css/panel.css')", $provider);
+    }
+
+    /**
+     * Filament sólo trae compiladas las rejillas de 1 a 4 columnas. Un widget
+     * que pida más no emite ninguna clase y sus tarjetas se apilan a renglón
+     * completo cada una, que fue justo lo que se vio en producción. La regla
+     * que lo repara vive en panel.css y se reconoce por el número de hijos, así
+     * que si alguien agrega o quita una tarjeta hay que ajustar la regla.
+     */
+    public function test_los_widgets_de_mas_de_cuatro_tarjetas_tienen_regla_de_rejilla(): void
+    {
+        $css = file_get_contents(public_path('css/panel.css'));
+
+        $widget = new \App\Filament\Widgets\BusinessAnalyticsWidget();
+        $columnas = (fn () => $this->getColumns())->call($widget);
+
+        $this->assertGreaterThan(
+            4,
+            $columnas,
+            'Si ya bajó a cuatro o menos, la regla de panel.css sobra y esta prueba también.'
+        );
+
+        $this->assertStringContainsString(
+            "nth-child({$columnas})",
+            $css,
+            "El widget pide {$columnas} columnas y panel.css no las cubre: se apilarán."
+        );
+    }
+
     public function test_la_barra_del_demo_ya_no_es_morada(): void
     {
         $company = Company::create([

@@ -51,6 +51,7 @@ class PaymentStats extends BaseWidget
                 ->color($trend >= 0 ? 'success' : 'danger'),
             Stat::make('Total por Cobrar', '$' . number_format($totalOwed, 2))
                 ->description('Suma de lo que deben tus clientes')
+                ->descriptionIcon($totalOwed > 0 ? 'heroicon-m-banknotes' : 'heroicon-m-check-circle')
                 ->color($totalOwed > 0 ? 'danger' : 'success'),
             // Antes eran tres recuadros sueltos; en celular ocupaban tres
             // renglones para decir lo mismo.
