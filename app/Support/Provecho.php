@@ -51,12 +51,18 @@ class Provecho
         $incidencias = $company->incidents()->count();
         $cortes = \App\Models\CashClosing::where('company_id', $company->id)->count();
 
-        $efectivoDelMes = (float) Payment::where('company_id', $company->id)
+        $delMes = fn () => Payment::where('company_id', $company->id)
             ->where('status', 'completado')
             ->whereYear('payment_date', now()->year)
-            ->whereMonth('payment_date', now()->month)
-            ->where('payment_method', 'like', '%fectivo%')
-            ->sum('amount');
+            ->whereMonth('payment_date', now()->month);
+
+        $efectivoDelMes = (float) $delMes()->where('payment_method', 'like', '%fectivo%')->sum('amount');
+        $ingresosDelMes = (float) $delMes()->sum('amount');
+
+        $gastos = \App\Models\Expense::where('company_id', $company->id)
+            ->whereYear('expense_date', now()->year)
+            ->whereMonth('expense_date', now()->month)
+            ->count();
 
         $porVencer = $company->rentals()
             ->where('status', 'activa')
@@ -95,6 +101,23 @@ class Provecho
                 ruta: 'filament.propietario.pages.rutas',
                 accion: 'Abrir el planificador',
                 peso: 95,
+            ),
+
+            new Herramienta(
+                clave: 'gastos',
+                titulo: 'Sabe de verdad cuánto ganas',
+                beneficio: 'Anota la gasolina, los sueldos y las refacciones, y el escritorio te dice lo que te quedó de verdad. Sin eso, lo que cobras se lee como ganancia y no lo es.',
+                comoSeUsa: 'En Finanzas, entra a Gastos y registra lo que vas pagando.',
+                pista: $gastos === 0 && $ingresosDelMes > 0
+                    ? 'Este mes cobraste $' . number_format($ingresosDelMes, 2) . ' y no has anotado un solo gasto: ese número no es tu ganancia.'
+                    : ($gastos > 0
+                        ? "Llevas {$gastos} " . ($gastos === 1 ? 'gasto anotado' : 'gastos anotados') . ' este mes.'
+                        : 'Empieza por la gasolina de salir a cobrar: es la que más se escapa.'),
+                estado: $gastos > 0 ? self::USANDO : self::SIN_ESTRENAR,
+                icono: 'heroicon-o-arrow-trending-down',
+                ruta: 'filament.propietario.resources.gastos.index',
+                accion: 'Registrar un gasto',
+                peso: 93,
             ),
 
             new Herramienta(

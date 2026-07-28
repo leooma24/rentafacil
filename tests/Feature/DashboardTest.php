@@ -175,6 +175,7 @@ class DashboardTest extends TestCase
             \App\Filament\Widgets\CollectionsWidget::class,
             \App\Filament\Widgets\SectionHeading::class,
             \App\Filament\Widgets\PaymentStats::class,
+            \App\Filament\Widgets\UtilidadStats::class,
             \App\Filament\Widgets\MonthlyRevenueChart::class,
             \App\Filament\Widgets\SectionHeading::class,
             \App\Filament\Widgets\StatsOverview::class,

@@ -59,6 +59,11 @@ class Company extends Model
         return $this->hasMany(Maintenance::class);
     }
 
+    public function expenses(): HasMany
+    {
+        return $this->hasMany(Expense::class);
+    }
+
     public function addresses()
     {
         return $this->morphMany(Address::class, 'addressable');

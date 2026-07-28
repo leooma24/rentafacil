@@ -43,9 +43,12 @@ class Dashboard extends BaseDashboard
 
             SectionHeading::make([
                 'titulo' => 'El dinero',
-                'descripcion' => 'Cómo va el mes y cuánto tienes por cobrar.',
+                'descripcion' => 'Qué entró, qué salió y cuánto te quedó este mes.',
             ]),
             \App\Filament\Widgets\PaymentStats::class,
+            // Va justo debajo de los ingresos: sin esto, "Ingresos del Mes" se
+            // lee como ganancia y no lo es.
+            \App\Filament\Widgets\UtilidadStats::class,
             \App\Filament\Widgets\MonthlyRevenueChart::class,
 
             SectionHeading::make([

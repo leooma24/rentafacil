@@ -108,6 +108,7 @@ class DemoCompanyBuilder
         $this->createCustomers($company);
         $this->createRentals($company);
         $this->createMaintenanceAndIncidents($company);
+        $this->createExpenses($company);
 
         return $company;
     }
@@ -283,6 +284,66 @@ class DemoCompanyBuilder
             ];
             $date->addDays(7);
             $n++;
+        }
+    }
+
+    /**
+     * Gastos del mes, para que la ganancia del demo se vea como la de un
+     * negocio de verdad.
+     *
+     * Sin ellos el escritorio presumía un margen del 93%, que a cualquier
+     * rentador le suena a cuento y le resta credibilidad a la pantalla.
+     */
+    private function createExpenses(Company $company): void
+    {
+        $usuario = $company->members()->first()?->id;
+
+        // Los montos salen de lo que se cobró este mes y no de números fijos:
+        // el demo se arma cualquier día, y con cifras fijas el día 3 del mes
+        // habría enseñado pérdida y el día 28 un margen del 90%.
+        $ingresoDelMes = (float) DB::table('payments')
+            ->where('company_id', $company->id)
+            ->where('status', 'completado')
+            ->whereYear('payment_date', now()->year)
+            ->whereMonth('payment_date', now()->month)
+            ->sum('amount');
+
+        // Deja alrededor de un 40% de margen, que es lo que da este negocio.
+        $bolsa = $ingresoDelMes * 0.55;
+
+        if ($bolsa <= 0) {
+            return;
+        }
+
+        $reparto = [
+            ['sueldos', 'Sueldo del cobrador', .34, 5],
+            ['gasolina', 'Gasolina de la ruta', .20, 3],
+            ['local', 'Renta de la bodega', .18, 12],
+            ['refacciones', 'Mangueras y bandas', .12, 9],
+            ['servicios', 'Luz y teléfono', .09, 14],
+            ['gasolina', 'Gasolina y casetas', .07, 18],
+        ];
+
+        $gastos = array_map(
+            fn (array $r) => [$r[0], $r[1], round($bolsa * $r[2], -1), $r[3]],
+            $reparto
+        );
+
+        foreach ($gastos as [$categoria, $descripcion, $monto, $diasAtras]) {
+            // Los gastos son del mes en curso: si la fecha se saliera del mes,
+            // el escritorio los dejaría fuera y la ganancia volvería a inflarse.
+            $fecha = now()->subDays($diasAtras);
+
+            $company->expenses()->create([
+                'user_id' => $usuario,
+                'category' => $categoria,
+                'description' => $descripcion,
+                'amount' => $monto,
+                'expense_date' => $fecha->lt(now()->startOfMonth())
+                    ? now()->startOfMonth()->toDateString()
+                    : $fecha->toDateString(),
+                'payment_method' => 'Efectivo',
+            ]);
         }
     }
 

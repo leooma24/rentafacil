@@ -151,6 +151,49 @@ class DemoCompanyBuilderTest extends TestCase
     }
 
     /**
+     * Sin gastos, el escritorio del demo presumía un margen del 93%, que a
+     * cualquier rentador le suena a cuento.
+     */
+    public function test_el_demo_trae_gastos_del_mes_en_curso(): void
+    {
+        $this->seedPackage();
+
+        $company = (new DemoCompanyBuilder())->build();
+        $utilidad = \App\Support\Utilidad::delMes($company);
+
+        $this->assertGreaterThan(0, $utilidad->gastos);
+        $this->assertFalse(
+            $utilidad->gananciaInflada(),
+            'El demo enseña una ganancia sin gastos, que es justo lo que la función viene a arreglar.'
+        );
+
+        // Los gastos salen de lo cobrado en el mes, así que el margen cae en la
+        // misma banda cualquier día: con cifras fijas, el día 3 habría enseñado
+        // pérdida y el día 28 un margen del 90%.
+        $this->assertGreaterThan(20, $utilidad->margen());
+        $this->assertLessThan(60, $utilidad->margen());
+    }
+
+    /** Se arma el demo como si fuera el día 2 del mes, que es el caso feo. */
+    public function test_el_margen_del_demo_aguanta_a_principios_de_mes(): void
+    {
+        $this->seedPackage();
+
+        \Carbon\Carbon::setTestNow(now()->startOfMonth()->addDay()->setTime(10, 0));
+
+        try {
+            $utilidad = \App\Support\Utilidad::delMes((new DemoCompanyBuilder())->build());
+
+            $this->assertFalse(
+                $utilidad->pierde(),
+                'El demo enseña pérdida a principios de mes.'
+            );
+        } finally {
+            \Carbon\Carbon::setTestNow();
+        }
+    }
+
+    /**
      * La geografía se tomaba con State::first(), que con la tabla sembrada
      * devuelve Aguascalientes: el demo enseñaba direcciones de "Los Mochis,
      * Aguascalientes", que además no las encuentra ningún mapa.
