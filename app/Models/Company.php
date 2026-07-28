@@ -15,7 +15,24 @@ class Company extends Model
         'address',
         'phone',
         'email',
+        'is_demo',
+        'demo_expires_at',
     ];
+
+    protected $casts = [
+        'is_demo' => 'boolean',
+        'demo_expires_at' => 'datetime',
+    ];
+
+    public function scopeDemo($query)
+    {
+        return $query->where('is_demo', true);
+    }
+
+    public function scopeExpiredDemos($query)
+    {
+        return $query->where('is_demo', true)->where('demo_expires_at', '<', now());
+    }
 
     public function members()
     {

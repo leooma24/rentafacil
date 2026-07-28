@@ -90,28 +90,13 @@ class AdminPanelProvider extends PanelProvider
                 '<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js")}</script>'
             ))
             ->renderHook('panels::body.start', function () {
-                $tenant = \Filament\Facades\Filament::getTenant();
-                if (!$tenant || auth()->user()?->hasRole('super_admin')) return '';
-                $planUrl = "/propietario/{$tenant->id}/mi-plan";
-                if ($tenant->isOnTrial()) {
-                    $days = $tenant->trialDaysLeft();
-                    $color = $days <= 3 ? '#ef4444' : ($days <= 7 ? '#f59e0b' : '#06b6d4');
-                    return new HtmlString(
-                        "<div style=\"background:{$color};color:#fff;text-align:center;padding:8px 16px;font-size:14px;font-weight:600;\">" .
-                        "Prueba gratuita: te quedan <strong>{$days} días</strong>. " .
-                        "<a href=\"{$planUrl}\" style=\"color:#fff;text-decoration:underline;margin-left:8px;\">Elegir un plan</a>" .
-                        "</div>"
-                    );
+                if (auth()->user()?->hasRole('super_admin')) {
+                    return '';
                 }
-                if (!$tenant->hasActivePackage()) {
-                    return new HtmlString(
-                        "<div style=\"background:#ef4444;color:#fff;text-align:center;padding:8px 16px;font-size:14px;font-weight:600;\">" .
-                        "Tu plan ha expirado. " .
-                        "<a href=\"{$planUrl}\" style=\"color:#fff;text-decoration:underline;margin-left:8px;\">Contratar plan para continuar</a>" .
-                        "</div>"
-                    );
-                }
-                return '';
+
+                return new HtmlString(
+                    \App\Support\PanelBanner::for(\Filament\Facades\Filament::getTenant())
+                );
             })
             ->tenant(Company::class)
             ->tenantRegistration(RegisterCompany::class)

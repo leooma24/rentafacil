@@ -7,12 +7,12 @@
                 <p>Cada hora que pasas buscando en cuadernos, cobrando sin orden o sin saber quién te debe, es tiempo que le quitas a tu familia y a hacer crecer tu negocio. Con Renta Fácil, todo eso se hace solo.</p>
                 <div class="banner-buttons">
                     <a href="/propietario/registrar" class="btn btn-primary btn-lg">Probar 15 Días Gratis</a>
-                    <a href="#como-funciona" class="btn btn-outline btn-lg">Ver cómo funciona</a>
+                    <a href="/demo" class="btn btn-outline btn-lg">▶ Ver demo en vivo</a>
                 </div>
                 <div class="banner-trust">
                     <div class="banner-trust-item">
                         <i class="fas fa-check-circle"></i>
-                        <span>Sin tarjeta de crédito</span>
+                        <span>Sin tarjeta · Demo sin registro</span>
                     </div>
                     <div class="banner-trust-item">
                         <i class="fas fa-check-circle"></i>

@@ -26,6 +26,7 @@ class SendRentalReminders extends Command
         $expiring = Rental::with(['customer', 'washingMachine', 'company.members'])
             ->where('status', 'activa')
             ->whereBetween('end_date', [now(), now()->addDays(3)])
+            ->whereHas('company', fn ($q) => $q->where('is_demo', false))
             ->get();
 
         foreach ($expiring as $rental) {
@@ -53,6 +54,7 @@ class SendRentalReminders extends Command
         // Rentas ya vencidas
         $overdue = Rental::with(['customer', 'washingMachine', 'company.members'])
             ->where('status', 'vencida')
+            ->whereHas('company', fn ($q) => $q->where('is_demo', false))
             ->get();
 
         foreach ($overdue as $rental) {

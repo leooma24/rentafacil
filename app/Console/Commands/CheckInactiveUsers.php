@@ -18,6 +18,7 @@ class CheckInactiveUsers extends Command
         // Users registered 2+ days ago with no washing machines
         $inactive = User::where('created_at', '<=', now()->subDays(2))
             ->where('created_at', '>=', now()->subDays(7)) // Only within last week
+            ->where('is_demo', false)
             ->whereHas('companies')
             ->get()
             ->filter(function ($user) {

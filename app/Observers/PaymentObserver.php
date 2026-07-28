@@ -11,6 +11,11 @@ class PaymentObserver
     {
         $payment->load('company.members', 'rental.washingMachine');
 
+        // Un demo siembra cientos de pagos: notificarlos llenaría la campana de ruido.
+        if ($payment->company?->is_demo) {
+            return;
+        }
+
         if ($payment->company) {
             $payment->company->members->each(fn ($member) =>
                 $member->notify(new PaymentReceivedNotification($payment))
