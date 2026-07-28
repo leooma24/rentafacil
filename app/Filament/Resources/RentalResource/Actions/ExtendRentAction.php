@@ -8,21 +8,32 @@ use Carbon\Carbon;
 use Filament\Notifications\Notification;
 use Filament\Tables;
 use App\Models\Company;
+use App\Support\RentalTerms;
 use Filament\Forms;
 
 class ExtendRentAction
 {
     public static function make(Company $tenant): Tables\Actions\Action
     {
+        $terms = RentalTerms::for($tenant);
+
         return Tables\Actions\Action::make('extend_rent')
             ->label('Extender Renta')
             ->icon('heroicon-o-calendar')
-            ->modalSubmitActionLabel('Pagar')
+            ->modalSubmitActionLabel('Cobrar')
+            // El camino normal es confirmar: los seis campos ya vienen llenos y
+            // esto se usa parado en la puerta del cliente, desde el celular.
+            ->modalHeading(fn (Rental $rental) => 'Cobrar ' . $terms->summary())
+            ->modalDescription(fn (Rental $rental) => $terms->isConfigured()
+                ? 'Se registra hoy y la renta se extiende al '
+                    . $terms->endDateFrom($rental->end_date)->format('d/m/Y') . '.'
+                : 'Falta configurar tu precio de renta en Preferencias.')
             ->form([
-                //
-                Forms\Components\Section::make('Extender Renta')
-                    ->description('Formulario para extender la renta de la lavadora')
-                    ->icon('heroicon-o-calendar')
+                Forms\Components\Section::make('Cambiar monto o método')
+                    ->description('Solo si este cobro es distinto al de siempre.')
+                    ->icon('heroicon-o-pencil-square')
+                    ->collapsed()
+                    ->collapsible()
                     ->columns('3')
                     ->schema([
                         Forms\Components\DatePicker::make('payment_date')
@@ -30,10 +41,10 @@ class ExtendRentAction
                             ->default(now()),
                         Forms\Components\TextInput::make('price')
                             ->label('Precio de renta')
-                            ->default($tenant->settings?->price),
+                            ->default($terms->price),
                         Forms\Components\TextInput::make('days')
                             ->label('Días de renta')
-                            ->default($tenant->settings?->days_per_payment),
+                            ->default($terms->days),
                         Forms\Components\Select::make('payment_method')
                             ->label('Método de Pago')
                             ->options([
