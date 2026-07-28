@@ -89,11 +89,23 @@ gzip -t "$DESTINO" 2>/dev/null || fallar "el archivo salió corrupto: $DESTINO"
 TAMANO=$(stat -c%s "$DESTINO")
 [ "$TAMANO" -gt 10240 ] || fallar "el respaldo pesa $TAMANO bytes, algo salió mal"
 
-CONTENIDO=$(zcat "$DESTINO")
+# Se saca primero la lista de tablas y luego se busca en ella, en vez de
+# rastrear el volcado entero una vez por tabla.
+#
+# Nada de `zcat | grep -q` aquí: grep -q cierra la tubería en cuanto encuentra
+# la primera coincidencia, el proceso de la izquierda recibe SIGPIPE y con
+# `set -o pipefail` eso cuenta como fallo. Sólo se nota cuando el volcado es
+# grande; con uno chico cabe en el búfer y pasa desapercibido.
+TABLAS_EN_RESPALDO=$(zcat "$DESTINO" | grep -o 'CREATE TABLE `[^`]*`' | tr -d '`' | sed 's/^CREATE TABLE //')
+
 for tabla in "${TABLAS_ESPERADAS[@]}"; do
-    echo "$CONTENIDO" | grep -q "CREATE TABLE \`${tabla}\`" \
-        || fallar "al respaldo le falta la tabla '${tabla}'"
+    case $'\n'"$TABLAS_EN_RESPALDO"$'\n' in
+        *$'\n'"$tabla"$'\n'*) ;;
+        *) fallar "al respaldo le falta la tabla '${tabla}'" ;;
+    esac
 done
+
+CUANTAS_TABLAS=$(printf '%s\n' "$TABLAS_EN_RESPALDO" | wc -l)
 
 # Cuántos renglones quedaron guardados, para verlo en el log de un vistazo.
 FILAS=$(mysql --defaults-extra-file="$CREDENCIALES" -N -B -e \
@@ -116,4 +128,4 @@ fi
 find "$BACKUP_DIR" -maxdepth 1 -type f -name "*.gz" -mtime +${RETENTION_DAYS} -delete
 find "$MENSUALES_DIR" -type f -name "*.gz" -mtime +180 -delete
 
-echo "[$(date '+%Y-%m-%d %H:%M:%S')] Respaldo OK: $DESTINO ($(du -h "$DESTINO" | cut -f1), ${FILAS} empresas)"
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] Respaldo OK: $DESTINO ($(du -h "$DESTINO" | cut -f1), ${CUANTAS_TABLAS} tablas, ${FILAS} empresas)"
