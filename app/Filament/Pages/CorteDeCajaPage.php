@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Models\User;
+use App\Support\Acceso;
 use App\Support\CorteDeCaja;
 use Carbon\Carbon;
 use Filament\Actions\Action;
@@ -72,9 +73,20 @@ class CorteDeCajaPage extends Page implements HasForms
         ])->columns(2);
     }
 
-    /** @return array<int, string> */
+    /**
+     * A quién puede mirarle el corte.
+     *
+     * El cobrador sólo se ve a sí mismo: cuánto cobró el resto del equipo no es
+     * asunto suyo. El dueño ve a todos.
+     *
+     * @return array<int, string>
+     */
     private function cobradores(): array
     {
+        if (Acceso::esCobrador()) {
+            return [auth()->id() => auth()->user()->name];
+        }
+
         return Filament::getTenant()
             ->members()
             ->orderBy('name')
@@ -82,12 +94,29 @@ class CorteDeCajaPage extends Page implements HasForms
             ->all();
     }
 
+    /**
+     * Y tampoco por URL: cambiar el número en la petición traería el corte de
+     * otro. El candado va aquí y no en el select, que es sólo la pantalla.
+     */
+    public function corteDe(): ?User
+    {
+        if (Acceso::esCobrador()) {
+            return auth()->user();
+        }
+
+        $elegido = User::find($this->cobradorId);
+
+        return $elegido && Filament::getTenant()->members()->whereKey($elegido->id)->exists()
+            ? $elegido
+            : null;
+    }
+
     public function corte(): CorteDeCaja
     {
         return CorteDeCaja::para(
             Filament::getTenant(),
             Carbon::parse($this->fecha ?? today()),
-            User::find($this->cobradorId),
+            $this->corteDe(),
         );
     }
 
@@ -122,10 +151,19 @@ class CorteDeCajaPage extends Page implements HasForms
                         ->rows(2),
                 ])
                 ->action(function (array $data) {
-                    $corte = $this->corte();
+                    $quien = $this->corteDe();
 
-                    $cierre = $corte->cerrar(
-                        User::findOrFail($this->cobradorId),
+                    if (! $quien) {
+                        Notification::make()
+                            ->title('Escoge de quién es el corte')
+                            ->warning()
+                            ->send();
+
+                        return;
+                    }
+
+                    $cierre = $this->corte()->cerrar(
+                        $quien,
                         (float) $data['contado'],
                         $data['notas'] ?? null,
                     );

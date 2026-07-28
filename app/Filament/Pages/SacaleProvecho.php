@@ -27,6 +27,12 @@ class SacaleProvecho extends Page
 
     protected static ?string $slug = 'sacale-provecho';
 
+    /** La guía habla de reportes y precios: es para quien manda. */
+    public static function canAccess(): bool
+    {
+        return \App\Support\Acceso::soloDueno();
+    }
+
     protected static string $view = 'filament.pages.sacale-provecho';
 
     /** El número de herramientas sin estrenar, para que se vea desde el menú. */

@@ -27,6 +27,12 @@ class Settings extends Page implements HasForms
 
     protected static ?string $slug = 'configuracion';
 
+    /** Aquí se pone el precio de la renta: es pantalla de dueño. */
+    public static function canAccess(): bool
+    {
+        return \App\Support\Acceso::soloDueno();
+    }
+
     protected static ?int $navigationSort = 10;
 
     public ?array $data = [];

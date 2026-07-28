@@ -85,10 +85,14 @@
         </div>
     @endif
 
-    @php($porCobrador = \App\Support\CorteDeCaja::para(
-        \Filament\Facades\Filament::getTenant(),
-        \Carbon\Carbon::parse($this->fecha)
-    )->porCobrador())
+    {{-- El reparto del día completo es del dueño: cuánto cobró el resto del
+         equipo no es asunto de quien sale a cobrar. --}}
+    @php($porCobrador = \App\Support\Acceso::esCobrador()
+        ? collect()
+        : \App\Support\CorteDeCaja::para(
+            \Filament\Facades\Filament::getTenant(),
+            \Carbon\Carbon::parse($this->fecha)
+        )->porCobrador())
 
     @if ($porCobrador->count() > 1)
         <div class="rf-corte-tabla-caja">

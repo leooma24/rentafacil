@@ -12,6 +12,12 @@ class MyPlan extends Page
     protected static ?string $navigationGroup = 'Mi cuenta';
     protected static ?string $title = 'Mi Plan';
     protected static ?string $slug = 'mi-plan';
+
+    /** Lo que la empresa paga no es asunto de quien sale a cobrar. */
+    public static function canAccess(): bool
+    {
+        return \App\Support\Acceso::soloDueno();
+    }
     protected static ?int $navigationSort = 11;
 
     protected static string $view = 'filament.pages.my-plan';

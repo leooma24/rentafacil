@@ -23,6 +23,16 @@ class Prospeccion extends Page
 
     protected static ?string $slug = 'contactar';
 
+    /**
+     * Esta pantalla es de quien opera la plataforma, no de los rentadores: trae
+     * la lista de prospectos del negocio. No tenía candado y la veía cualquier
+     * dueño, igual que ProspectiveClientResource, que sí lo tiene.
+     */
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->hasRole('super_admin') ?? false;
+    }
+
     protected static ?string $title = 'Contactar hoy';
 
     protected static ?int $navigationSort = 0;

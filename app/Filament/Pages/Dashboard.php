@@ -16,6 +16,20 @@ class Dashboard extends BaseDashboard
 
     public function getWidgets(): array
     {
+        // Al cobrador se le da su trabajo del día y nada más: los ingresos, la
+        // rentabilidad por lavadora y la proyección son del dueño. Enseñárselos
+        // no sólo sobra, le pone enfrente números que no le tocan.
+        if (\App\Support\Acceso::esCobrador()) {
+            return [
+                SectionHeading::make([
+                    'titulo' => 'Tu día',
+                    'descripcion' => 'A quién hay que cobrarle antes de que se acabe el día.',
+                ]),
+                \App\Filament\Widgets\TodayStats::class,
+                \App\Filament\Widgets\CollectionsWidget::class,
+            ];
+        }
+
         return [
             // Primeros pasos: se esconde solo cuando ya no hay pendientes.
             \App\Filament\Widgets\OnboardingWidget::class,
