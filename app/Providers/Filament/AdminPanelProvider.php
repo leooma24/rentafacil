@@ -10,6 +10,7 @@ use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Support\Facades\FilamentView;
 use Illuminate\Support\HtmlString;
 use Filament\Widgets;
@@ -36,8 +37,12 @@ class AdminPanelProvider extends PanelProvider
             ->registration()
             ->registrationRouteSlug('registrar')
             ->passwordReset()
-            ->brandLogo(asset('img/logo.png'))
-            ->brandLogoHeight('4rem')
+            // Logotipo propio en SVG: la ilustración anterior tenía contornos
+            // gruesos y degradados que a este tamaño se leían como clip-art.
+            // public/img/logo.png se conserva para el PWA, los PDF y las
+            // etiquetas de compartir.
+            ->brandLogo(fn () => view('components.marca'))
+            ->brandLogoHeight('2.25rem')
             ->favicon(asset('img/favicon.ico'))
             ->brandName('Renta Fácil')
             ->font('Inter')
@@ -52,6 +57,9 @@ class AdminPanelProvider extends PanelProvider
                 'warning' => Color::Orange,
             ])
             ->sidebarCollapsibleOnDesktop()
+            // En monitores anchos las tablas se estiraban de borde a borde y la
+            // lectura se perdía.
+            ->maxContentWidth(MaxWidth::SevenExtraLarge)
             ->profile()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')

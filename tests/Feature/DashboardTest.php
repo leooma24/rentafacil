@@ -158,24 +158,33 @@ class DashboardTest extends TestCase
             ->assertOk();
     }
 
+    /**
+     * Los rótulos de sección van entre los bloques, así que la lista trae tanto
+     * clases sueltas como configuraciones de widget.
+     */
     public function test_el_escritorio_declara_solo_los_widgets_previstos(): void
     {
-        $widgets = (new Dashboard())->getWidgets();
+        $clases = collect((new Dashboard())->getWidgets())
+            ->map(fn ($w) => $w instanceof \Filament\Widgets\WidgetConfiguration ? $w->widget : $w)
+            ->all();
 
         $this->assertSame([
             \App\Filament\Widgets\OnboardingWidget::class,
+            \App\Filament\Widgets\SectionHeading::class,
             \App\Filament\Widgets\TodayStats::class,
             \App\Filament\Widgets\CollectionsWidget::class,
+            \App\Filament\Widgets\SectionHeading::class,
             \App\Filament\Widgets\PaymentStats::class,
             \App\Filament\Widgets\MonthlyRevenueChart::class,
+            \App\Filament\Widgets\SectionHeading::class,
             \App\Filament\Widgets\StatsOverview::class,
             \App\Filament\Widgets\RentalStatusChart::class,
             \App\Filament\Widgets\MachineProfitabilityWidget::class,
             \App\Filament\Widgets\BusinessAnalyticsWidget::class,
-        ], $widgets);
+        ], $clases);
 
-        foreach ($widgets as $widget) {
-            $this->assertTrue(class_exists($widget), "{$widget} no existe.");
+        foreach ($clases as $clase) {
+            $this->assertTrue(class_exists($clase), "{$clase} no existe.");
         }
     }
 
