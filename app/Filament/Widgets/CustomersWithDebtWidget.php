@@ -22,7 +22,7 @@ class CustomersWithDebtWidget extends Widget
     {
         return app(AccountStatement::class)
             ->forCompany(Filament::getTenant())
-            ->take(10);
+            ->take(5);
     }
 
     public function statementUrl(Statement $statement): string
