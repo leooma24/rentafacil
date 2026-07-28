@@ -74,6 +74,12 @@
                                 Pagada hasta el
                                 {{ \Carbon\Carbon::parse($linea->rental->end_date)->format('d/m/Y') }}
                             </div>
+                            @if ($linea->hasCredit())
+                                <div class="detalle">
+                                    Ya abonaste ${{ number_format($linea->credit, 2) }} ·
+                                    faltan ${{ number_format($linea->missingForNextPeriod(), 2) }}
+                                </div>
+                            @endif
                         </div>
                         <div class="importe {{ $linea->amount > 0 ? 'debe' : '' }}">
                             ${{ number_format($linea->amount, 2) }}

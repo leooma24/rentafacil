@@ -209,6 +209,10 @@ class RentalResource extends Resource
                     ->button()
                     ->color('success'),
                 Tables\Actions\ActionGroup::make([
+                RentalResource\Actions\AbonarAction::make(
+                    $tenant,
+                    fn (Rental $record) => in_array($record->status, ['activa', 'vencida']) ? $record : null,
+                ),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('download_contract')
                     ->label('Contrato')

@@ -88,6 +88,11 @@ class PaymentResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('reference')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('applied')
+                    ->label('Tipo')
+                    ->badge()
+                    ->formatStateUsing(fn ($state) => $state ? 'Cobro' : 'Abono')
+                    ->color(fn ($state) => $state ? 'success' : 'warning'),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Estatus')
                     ->badge()
