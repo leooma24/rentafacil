@@ -69,9 +69,15 @@ class Company extends Model
         return $this->hasManyThrough(Payment::class, Rental::class);
     }
 
+    /**
+     * El plan efectivo es el último asignado.
+     *
+     * Sin el latestOfMany, un hasOne devuelve el de id más bajo: si por lo que sea
+     * vuelven a existir dos filas, se aplicaría el plan viejo en vez del nuevo.
+     */
     public function companyPackage()
     {
-        return $this->hasOne(CompanyPackage::class);
+        return $this->hasOne(CompanyPackage::class)->latestOfMany();
     }
 
     public function currentPackage()

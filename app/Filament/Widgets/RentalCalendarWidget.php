@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use App\Models\Maintenance;
 use App\Models\Rental;
 use Filament\Facades\Filament;
+use Illuminate\Database\Eloquent\Model;
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 
 class RentalCalendarWidget extends FullCalendarWidget
@@ -12,6 +13,13 @@ class RentalCalendarWidget extends FullCalendarWidget
     protected static ?int $sort = 8;
     // Sin esto el widget se queda en el placeholder de carga y nunca aparece.
     protected static bool $isLazy = false;
+
+    /**
+     * El paquete declara $record sin valor inicial. Como widget de encabezado de
+     * una página nadie lo inicializa, y al leerlo revienta con "must not be
+     * accessed before initialization".
+     */
+    public Model|int|string|null $record = null;
 
     public function fetchEvents(array $fetchInfo): array
     {
