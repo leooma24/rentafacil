@@ -22,10 +22,14 @@ class AccountStatement
 
     public function forCustomer(Customer $customer): Statement
     {
-        $rentals = $customer->rentals()
-            ->whereIn('status', self::ACTIVE_STATUSES)
-            ->with(['payments', 'washingMachine'])
-            ->get();
+        // Si quien llama ya trajo las rentas (la lista de clientes lo hace para no
+        // disparar tres consultas por fila), se reutilizan en vez de repetirlas.
+        $rentals = $customer->relationLoaded('rentals')
+            ? $customer->rentals->whereIn('status', self::ACTIVE_STATUSES)->values()
+            : $customer->rentals()
+                ->whereIn('status', self::ACTIVE_STATUSES)
+                ->with(['payments', 'washingMachine'])
+                ->get();
 
         return $this->buildStatement($customer, $rentals, $customer->company?->settings);
     }

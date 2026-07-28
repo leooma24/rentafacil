@@ -36,6 +36,8 @@ class PaymentStats extends BaseWidget
         $activeRentals = $tenant->rentals()->where('status', 'activa')->count();
         $overdueRentals = $tenant->rentals()->where('status', 'vencida')->count();
 
+        $totalOwed = app(\App\Support\AccountStatement::class)->totalForCompany($tenant);
+
         $trend = $lastMonthRevenue > 0
             ? round((($monthRevenue - $lastMonthRevenue) / $lastMonthRevenue) * 100, 1)
             : 0;
@@ -48,6 +50,9 @@ class PaymentStats extends BaseWidget
             Stat::make('Pagos Pendientes', $pendingPayments)
                 ->description('Por cobrar')
                 ->color($pendingPayments > 0 ? 'warning' : 'success'),
+            Stat::make('Total por Cobrar', '$' . number_format($totalOwed, 2))
+                ->description('Suma de lo que deben tus clientes')
+                ->color($totalOwed > 0 ? 'danger' : 'success'),
             Stat::make('Rentas Activas', $activeRentals)
                 ->description('En curso')
                 ->color('info'),
