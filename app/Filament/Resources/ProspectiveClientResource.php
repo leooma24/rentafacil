@@ -6,6 +6,7 @@ use App\Filament\Resources\ProspectiveClientResource\Pages;
 use App\Models\Company;
 use App\Models\Package;
 use App\Models\ProspectiveClient;
+use App\Support\ProspectOutreach;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -207,7 +208,9 @@ class ProspectiveClientResource extends Resource
                     ->icon('heroicon-o-chat-bubble-left-ellipsis')
                     ->color('success')
                     ->visible(fn ($record) => $record->phone && $record->status !== 'cliente')
-                    ->url(fn ($record) => 'https://wa.me/' . preg_replace('/[^0-9]/', '', (strlen(preg_replace('/[^0-9]/', '', $record->phone)) === 10 ? '52' : '') . $record->phone) . '?text=' . urlencode("Hola {$record->name}, te contactamos de Renta Fácil. Tenemos una plataforma para gestionar tu negocio de renta de lavadoras. ¿Te gustaría conocer más?"))
+                    // Misma plantilla y misma normalización que la pantalla de
+                    // "Contactar hoy", para no tener dos mensajes distintos.
+                    ->url(fn ($record) => ProspectOutreach::whatsappUrl($record, 'primero'))
                     ->openUrlInNewTab()
                     ->after(function ($record) {
                         $record->update([
