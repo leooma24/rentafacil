@@ -22,9 +22,14 @@ class Address extends Model
         return implode(', ', $parts);
     }
 
+    /**
+     * Cero no es una ubicación: es el punto nulo en medio del Atlántico. Si se
+     * colara, la ruta saldría trazada hacia el océano.
+     */
     public function hasCoordinates(): bool
     {
-        return $this->latitude !== null && $this->longitude !== null;
+        return $this->latitude !== null && $this->longitude !== null
+            && (float) $this->latitude !== 0.0 && (float) $this->longitude !== 0.0;
     }
 
 

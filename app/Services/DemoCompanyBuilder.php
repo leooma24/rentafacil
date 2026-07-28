@@ -165,22 +165,28 @@ class DemoCompanyBuilder
     private function geography(): array
     {
         $country = Country::first() ?? Country::create(['nombre' => 'México']);
+
+        // Se busca Sinaloa por nombre antes de conformarse con el primero de la
+        // tabla. Con la geografía sembrada, first() devolvía Aguascalientes y el
+        // demo le enseñaba al prospecto direcciones de "Los Mochis,
+        // Aguascalientes", que además no las encuentra ningún mapa.
         // estados.pais_id es obligatorio pero no está en el $fillable del modelo.
-        $state = State::first() ?? State::forceCreate([
-            'nombre' => 'Sinaloa',
-            'pais_id' => $country->id,
-        ]);
-        $township = Township::first() ?? Township::create([
-            'nombre' => 'Ahome',
-            'estado_id' => $state->id,
-        ]);
-        $neighborhood = Neighborhood::first() ?? Neighborhood::create([
-            'nombre' => 'Centro',
-            'ciudad' => 'Los Mochis',
-            'municipio_id' => $township->id,
-            'asentamiento' => 'Colonia',
-            'codigo_postal' => '81200',
-        ]);
+        $state = State::where('nombre', 'like', 'Sinaloa%')->first()
+            ?? State::first()
+            ?? State::forceCreate(['nombre' => 'Sinaloa', 'pais_id' => $country->id]);
+
+        $township = Township::where('estado_id', $state->id)->where('nombre', 'like', 'Ahome%')->first()
+            ?? Township::where('estado_id', $state->id)->first()
+            ?? Township::create(['nombre' => 'Ahome', 'estado_id' => $state->id]);
+
+        $neighborhood = Neighborhood::where('municipio_id', $township->id)->first()
+            ?? Neighborhood::create([
+                'nombre' => 'Centro',
+                'ciudad' => 'Los Mochis',
+                'municipio_id' => $township->id,
+                'asentamiento' => 'Colonia',
+                'codigo_postal' => '81200',
+            ]);
 
         return compact('country', 'state', 'township', 'neighborhood');
     }

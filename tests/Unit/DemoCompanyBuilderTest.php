@@ -151,6 +151,28 @@ class DemoCompanyBuilderTest extends TestCase
     }
 
     /**
+     * La geografía se tomaba con State::first(), que con la tabla sembrada
+     * devuelve Aguascalientes: el demo enseñaba direcciones de "Los Mochis,
+     * Aguascalientes", que además no las encuentra ningún mapa.
+     */
+    public function test_las_direcciones_del_demo_son_de_un_lugar_que_existe(): void
+    {
+        $this->seedPackage();
+
+        // Aguascalientes primero, que es justo el orden que causaba el problema.
+        $pais = \App\Models\Country::create(['nombre' => 'México']);
+        \App\Models\State::forceCreate(['nombre' => 'Aguascalientes', 'pais_id' => $pais->id]);
+        \App\Models\State::forceCreate(['nombre' => 'Sinaloa', 'pais_id' => $pais->id]);
+
+        $company = (new DemoCompanyBuilder())->build();
+
+        $direccion = $company->customers->first()->addresses->first();
+
+        $this->assertSame('Los Mochis', $direccion->city);
+        $this->assertSame('Sinaloa', $direccion->state->nombre);
+    }
+
+    /**
      * El reporte cerrado se creaba hoy y se marcaba resuelto cuatro días antes,
      * así que el demo le enseñaba al prospecto "-4 días para resolver".
      */

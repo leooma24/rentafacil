@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Models\Rental;
 use App\Services\RouteOptimizerService;
 use Filament\Facades\Filament;
+use Filament\Forms;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
@@ -59,15 +60,23 @@ class RoutePlanner extends Page implements HasForms
         return $form
             ->schema([
                 Section::make('Selecciona las paradas')
-                    ->description('Elige los clientes que necesitas visitar. Solo aparecen los que tienen coordenadas registradas.')
+                    ->description($options === []
+                        ? 'Todavía no hay clientes ubicados en el mapa. Ve a Clientes, selecciona los que quieras y usa "Ubicar en el mapa".'
+                        : 'Elige a quién vas a visitar y te armo la ruta más corta, lista para abrir en Google Maps.')
                     ->schema([
+                        // Antes había que teclear la latitud de memoria. Ahora la
+                        // pide el navegador y no pasa por ningún servidor ajeno.
+                        Forms\Components\View::make('filament.forms.mi-ubicacion')
+                            ->columnSpanFull(),
                         TextInput::make('origin_lat')
-                            ->label('Tu latitud (punto de partida)')
+                            ->label('Latitud de partida')
                             ->numeric()
+                            ->hint('Se llena con el botón de arriba')
                             ->placeholder('24.8049'),
                         TextInput::make('origin_lng')
-                            ->label('Tu longitud (punto de partida)')
+                            ->label('Longitud de partida')
                             ->numeric()
+                            ->hint('Opcional: sin esto la ruta arranca en la primera parada')
                             ->placeholder('-107.3939'),
                         CheckboxList::make('selected_rentals')
                             ->label('Visitas')

@@ -10,6 +10,7 @@ use App\Filament\Resources\CustomerResource\RelationManagers\WashingMachinesRela
 use App\Models\Customer;
 use App\Models\Township;
 use App\Models\Neighborhood;
+use App\Services\UbicarClientes;
 use Filament\Facades\Filament;
 use Filament\Forms;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -187,6 +188,23 @@ class CustomerResource extends Resource
                 ]),
             ])
             ->bulkActions([
+                // Ubicar en el mapa las direcciones ya capturadas. Lo dispara el
+                // dueño y no un proceso automático: buscar una dirección la manda
+                // a un servidor ajeno, y esa decisión es suya.
+                Tables\Actions\BulkAction::make('ubicar_en_el_mapa')
+                    ->label('Ubicar en el mapa')
+                    ->icon('heroicon-o-map-pin')
+                    ->color('primary')
+                    ->modalHeading('Ubicar clientes en el mapa')
+                    ->modalDescription(
+                        'Se buscará la dirección de cada cliente en OpenStreetMap para obtener su ubicación. '
+                        . 'Con eso podrás incluirlos en la ruta del día. Se procesan hasta '
+                        . UbicarClientes::MAXIMO_POR_TANDA . ' por tanda.'
+                    )
+                    ->modalSubmitActionLabel('Buscar ubicaciones')
+                    ->deselectRecordsAfterCompletion()
+                    ->action(fn (Collection $records) => app(UbicarClientes::class)->paraTodos($records)),
+
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),

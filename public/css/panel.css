@@ -491,6 +491,26 @@
     margin-top: .8rem;
 }
 
+/* El botón de ubicación del planificador de rutas */
+.rf-ubicacion-nota {
+    margin-top: .5rem;
+    font-size: .8125rem;
+    color: #64748b;
+}
+
+.rf-ubicacion-ok {
+    color: #047857;
+    font-weight: 600;
+}
+
+.rf-ubicacion-mal {
+    color: #b45309;
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
 .rf-provecho-pie {
     margin-top: 1.75rem;
     padding-top: 1.15rem;
