@@ -261,7 +261,7 @@
         <p>Accede al plan más completo sin pagar. Sin tarjeta de crédito. Cancela cuando quieras.</p>
         <div class="cta-buttons">
             <a href="/propietario/registrar" class="btn btn-primary btn-lg">Empezar Prueba Gratis</a>
-            <a href="https://wa.me/6682493398?text=Quiero%20una%20demo%20de%20Renta%20Fácil" target="_blank" class="btn btn-outline btn-lg">Solicitar Demo</a>
+            <a href="/demo" class="btn btn-outline btn-lg">▶ Ver demo en vivo</a>
         </div>
     </div>
 </section>

@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 use App\Livewire\ShowHome;
+use App\Http\Controllers\DemoController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\QrCodeController;
@@ -30,6 +31,11 @@ Route::get('/', function () {
 
 Route::get('/', ShowHome::class);
 Route::get('/contratar/{package}', ShowPackage::class);
+
+Route::get('/demo', [DemoController::class, 'index'])->name('demo.start');
+Route::post('/demo/iniciar', [DemoController::class, 'create'])
+    ->middleware('throttle:demo')
+    ->name('demo.create');
 
 Route::post('/create-payment-intent', [PaymentController::class, 'createPaymentIntent']);
 

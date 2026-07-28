@@ -12,6 +12,12 @@ class UserObserver
 {
     public function created(User $user): void
     {
+        // Los usuarios de demo son desechables: ni son prospectos convertidos,
+        // ni deben disparar correos de bienvenida ni avisos a los admins.
+        if ($user->is_demo) {
+            return;
+        }
+
         // Auto-detect if this user was a prospect and mark as converted
         $prospect = ProspectiveClient::where('email', $user->email)
             ->orWhere(function ($q) use ($user) {

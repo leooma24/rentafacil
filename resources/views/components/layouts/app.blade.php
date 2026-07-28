@@ -135,6 +135,7 @@
                                 <li><a href="#servicios">Servicios</a></li>
                                 <li><a href="#como-funciona">Cómo Funciona</a></li>
                                 <li><a href="#precios">Precios</a></li>
+                                <li><a href="/demo">Ver demo</a></li>
                                 <li><a class="btn btn-primary btn-nav" href="/propietario">Acceder</a></li>
                             </ul>
                         </nav>

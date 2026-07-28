@@ -16,6 +16,11 @@ class PlanCheckoutController extends Controller
             abort(403);
         }
 
+        // Un sandbox de demo nunca debe llegar a un cobro real.
+        if ($tenant->is_demo) {
+            return redirect('/propietario/registrar');
+        }
+
         $stripe = new StripeClient(config('services.stripe.secret'));
 
         $session = $stripe->checkout->sessions->create([

@@ -24,6 +24,11 @@ class User extends Authenticatable implements FilamentUser, HasTenants
         'password',
         'referral_code',
         'referred_by',
+        'is_demo',
+    ];
+
+    protected $casts = [
+        'is_demo' => 'boolean',
     ];
 
     protected static function booted(): void

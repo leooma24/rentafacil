@@ -52,7 +52,7 @@ Todas las fechas son relativas a `now()` en el momento de la generación.
 
 | Entidad | Cantidad | Detalle |
 |---|---|---|
-| `WashingMachine` | 12 | Códigos `LAV-001`…`LAV-012`. Marcas reales (Whirlpool, Mabe, LG, Easy, Samsung). Estados: 8 `rentada`, 2 `disponible`, 1 `mantenimiento`, 1 `fuera_de_servicio`. Con `purchase_date` y `purchase_price` para que la utilidad por máquina cuadre. |
+| `WashingMachine` | 14 | Códigos `LAV-001`…`LAV-014`. Marcas reales (Whirlpool, Mabe, LG, Easy, Samsung). Estados: 10 `rentada` (8 rentas activas + 2 vencidas), 2 `disponible`, 1 `mantenimiento`, 1 `fuera_de_servicio`. Con `purchase_date` y `purchase_price` para que la utilidad por máquina cuadre. |
 | `Customer` | 20 | Nombre, teléfono, correo ficticio y `Address` relacionada. |
 | `Rental` activas | 8 | Una vence en 2 días y otra en 5, para que el calendario y los recordatorios tengan qué mostrar. |
 | `Rental` vencidas | 2 | Con 6 y 15 días de atraso, para poblar `OverdueRentalsWidget`. |

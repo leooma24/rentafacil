@@ -12,6 +12,11 @@ class RentalObserver
     {
         $rental->load(['company.members', 'washingMachine', 'customer']);
 
+        // Las rentas sembradas para un demo no son un hito real del negocio.
+        if ($rental->company?->is_demo) {
+            return;
+        }
+
         // Check if this is the company's first rental
         $totalRentals = Rental::where('company_id', $rental->company_id)->count();
 

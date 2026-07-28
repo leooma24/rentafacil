@@ -42,6 +42,7 @@ class UserLifecycleEmails extends Command
     protected function handleTrialExpiring(): void
     {
         $companies = Company::with(['companyPackage', 'members'])
+            ->where('is_demo', false)
             ->whereHas('companyPackage', function ($q) {
                 $q->whereBetween('end_date', [now()->addDays(1), now()->addDays(3)]);
             })
@@ -66,6 +67,7 @@ class UserLifecycleEmails extends Command
     {
         // Expired yesterday (send once)
         $companies = Company::with(['companyPackage', 'members'])
+            ->where('is_demo', false)
             ->whereHas('companyPackage', function ($q) {
                 $q->whereDate('end_date', now()->subDay()->toDateString());
             })
@@ -89,9 +91,11 @@ class UserLifecycleEmails extends Command
         // Only on Mondays
         if (now()->dayOfWeek !== 1) return;
 
-        $companies = Company::with('members')->whereHas('companyPackage', function ($q) {
-            $q->where('end_date', '>=', now());
-        })->get();
+        $companies = Company::with('members')
+            ->where('is_demo', false)
+            ->whereHas('companyPackage', function ($q) {
+                $q->where('end_date', '>=', now());
+            })->get();
 
         foreach ($companies as $company) {
             $revenue = Payment::where('company_id', $company->id)
@@ -117,6 +121,7 @@ class UserLifecycleEmails extends Command
     {
         // Users registered exactly 14 days ago
         $users = User::whereDate('created_at', now()->subDays(14)->toDateString())
+            ->where('is_demo', false)
             ->whereHas('companies')
             ->get();
 
@@ -138,9 +143,10 @@ class UserLifecycleEmails extends Command
         $weekNum = now()->weekOfYear % count($this->tips);
         $tip = $this->tips[$weekNum];
 
-        $users = User::whereHas('companies', function ($q) {
-            $q->whereHas('companyPackage', fn ($q2) => $q2->where('end_date', '>=', now()));
-        })->get();
+        $users = User::where('is_demo', false)
+            ->whereHas('companies', function ($q) {
+                $q->whereHas('companyPackage', fn ($q2) => $q2->where('end_date', '>=', now()));
+            })->get();
 
         foreach ($users as $user) {
             try {

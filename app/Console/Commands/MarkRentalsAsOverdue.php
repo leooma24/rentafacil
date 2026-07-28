@@ -29,6 +29,7 @@ class MarkRentalsAsOverdue extends Command
         //
         $overdueRentals = Rental::where('status', 'activa')
                                 ->where('end_date', '<', now())
+                                ->whereHas('company', fn ($q) => $q->where('is_demo', false))
                                 ->get();
 
         foreach ($overdueRentals as $rental) {
