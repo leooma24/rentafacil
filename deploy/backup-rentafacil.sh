@@ -142,4 +142,9 @@ fi
 find "$BACKUP_DIR" -maxdepth 1 -type f -name "*.gz" -mtime +${RETENTION_DAYS} -delete
 find "$MENSUALES_DIR" -type f -name "*.gz" -mtime +180 -delete
 
+# Un volcado trae correos, teléfonos y contraseñas cifradas de los clientes de
+# 17 negocios. La carpeta ya es 700, pero los archivos también van cerrados.
+find "$BACKUP_DIR" -type f -name "*.gz" -exec chmod 600 {} +
+chmod 700 "$MENSUALES_DIR"
+
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Respaldo OK: $DESTINO ($(du -h "$DESTINO" | cut -f1), ${CUANTAS_TABLAS} tablas, ${FILAS} empresas)"
