@@ -149,4 +149,30 @@ class DemoCompanyBuilderTest extends TestCase
             $incidents->pluck('status')->all()
         );
     }
+
+    /**
+     * El reporte cerrado se creaba hoy y se marcaba resuelto cuatro días antes,
+     * así que el demo le enseñaba al prospecto "-4 días para resolver".
+     */
+    public function test_la_incidencia_cerrada_se_abre_antes_de_resolverse(): void
+    {
+        $this->seedPackage();
+
+        $company = (new DemoCompanyBuilder())->build();
+
+        $cerrada = $company->incidents->firstWhere('status', 'cerrada');
+
+        $this->assertNotNull($cerrada->resolved_at);
+        // resolved_at no trae cast en el modelo, así que llega como cadena.
+        $this->assertTrue(
+            Carbon::parse($cerrada->resolved_at)->gte($cerrada->created_at),
+            'La incidencia quedó resuelta antes de haberse abierto.'
+        );
+
+        // Y las abiertas no traen fecha de resolución.
+        $this->assertTrue(
+            $company->incidents->whereIn('status', ['abierta', 'en_progreso'])
+                ->every(fn ($i) => $i->resolved_at === null)
+        );
+    }
 }

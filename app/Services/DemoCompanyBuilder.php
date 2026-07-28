@@ -299,13 +299,18 @@ class DemoCompanyBuilder
         }
 
         $incidents = [
-            ['title' => 'La lavadora no centrifuga', 'status' => 'abierta', 'priority' => 'alta', 'type' => 'mecánica', 'resolved' => false],
-            ['title' => 'Fuga de agua en la manguera', 'status' => 'en_progreso', 'priority' => 'media', 'type' => 'mecánica', 'resolved' => false],
-            ['title' => 'No enciende el panel', 'status' => 'cerrada', 'priority' => 'alta', 'type' => 'eléctrica', 'resolved' => true],
+            ['title' => 'La lavadora no centrifuga', 'status' => 'abierta', 'priority' => 'alta', 'type' => 'mecánica', 'openedDaysAgo' => 2, 'resolvedDaysAgo' => null],
+            ['title' => 'Fuga de agua en la manguera', 'status' => 'en_progreso', 'priority' => 'media', 'type' => 'mecánica', 'openedDaysAgo' => 5, 'resolvedDaysAgo' => null],
+            ['title' => 'No enciende el panel', 'status' => 'cerrada', 'priority' => 'alta', 'type' => 'eléctrica', 'openedDaysAgo' => 7, 'resolvedDaysAgo' => 4],
         ];
 
         foreach ($incidents as $i => $inc) {
-            $company->incidents()->create([
+            // El reporte tiene que abrirse antes de cerrarse. Sin la fecha de
+            // alta explícita quedaba creado hoy y resuelto hace cuatro días, y
+            // el promedio de atención salía en negativo.
+            $abierta = now()->subDays($inc['openedDaysAgo']);
+
+            $incidencia = $company->incidents()->create([
                 'title' => $inc['title'],
                 'description' => 'Reporte de ejemplo generado para la demo.',
                 'status' => $inc['status'],
@@ -313,8 +318,14 @@ class DemoCompanyBuilder
                 'type' => $inc['type'],
                 'user_id' => $user?->id,
                 'washing_machine_id' => $machines[$i]->id,
-                'resolved_at' => $inc['resolved'] ? now()->subDays(4) : null,
+                'resolved_at' => $inc['resolvedDaysAgo'] === null
+                    ? null
+                    : now()->subDays($inc['resolvedDaysAgo']),
             ]);
+
+            // created_at no es asignable en masa, así que la fecha de alta se
+            // pone aparte.
+            $incidencia->forceFill(['created_at' => $abierta, 'updated_at' => $abierta])->save();
         }
     }
 }

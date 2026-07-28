@@ -4,6 +4,7 @@ namespace App\Filament\Resources\CustomerResource\Pages;
 
 use App\Filament\Actions\CreateWithinPlanAction;
 use App\Filament\Resources\CustomerResource;
+use App\Filament\Resources\CustomerResource\Widgets\ClientesStats;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Facades\Filament;
@@ -20,5 +21,10 @@ class ListCustomers extends ListRecords
         return [
             CreateWithinPlanAction::make(Filament::getTenant(), 'clientes'),
         ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [ClientesStats::class];
     }
 }

@@ -4,6 +4,7 @@ namespace App\Filament\Resources\WashingMachineResource\Pages;
 
 use App\Filament\Actions\CreateWithinPlanAction;
 use App\Filament\Resources\WashingMachineResource;
+use App\Filament\Resources\WashingMachineResource\Widgets\LavadorasStats;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
@@ -22,6 +23,11 @@ class ListWashingMachines extends ListRecords
         return [
             CreateWithinPlanAction::make(Filament::getTenant(), 'lavadoras'),
         ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [LavadorasStats::class];
     }
 
     public function getTabs(): array
