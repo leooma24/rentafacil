@@ -9,6 +9,9 @@ use Filament\Facades\Filament;
 
 class StatsOverview extends BaseWidget
 {
+    // Sin esto el widget se queda en el placeholder de carga y nunca aparece.
+    protected static bool $isLazy = false;
+
     protected function getStats(): array
     {
         $tenant = Filament::getTenant();

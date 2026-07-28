@@ -11,6 +11,8 @@ class MonthlyRevenueChart extends ChartWidget
 {
     protected static ?string $heading = 'Ingresos Mensuales';
     protected static ?int $sort = 2;
+    // Sin esto el widget se queda en el placeholder de carga y nunca aparece.
+    protected static bool $isLazy = false;
     protected static ?string $maxHeight = '300px';
 
     protected function getData(): array

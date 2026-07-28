@@ -69,6 +69,27 @@ class AccountStatement
     }
 
     /**
+     * El adeudo de una sola renta, con la misma regla del estado de cuenta.
+     */
+    public function forRental(Rental $rental, ?Setting $settings = null): RentalDebt
+    {
+        $settings ??= $rental->company?->settings;
+
+        $daysPerPeriod = (int) ($settings->days_per_payment ?? 0);
+        $defaultPrice = (float) ($settings->price ?? 0);
+
+        if ($daysPerPeriod <= 0 || $defaultPrice <= 0) {
+            return new RentalDebt($rental, 0, 0.0, 0.0);
+        }
+
+        if (! $rental->relationLoaded('payments')) {
+            $rental->load('payments');
+        }
+
+        return $this->debtFor($rental, $daysPerPeriod, $defaultPrice);
+    }
+
+    /**
      * @param Collection<int, Rental> $rentals
      */
     private function buildStatement(Customer $customer, Collection $rentals, ?Setting $settings): Statement
