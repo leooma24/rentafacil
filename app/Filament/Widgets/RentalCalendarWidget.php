@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\Maintenance;
 use App\Models\Rental;
+use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Model;
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
@@ -20,6 +21,33 @@ class RentalCalendarWidget extends FullCalendarWidget
      * accessed before initialization".
      */
     public Model|int|string|null $record = null;
+
+    /**
+     * Este calendario es de consulta: muestra vencimientos, no se crean ni se
+     * editan eventos desde aquí. Las acciones que trae el paquete por omisión
+     * (crear, ver, editar, borrar) exigen un registro y revientan con
+     * "Cannot use ::class on value of type null" cuando no hay ninguno.
+     */
+    protected function headerActions(): array
+    {
+        return [];
+    }
+
+    protected function modalActions(): array
+    {
+        return [];
+    }
+
+    /**
+     * El clic en un evento tiene que encontrar una acción llamada "view", pero
+     * los eventos vienen de dos modelos distintos (rentas y mantenimientos) con
+     * ids sintéticos, así que no hay un registro que resolver: se devuelve una
+     * acción vacía y el clic simplemente no hace nada.
+     */
+    protected function viewAction(): Action
+    {
+        return Action::make('view');
+    }
 
     public function fetchEvents(array $fetchInfo): array
     {

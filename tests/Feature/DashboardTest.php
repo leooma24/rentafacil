@@ -4,6 +4,9 @@ namespace Tests\Feature;
 
 use App\Filament\Pages\Dashboard;
 use App\Filament\Widgets\CollectionsWidget;
+use App\Filament\Widgets\RentalCalendarWidget;
+use Filament\Facades\Filament;
+use Livewire\Livewire;
 use App\Models\Company;
 use App\Models\Package;
 use App\Models\User;
@@ -125,6 +128,24 @@ class DashboardTest extends TestCase
 
         $this->actingAs($user)
             ->get("/propietario/{$company->id}/calendario")
+            ->assertOk();
+    }
+
+    /**
+     * Un GET a la página no basta ni montar el widget tampoco: el 500 salía al
+     * hacer clic en un evento, que dispara mountAction('view'). La ViewAction que
+     * trae el paquete lee el registro para armar el título del modal, y como
+     * nuestros eventos no tienen registro que resolver, tronaba.
+     */
+    public function test_hacer_clic_en_un_evento_del_calendario_no_truena(): void
+    {
+        [$company, $user] = $this->makeCompanyWithOwner();
+
+        $this->actingAs($user);
+        Filament::setTenant($company, true);
+
+        Livewire::test(RentalCalendarWidget::class)
+            ->call('mountAction', 'view')
             ->assertOk();
     }
 
