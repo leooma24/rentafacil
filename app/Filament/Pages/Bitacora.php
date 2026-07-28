@@ -9,7 +9,7 @@ class Bitacora extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
 
-    protected static ?string $navigationGroup = 'Configuración';
+    protected static ?string $navigationGroup = 'Mi cuenta';
 
     protected static ?string $navigationLabel = 'Actividad';
 

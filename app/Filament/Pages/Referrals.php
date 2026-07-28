@@ -7,7 +7,7 @@ use Filament\Pages\Page;
 class Referrals extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-gift';
-    protected static ?string $navigationGroup = 'Configuración';
+    protected static ?string $navigationGroup = 'Mi cuenta';
     protected static ?string $title = 'Invitar Amigos';
     protected static ?string $slug = 'referidos';
     protected static ?int $navigationSort = 12;

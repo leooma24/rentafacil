@@ -27,7 +27,7 @@ class IncidentResource extends Resource
     protected static ?string $navigationGroup = 'Gestión Principal';
     protected static ?string $modelLabel = 'Incidente';
     protected static ?string $pluralModelLabel = 'Incidentes';
-    protected static ?string $navigationLabel = 'Incidentes';
+    protected static ?string $navigationLabel = 'Incidencias';
     protected static ?string $slug = 'incidencias';
 
     protected static ?int $navigationSort = 4;

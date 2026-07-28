@@ -26,7 +26,7 @@ class CompanyResource extends Resource
     protected static ?string $navigationGroup = 'Administrador';
     protected static ?string $modelLabel = 'Compañia';
     protected static ?string $pluralModelLabel = 'Compañias';
-    protected static ?string $navigationLabel = 'Compañias';
+    protected static ?string $navigationLabel = 'Compañías';
     protected static bool $isScopedToTenant = false;
 
     public static function form(Form $form): Form

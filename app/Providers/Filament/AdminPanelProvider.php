@@ -39,16 +39,19 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogo(asset('img/logo.png'))
             ->brandLogoHeight('4rem')
             ->favicon(asset('img/favicon.ico'))
-            ->brandName('Renta Facíl')
-            ->font('Roboto')
+            ->brandName('Renta Fácil')
+            ->font('Inter')
             ->colors([
                 'danger' => Color::Rose,
                 'gray' => Color::Gray,
                 'info' => Color::Blue,
-                'primary' => Color::Cyan,
+                // El mismo cyan del landing, para que sitio y panel se sientan
+                // la misma marca en vez de dos productos parecidos.
+                'primary' => Color::hex('#06b6d4'),
                 'success' => Color::Emerald,
                 'warning' => Color::Orange,
             ])
+            ->sidebarCollapsibleOnDesktop()
             ->profile()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -61,7 +64,7 @@ class AdminPanelProvider extends PanelProvider
                 'Gestión Principal' => NavigationGroup::make('Gestión Principal', 'heroicon-s-home'),
                 'Finanzas' => NavigationGroup::make('Finanzas', 'heroicon-o-currency-dollar'),
                 'Servicios' => NavigationGroup::make('Servicios', 'heroicon-o-cog'),
-                'Configuración' => NavigationGroup::make('Configuración', 'heroicon-o-cog'),
+                'Mi cuenta' => NavigationGroup::make('Mi cuenta', 'heroicon-o-user-circle'),
                 'Administrador' => NavigationGroup::make('Administrador', 'heroicon-o-cog'),
             ])
             ->middleware([

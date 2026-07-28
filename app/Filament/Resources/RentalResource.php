@@ -25,7 +25,7 @@ class RentalResource extends Resource
     protected static ?string $navigationGroup = 'Gestión Principal';
     protected static ?string $modelLabel = 'Renta';
     protected static ?string $pluralModelLabel = 'Rentas';
-    protected static ?string $navigationLabel = 'Mis Rentas';
+    protected static ?string $navigationLabel = 'Rentas';
     protected static ?string $slug = 'mis-rentas';
 
     public static function getNavigationBadge(): ?string
@@ -118,6 +118,8 @@ class RentalResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $tenant = Filament::getTenant();
+
         return $table
             ->columns([
                 //
@@ -189,6 +191,13 @@ class RentalResource extends Resource
                     }),
             ])
             ->actions([
+                // Cobrar es la acción del negocio: va suelta y visible. El resto
+                // se agrupa para que la fila no se salga de la pantalla.
+                RentalResource\Actions\ExtendRentAction::make($tenant)
+                    ->label('Cobrar')
+                    ->button()
+                    ->color('success'),
+                Tables\Actions\ActionGroup::make([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('download_contract')
                     ->label('Contrato')
@@ -273,11 +282,12 @@ class RentalResource extends Resource
                                 ->send();
                         } else {
                             \Filament\Notifications\Notification::make()
-                                ->title('Error: configura el precio en Configuración primero')
+                                ->title('Error: configura el precio en Preferencias primero')
                                 ->danger()
                                 ->send();
                         }
                     }),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
