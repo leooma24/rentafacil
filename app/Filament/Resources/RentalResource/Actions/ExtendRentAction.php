@@ -9,6 +9,7 @@ use Filament\Notifications\Notification;
 use Filament\Tables;
 use App\Models\Company;
 use App\Support\RentalTerms;
+use App\Support\ShareableLinks;
 use Filament\Forms;
 
 class ExtendRentAction
@@ -93,7 +94,7 @@ class ExtendRentAction
                 $rental->end_date = $newDate->format('Y-m-d');
                 $rental->save();
 
-                $rental->payments()->create([
+                $payment = $rental->payments()->create([
                     'company_id' => $tenant->id,
                     'amount' => $price,
                     'payment_date' => $data['payment_date'],
@@ -107,9 +108,26 @@ class ExtendRentAction
                     $rental->save();
                 }
 
+                $telefono = $rental->customer?->phone;
+
                 Notification::make()
-                    ->title('Se pago la renta de la lavadora ' . $rental->washingMachine->machine_code)
+                    ->title('Cobro registrado: ' . $rental->washingMachine->machine_code)
+                    ->body($telefono ? 'Puedes mandarle su comprobante por WhatsApp.' : null)
                     ->success()
+                    ->persistent()
+                    // El comprobante se manda en el momento, que es cuando el
+                    // cliente lo espera y cuando tienes su teléfono a la mano.
+                    ->actions(array_filter([
+                        $telefono
+                            ? NotificationAction::make('Mandar recibo')
+                                ->button()
+                                ->url(ShareableLinks::whatsappUrl(
+                                    $telefono,
+                                    ShareableLinks::receiptMessage($payment->fresh('rental'))
+                                ))
+                                ->openUrlInNewTab()
+                            : null,
+                    ]))
                     ->send();
             });
     }

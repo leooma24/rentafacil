@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Livewire\ShowHome;
 use App\Http\Controllers\DemoController;
+use App\Http\Controllers\PublicDocumentController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\QrCodeController;
@@ -31,6 +32,17 @@ Route::get('/', function () {
 
 Route::get('/', ShowHome::class);
 Route::get('/contratar/{package}', ShowPackage::class);
+
+// Lo que el cliente abre desde WhatsApp. Sin login: la firma de la liga es la
+// que autoriza, y `signed` la valida. Alterar un carácter devuelve 403.
+Route::middleware('signed')->group(function () {
+    Route::get('/recibo/{payment}', [PublicDocumentController::class, 'receipt'])
+        ->name('publico.recibo');
+    Route::get('/recibo/{payment}/pdf', [PublicDocumentController::class, 'receiptPdf'])
+        ->name('publico.recibo.pdf');
+    Route::get('/estado-de-cuenta/{customer}', [PublicDocumentController::class, 'statement'])
+        ->name('publico.estado-de-cuenta');
+});
 
 Route::get('/demo', [DemoController::class, 'index'])->name('demo.start');
 Route::post('/demo/iniciar', [DemoController::class, 'create'])
