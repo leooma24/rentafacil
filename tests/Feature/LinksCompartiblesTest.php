@@ -235,7 +235,16 @@ class LinksCompartiblesTest extends TestCase
             $this->get($ruta)
                 ->assertOk()
                 ->assertSee('og:image', false)
-                ->assertSee('icon-512.png', false);
+                // Absoluta: WhatsApp no resuelve rutas relativas, y asset()
+                // devuelve relativas porque asset_url está en '/'.
+                ->assertSee(url('img/icon-512.png'), false);
         }
+    }
+
+    public function test_la_portada_tambien_comparte_su_logo_con_url_absoluta(): void
+    {
+        $this->get('/')
+            ->assertOk()
+            ->assertSee(url('img/logo.png'), false);
     }
 }

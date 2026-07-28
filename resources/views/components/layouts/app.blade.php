@@ -12,7 +12,7 @@
 
         <meta property="og:title" content="Renta Fácil | Software para gestionar tu negocio de renta de lavadoras">
         <meta property="og:description" content="Controla rentas, cobros, clientes y mantenimientos desde tu celular. Cobra por WhatsApp, genera contratos PDF y planifica rutas. Prueba gratis 15 días.">
-        <meta property="og:image" content="{{ asset('img/logo.png') }}">
+        <meta property="og:image" content="{{ url('img/logo.png') }}">
         <meta property="og:url" content="{{ url('/') }}">
         <meta property="og:type" content="website">
         <meta property="og:site_name" content="Renta Fácil">
@@ -21,7 +21,7 @@
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:title" content="Renta Fácil | Software para renta de lavadoras">
         <meta name="twitter:description" content="Gestiona tu negocio de renta de lavadoras desde tu celular. Prueba gratis 15 días.">
-        <meta name="twitter:image" content="{{ asset('img/logo.png') }}">
+        <meta name="twitter:image" content="{{ url('img/logo.png') }}">
 
         <link rel="icon" href="{{ asset('img/favicon.ico') }}" type="image/ico">
         <link rel="manifest" href="/manifest.json">
