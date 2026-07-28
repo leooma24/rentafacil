@@ -10,6 +10,8 @@ class RentalStatusChart extends ChartWidget
     protected static ?string $heading = 'Estado de Rentas';
     protected static ?int $sort = 3;
     protected static ?string $maxHeight = '300px';
+    // Sin esto el widget se queda en el placeholder de carga y nunca aparece.
+    protected static bool $isLazy = false;
 
     protected function getData(): array
     {

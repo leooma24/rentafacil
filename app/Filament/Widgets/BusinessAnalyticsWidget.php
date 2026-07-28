@@ -28,8 +28,12 @@ class BusinessAnalyticsWidget extends BaseWidget
 
         // Average days overdue
         $overdueRentals = $tenant->rentals()->where('status', 'vencida')->get();
+        // La resta va de la fecha vencida hacia hoy: al revés sale negativa,
+        // porque en Laravel 11 diffInDays devuelve el valor con signo.
         $avgDaysOverdue = $overdueRentals->count() > 0
-            ? round($overdueRentals->avg(fn ($r) => now()->diffInDays($r->end_date)), 1)
+            ? round($overdueRentals->avg(
+                fn ($r) => Carbon::parse($r->end_date)->startOfDay()->diffInDays(now()->startOfDay())
+            ), 1)
             : 0;
 
         // Churn rate (customers who didn't renew in last 30 days)

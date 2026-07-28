@@ -63,7 +63,14 @@ class WashingMachine extends Model
 
     public function activeRental()
     {
-        return $this->hasOne(Rental::class)->whereIn('status', ['activa', 'vencida'])->latestOfMany();
+        // El filtro va DENTRO de la subconsulta: latestOfMany() arma un MAX(id) que
+        // ignora el where externo, así que si la lavadora tuvo una renta finalizada
+        // con id mayor, elegía esa y el filtro de afuera la descartaba, dejando la
+        // relación en nulo.
+        return $this->hasOne(Rental::class)->ofMany(
+            ['id' => 'max'],
+            fn ($query) => $query->whereIn('status', ['activa', 'vencida'])
+        );
     }
 
     public function customers(): BelongsToMany

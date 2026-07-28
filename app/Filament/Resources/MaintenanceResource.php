@@ -81,12 +81,12 @@ class MaintenanceResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('start_date')
                     ->label('Fecha de Inicio')
-                    ->date()
+                    ->date('d/m/Y')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('end_date')
                     ->label('Fecha de fin')
-                    ->date()
+                    ->date('d/m/Y')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('maintenance_type')
@@ -102,6 +102,7 @@ class MaintenanceResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Estatus')
                     ->badge()
+                    ->formatStateUsing(fn (?string $state) => $state ? ucfirst($state) : '—')
                     ->searchable()
                     ->sortable(),
             ])

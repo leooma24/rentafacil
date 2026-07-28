@@ -11,6 +11,8 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 class PaymentStats extends BaseWidget
 {
     protected static ?int $sort = 1;
+    // Sin esto el widget se queda en el placeholder de carga y nunca aparece.
+    protected static bool $isLazy = false;
 
     protected function getStats(): array
     {

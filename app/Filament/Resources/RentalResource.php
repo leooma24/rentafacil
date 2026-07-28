@@ -131,17 +131,18 @@ class RentalResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('start_date')
                     ->label('Fecha de Inicio')
-                    ->date()
+                    ->date('d/m/Y')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('end_date')
                     ->label('Fecha de Fin')
-                    ->date()
+                    ->date('d/m/Y')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Estatus')
                     ->badge()
+                    ->formatStateUsing(fn (?string $state) => $state ? ucfirst($state) : '—')
                     ->searchable()
                     ->sortable(),
 
