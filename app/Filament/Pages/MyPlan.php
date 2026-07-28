@@ -9,7 +9,7 @@ use Filament\Pages\Page;
 class MyPlan extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-credit-card';
-    protected static ?string $navigationGroup = 'Configuración';
+    protected static ?string $navigationGroup = 'Mi cuenta';
     protected static ?string $title = 'Mi Plan';
     protected static ?string $slug = 'mi-plan';
     protected static ?int $navigationSort = 11;

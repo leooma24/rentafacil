@@ -31,7 +31,7 @@ class WashingMachineResource extends Resource
     protected static ?string $navigationGroup = 'Gestión Principal';
     protected static ?string $modelLabel = 'Lavadora';
     protected static ?string $pluralModelLabel = 'Lavadoras';
-    protected static ?string $navigationLabel = 'Mis Lavadoras';
+    protected static ?string $navigationLabel = 'Lavadoras';
     protected static ?string $slug = 'lavadoras';
     protected static ?string $recordTitleAttribute = 'machine_code';
 

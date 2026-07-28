@@ -36,7 +36,7 @@ class CustomerResource extends Resource
 
     protected static ?string $modelLabel = 'Cliente';
     protected static ?string $pluralModelLabel = 'Clientes';
-    protected static ?string $navigationLabel = 'Mis Clientes';
+    protected static ?string $navigationLabel = 'Clientes';
     protected static ?string $slug = 'clientes';
     protected static ?string $recordTitleAttribute = 'name';
 
@@ -159,14 +159,18 @@ class CustomerResource extends Resource
                             ->whereDate('end_date', '<', \Carbon\Carbon::today()))),
             ])
             ->actions([
+                // El estado de cuenta es a lo que más se entra desde aquí: va suelto.
                 Tables\Actions\Action::make('estado_de_cuenta')
                     ->label('Estado de cuenta')
                     ->icon('heroicon-o-banknotes')
+                    ->button()
                     ->color('warning')
                     ->url(fn (Customer $record) => static::getUrl('estado-de-cuenta', ['record' => $record])),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                    Tables\Actions\RestoreAction::make(),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
