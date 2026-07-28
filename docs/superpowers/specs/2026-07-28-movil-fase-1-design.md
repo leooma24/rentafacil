@@ -35,16 +35,33 @@ API de Filament y no necesita ninguna clase nueva.
 
 ## Qué se ve en celular
 
-| Pantalla | Se queda | Se esconde hasta tableta |
-|---|---|---|
-| **Rentas** | Cliente, Lavadora, Estatus y las acciones | Fecha de inicio y fecha de fin |
-| **Clientes** | Nombre, Debe y las acciones | Correo y teléfono |
-| **Lavadoras** | Código, Estatus, Cliente y las acciones | Marca, modelo, estatus de renta, fecha de inicio y de fin |
+**Corregido durante la implementación.** La primera versión dejaba tres columnas visibles
+por lista y **no cumplió el criterio**: en Rentas seguían quedando 177 px fuera de
+pantalla y el botón de Cobrar seguía sin alcanzarse. La versión que sí cumple deja **una
+sola columna**, y lo demás viaja como subtítulo de ella:
 
-En Rentas el cálculo queda en unos 365 px de los 390 disponibles, con el botón dentro.
+| Pantalla | En celular | Subtítulo | Se esconde hasta tableta |
+|---|---|---|---|
+| **Rentas** | Cliente y las acciones | lavadora · estatus | Lavadora, estatus y las dos fechas |
+| **Clientes** | Nombre y las acciones | "Debe $X" o "Al corriente" | Correo, teléfono y la columna Debe |
+| **Lavadoras** | Código y las acciones | estatus · cliente | Marca, modelo, estatus, estatus de renta, cliente y las dos fechas |
+
+También hizo falta adelgazar las acciones: en Clientes la etiqueta pasa de "Estado de
+cuenta" a "Cuenta" con su tooltip, y en Lavadoras el botón de QR queda solo con su ícono
+mientras Editar y Restaurar se van al menú de tres puntos.
 
 Las columnas ya ocultas por omisión (`toggleable(isToggledHiddenByDefault: true)`) no se
 tocan.
+
+### Medición
+
+| Pantalla | Antes | Después |
+|---|---|---|
+| Rentas | 459 px fuera, botón inalcanzable | **0 px fuera**, botón dentro |
+| Clientes | 161 px fuera, botón inalcanzable | **10 px**, botón dentro |
+| Lavadoras | 227 px fuera, botón inalcanzable | **7 px**, botón dentro |
+
+En escritorio las tres listas conservan todas sus columnas.
 
 ## Las tarjetas de números
 

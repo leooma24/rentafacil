@@ -186,8 +186,14 @@ class WashingMachineResource extends Resource
         return $table
             ->columns([
                 //
+                // En celular esta columna carga sola con el estatus y el cliente
+                // como subtítulo, para que la fila quepa con sus acciones.
                 Tables\Columns\TextColumn::make('machine_code')
                     ->label('Código')
+                    ->description(fn (WashingMachine $record): string => collect([
+                        ucfirst(str_replace('_', ' ', (string) $record->status)),
+                        $record->activeRental?->customer?->name,
+                    ])->filter()->join(' · '))
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('brand')
@@ -203,6 +209,7 @@ class WashingMachineResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Estatus')
                     ->badge()
+                    ->visibleFrom('md')
                     ->formatStateUsing(fn (?string $state) => $state
                         ? ucfirst(str_replace('_', ' ', $state))
                         : '—')
@@ -219,6 +226,7 @@ class WashingMachineResource extends Resource
                     ->visibleFrom('md')
                     ->label('Estatus Renta')
                     ->badge()
+                    ->formatStateUsing(fn (?string $state) => $state ? ucfirst($state) : '—')
                     ->searchable()
                     ->sortable()
                     ->color(fn(string $state): string => match ($state) {
@@ -229,18 +237,19 @@ class WashingMachineResource extends Resource
                     }),
                 Tables\Columns\TextColumn::make('activeRental.customer.name')
                     ->label('Cliente')
+                    ->visibleFrom('md')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('activeRental.start_date')
                     ->visibleFrom('md')
                     ->label('Fecha de Inicio')
-                    ->date()
+                    ->date('d/m/Y')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('activeRental.end_date')
                     ->visibleFrom('md')
                     ->label('Fecha de Fin')
-                    ->date()
+                    ->date('d/m/Y')
                     ->searchable()
                     ->sortable(),
             ])
@@ -277,15 +286,19 @@ class WashingMachineResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\RestoreAction::make(),
+                // Editar y Restaurar se van al menú: sueltas empujaban la fila
+                // fuera de la pantalla en celular.
                 Tables\Actions\Action::make('qr_code')
                     ->label('QR')
+                    ->iconButton()
+                    ->tooltip('Descargar QR')
                     ->icon('heroicon-o-qr-code')
                     ->color('gray')
                     ->url(fn ($record) => route('qr.download', $record))
                     ->openUrlInNewTab(),
                 ActionGroup::make([
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\RestoreAction::make(),
                     Actions\RentAction::make($tenant),
                     Actions\ExtendRentAction::make($tenant),
 

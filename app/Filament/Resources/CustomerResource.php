@@ -92,17 +92,30 @@ class CustomerResource extends Resource
                 'company.settings',
             ]))
             ->columns([
+                // En celular esta columna carga sola con el saldo como subtítulo,
+                // para que la fila quepa y el botón no se salga de la pantalla.
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nombre')
+                    ->description(function (Customer $record): string {
+                        $saldo = app(\App\Support\AccountStatement::class)->forCustomer($record)->total;
+
+                        return $saldo > 0
+                            ? 'Debe $' . number_format($saldo, 2)
+                            : 'Al corriente';
+                    })
                     ->searchable(),
+                // Se esconden en celular para dejarle lugar al saldo y al botón.
                 Tables\Columns\TextColumn::make('email')
                     ->label('Correo Electrónico')
+                    ->visibleFrom('md')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('phone')
                     ->label('Teléfono')
+                    ->visibleFrom('md')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('debt')
                     ->label('Debe')
+                    ->visibleFrom('md')
                     // El saldo se calcula, no vive en la base de datos, así que esta
                     // columna no se puede ordenar. Para ver quién debe más está el
                     // widget "Clientes con adeudo" del escritorio.
@@ -161,7 +174,8 @@ class CustomerResource extends Resource
             ->actions([
                 // El estado de cuenta es a lo que más se entra desde aquí: va suelto.
                 Tables\Actions\Action::make('estado_de_cuenta')
-                    ->label('Estado de cuenta')
+                    ->label('Cuenta')
+                    ->tooltip('Estado de cuenta')
                     ->icon('heroicon-o-banknotes')
                     ->button()
                     ->color('warning')

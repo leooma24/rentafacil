@@ -49,17 +49,14 @@ class PaymentStats extends BaseWidget
                 ->description($trend >= 0 ? "+{$trend}% vs mes anterior" : "{$trend}% vs mes anterior")
                 ->descriptionIcon($trend >= 0 ? 'heroicon-m-arrow-trending-up' : 'heroicon-m-arrow-trending-down')
                 ->color($trend >= 0 ? 'success' : 'danger'),
-            Stat::make('Pagos Pendientes', $pendingPayments)
-                ->description('Por cobrar')
-                ->color($pendingPayments > 0 ? 'warning' : 'success'),
             Stat::make('Total por Cobrar', '$' . number_format($totalOwed, 2))
                 ->description('Suma de lo que deben tus clientes')
                 ->color($totalOwed > 0 ? 'danger' : 'success'),
+            // Antes eran tres recuadros sueltos; en celular ocupaban tres
+            // renglones para decir lo mismo.
             Stat::make('Rentas Activas', $activeRentals)
-                ->description('En curso')
-                ->color('info'),
-            Stat::make('Rentas Vencidas', $overdueRentals)
-                ->description('Requieren atención')
+                ->description("{$overdueRentals} vencidas · {$pendingPayments} pagos pendientes")
+                ->descriptionIcon($overdueRentals > 0 ? 'heroicon-m-exclamation-triangle' : 'heroicon-m-check-circle')
                 ->color($overdueRentals > 0 ? 'danger' : 'success'),
         ];
     }
