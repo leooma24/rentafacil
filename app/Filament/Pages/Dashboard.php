@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Widgets\SectionHeading;
 use Filament\Pages\Dashboard as BaseDashboard;
 
 /**
@@ -18,14 +19,25 @@ class Dashboard extends BaseDashboard
         return [
             // Primeros pasos: se esconde solo cuando ya no hay pendientes.
             \App\Filament\Widgets\OnboardingWidget::class,
-            // Hoy
+
+            SectionHeading::make([
+                'titulo' => 'Hoy',
+                'descripcion' => 'Lo que hay que atender antes de que se acabe el día.',
+            ]),
             \App\Filament\Widgets\TodayStats::class,
-            // A quién cobrar
             \App\Filament\Widgets\CollectionsWidget::class,
-            // El dinero
+
+            SectionHeading::make([
+                'titulo' => 'El dinero',
+                'descripcion' => 'Cómo va el mes y cuánto tienes por cobrar.',
+            ]),
             \App\Filament\Widgets\PaymentStats::class,
             \App\Filament\Widgets\MonthlyRevenueChart::class,
-            // Estado del negocio
+
+            SectionHeading::make([
+                'titulo' => 'Estado del negocio',
+                'descripcion' => 'Tus lavadoras y qué tan bien están trabajando.',
+            ]),
             \App\Filament\Widgets\StatsOverview::class,
             \App\Filament\Widgets\RentalStatusChart::class,
             \App\Filament\Widgets\MachineProfitabilityWidget::class,

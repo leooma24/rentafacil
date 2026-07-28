@@ -17,7 +17,9 @@ class PanelBanner
 
         if ($tenant->is_demo) {
             return self::bar(
-                '#7c3aed',
+                // Azul pizarra, el mismo de las páginas públicas. El morado
+                // anterior peleaba con el cyan de la marca.
+                '#0f172a',
                 'Estás en un <strong>demo</strong>: los datos son de ejemplo y se borran solos en 24 horas.',
                 '/propietario/registrar',
                 'Crear mi cuenta real'
