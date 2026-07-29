@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Company;
+use App\Models\Rental;
 use Carbon\Carbon;
 
 /**
@@ -33,6 +34,22 @@ class RentalTerms
             : self::DIAS_POR_OMISION;
 
         return new self($precio, $dias);
+    }
+
+    /**
+     * Las condiciones de UNA renta: manda su precio propio y sólo si no trae uno
+     * se usa el de la empresa.
+     *
+     * Así el dueño puede cobrar distinto por equipo o por cliente sin que cambiarle
+     * el precio a la empresa le mueva lo que ya tiene rentado.
+     */
+    public static function forRental(Rental $renta): self
+    {
+        $empresa = self::for($renta->company ?? Company::find($renta->company_id));
+
+        return $renta->price > 0
+            ? new self((float) $renta->price, $empresa->days)
+            : $empresa;
     }
 
     /** Sin precio no se puede cobrar; la acción avisa y liga a Preferencias. */

@@ -234,6 +234,8 @@ class DemoCompanyBuilder
         $payments = [];
 
         // 8 activas sobre las máquinas 1-8. Las dos primeras vencen esta semana.
+        // Dos llevan precio propio y depósito, para que se vea que se puede
+        // cobrar distinto por equipo y llevar el control de la garantía.
         $activeEndsInDays = [2, 5, 21, 34, 48, 60, 75, 92];
         foreach ($activeEndsInDays as $i => $endsIn) {
             $start = now()->subWeeks(3 + $i * 2)->startOfDay();
@@ -243,6 +245,8 @@ class DemoCompanyBuilder
                 'start_date' => $start->toDateString(),
                 'end_date' => now()->addDays($endsIn)->toDateString(),
                 'status' => 'activa',
+                'price' => match ($i) { 2 => 300, 5 => 200, default => null },
+                'deposit' => match ($i) { 0 => 500, 3 => 800, default => 0 },
                 'notes' => 'Renta de ejemplo generada para la demo.',
             ]);
             $this->collectWeeklyPayments($payments, $company, $rental, $start, now());
@@ -319,11 +323,15 @@ class DemoCompanyBuilder
         // descompuesto. Se resuelve una vez y no en cada una de las 13 rentas.
         $cobrador = $this->cobradorDemo ??= $company->members()->first()?->id;
 
+        // El cobro sigue el precio de SU renta: con precios distintos por equipo,
+        // dejarlo fijo dejaría pagos de 250 en una renta pactada en 300.
+        $precio = $rental->price > 0 ? (float) $rental->price : self::RENT_PRICE;
+
         while ($date->lte($until)) {
             $rows[] = [
                 'company_id' => $company->id,
                 'rental_id' => $rental->id,
-                'amount' => self::RENT_PRICE,
+                'amount' => $precio,
                 'payment_date' => $date->toDateString(),
                 'payment_method' => $n % 3 === 0 ? 'transferencia' : 'efectivo',
                 'reference' => 'DEMO-' . $rental->id . '-' . ($n + 1),

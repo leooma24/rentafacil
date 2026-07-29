@@ -77,16 +77,22 @@ class RentalResource extends Resource
                     )
                     ->required(),
                 Forms\Components\Select::make('washing_machine_id')
-                    ->label('Lavadora')
+                    ->label('Equipo')
                     ->options(function ($record) use ($tenant) {
                         $options = $tenant->washingMachines()
                             ->where('status', 'disponible');
                         if ($record) {
                             $options->orWhere('id', $record->washing_machine_id);
                         }
+                        // Con secadoras en el parque, el puro código no basta para
+                        // saber qué se está asignando.
                         return $options->get()
-                            ->pluck('machine_code', 'id');
+                            ->mapWithKeys(fn ($equipo) => [
+                                $equipo->id => "{$equipo->machine_code} · {$equipo->kindLabel()}"
+                                    . ($equipo->brand ? " {$equipo->brand}" : ''),
+                            ]);
                     })
+                    ->searchable()
                     ->required(),
                 Forms\Components\DatePicker::make('start_date')
                     ->label('Fecha de Inicio')
@@ -110,6 +116,27 @@ class RentalResource extends Resource
                     ->default('activa')
                     ->hiddenOn(['edit'])
                     ->required(),
+                // El precio vive en la renta y no sólo en la configuración de la
+                // empresa: así se cobra distinto por equipo o por cliente, y
+                // cambiarle el precio a la empresa no mueve lo ya rentado.
+                Forms\Components\TextInput::make('price')
+                    ->label('Precio de esta renta')
+                    ->numeric()
+                    ->minValue(0)
+                    ->step('0.01')
+                    ->prefix('$')
+                    ->default(fn () => \App\Support\RentalTerms::for($tenant)->price)
+                    ->helperText('Puedes cobrar distinto por equipo o por cliente. Vacío usa el precio de tus Preferencias.'),
+
+                Forms\Components\TextInput::make('deposit')
+                    ->label('Depósito en garantía')
+                    ->numeric()
+                    ->minValue(0)
+                    ->step('0.01')
+                    ->prefix('$')
+                    ->default(0)
+                    ->helperText('Lo que dejó el cliente y hay que devolverle al terminar.'),
+
                 Forms\Components\Textarea::make('notes')
                     ->label('Notas')
                     ->columnSpanFull(),

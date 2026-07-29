@@ -42,6 +42,24 @@ class RentAction
                     ->label('Fecha de Fin')
                     ->default($terms->endDateFrom())
                     ->required(),
+                // Precargado con el de la empresa: quien cobra parejo no lo toca,
+                // y quien cobra distinto por equipo lo cambia aquí mismo.
+                Forms\Components\TextInput::make('price')
+                    ->label('Precio de esta renta')
+                    ->numeric()
+                    ->minValue(0)
+                    ->step('0.01')
+                    ->prefix('$')
+                    ->default($terms->price)
+                    ->required(),
+                Forms\Components\TextInput::make('deposit')
+                    ->label('Depósito en garantía')
+                    ->numeric()
+                    ->minValue(0)
+                    ->step('0.01')
+                    ->prefix('$')
+                    ->default(0)
+                    ->helperText('Déjalo en cero si no pides depósito.'),
                 Forms\Components\Textarea::make('notes')
                     ->label('Notas')
                     ->columnSpanFull(),
@@ -62,7 +80,10 @@ class RentAction
                 event(new RentEvent($data));
 
                 Notification::make()
-                    ->title('La lavadora ha sido rentada')
+                    ->title($record->kindLabel() . ' rentada a ' . $rental->customer->name)
+                    ->body($rental->deposit > 0
+                        ? 'Quedó registrado un depósito de $' . number_format($rental->deposit, 2) . '.'
+                        : null)
                     ->success()
                     ->send();
             });

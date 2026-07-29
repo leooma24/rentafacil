@@ -32,6 +32,9 @@
         .saldo.debe { color: #dc2626; }
         .saldo.ok { color: #059669; font-size: 26px; }
         .desde { margin-top: 6px; font-size: 14px; color: #64748b; }
+        .deposito { margin-top: 18px; padding: 12px 14px; border-radius: 10px;
+                    background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46;
+                    font-size: 14px; line-height: 1.5; }
         .titulo { margin: 26px 0 8px; font-size: 14px; font-weight: 700; color: #475569;
                   text-transform: uppercase; letter-spacing: .03em; }
         .maquina { display: flex; justify-content: space-between; gap: 16px;
@@ -68,8 +71,18 @@
                 <p class="desde">No debes nada. Gracias.</p>
             @endif
 
+            {{-- El depósito va aparte y nunca restándole a la deuda: es dinero del
+                 cliente en poder del proveedor, no un abono a lo que debe. --}}
+            @php($enGarantia = $statement->depositosEnGarantia())
+            @if ($enGarantia > 0)
+                <div class="deposito">
+                    Tienes ${{ number_format($enGarantia, 2) }} en depósito de garantía.
+                    Se te devuelve cuando entregues el equipo.
+                </div>
+            @endif
+
             @if ($statement->calculable && count($statement->lines))
-                <div class="titulo">Tus lavadoras</div>
+                <div class="titulo">Tus equipos</div>
                 @foreach ($statement->lines as $linea)
                     <div class="maquina">
                         <div>

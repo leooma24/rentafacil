@@ -155,8 +155,22 @@ class AccountStatement
         return Abonos::creditFor($rental);
     }
 
+    /**
+     * A cuánto se le cobra a esta renta.
+     *
+     * Manda el precio de la renta. Antes no existía y había que deducirlo del
+     * último pago aplicado: una adivinanza que se rompe en cuanto alguien paga de
+     * más o de menos, y que además impedía cobrar distinto por equipo o cliente.
+     *
+     * La deducción se queda como respaldo para las rentas viejas, que se crearon
+     * cuando la columna no existía y tienen price en nulo.
+     */
     private function priceFor(Rental $rental, float $defaultPrice): float
     {
+        if ($rental->price > 0) {
+            return (float) $rental->price;
+        }
+
         // Solo los pagos aplicados dicen a cuánto se le cobra a este cliente.
         // Un abono de $150 no es su tarifa: es un pedazo de ella.
         $last = $rental->payments

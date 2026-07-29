@@ -148,10 +148,16 @@ class DemoCompanyBuilderTest extends TestCase
             )
         );
 
-        $payments = Payment::where('company_id', $company->id)->get();
+        $payments = Payment::where('company_id', $company->id)->with('rental')->get();
         $this->assertGreaterThan(50, $payments->count());
         $this->assertTrue($payments->every(fn ($p) => $p->status === 'completado'));
-        $this->assertTrue($payments->every(fn ($p) => (float) $p->amount === 250.0));
+
+        // Cada cobro vale lo que su renta: con precios distintos por equipo, un
+        // monto fijo dejaría pagos de 250 en una renta pactada en 300.
+        $this->assertTrue(
+            $payments->every(fn ($p) => (float) $p->amount === (float) ($p->rental->price ?: 250)),
+            'Hay cobros que no coinciden con el precio de su renta.'
+        );
 
         // Hay historial repartido en al menos 5 meses distintos.
         $months = $payments->map(fn ($p) => Carbon::parse($p->payment_date)->format('Y-m'))->unique();

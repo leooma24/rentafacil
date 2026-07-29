@@ -16,12 +16,19 @@ class Rental extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['status', 'start_date', 'end_date', 'customer_id', 'washing_machine_id'])
+            ->logOnly(['status', 'start_date', 'end_date', 'customer_id', 'washing_machine_id', 'price', 'deposit'])
             ->logOnlyDirty()
             ->setDescriptionForEvent(fn (string $eventName) => "Renta {$eventName}");
     }
 
-    protected $fillable = ['company_id', 'customer_id', 'washing_machine_id', 'start_date', 'end_date', 'status', 'notes'];
+    protected $fillable = [
+        'company_id', 'customer_id', 'washing_machine_id', 'start_date', 'end_date',
+        'status', 'notes', 'price', 'deposit', 'deposit_returned', 'deposit_returned_at',
+    ];
+
+    protected $casts = [
+        'deposit_returned_at' => 'datetime',
+    ];
 
     public function company(): BelongsTo
     {
@@ -46,5 +53,11 @@ class Rental extends Model
     public function payments()
     {
         return $this->hasMany(Payment::class);
+    }
+
+    /** Trae depósito y todavía no se le devuelve. */
+    public function hasPendingDeposit(): bool
+    {
+        return (float) $this->deposit > 0 && $this->deposit_returned_at === null;
     }
 }

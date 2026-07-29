@@ -28,4 +28,17 @@ class Statement
     {
         return $this->calculable && $this->total > 0;
     }
+
+    /**
+     * Lo que el cliente dejó en garantía y todavía no se le devuelve.
+     *
+     * Va aparte del total y nunca se le resta: es dinero del cliente en poder del
+     * dueño, no un abono a su deuda. Mezclarlos haría creer que debe menos.
+     */
+    public function depositosEnGarantia(): float
+    {
+        return collect($this->lines)
+            ->filter(fn (RentalDebt $linea) => $linea->rental->hasPendingDeposit())
+            ->sum(fn (RentalDebt $linea) => (float) $linea->rental->deposit);
+    }
 }

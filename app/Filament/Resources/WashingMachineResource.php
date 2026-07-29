@@ -352,19 +352,67 @@ class WashingMachineResource extends Resource
                     // salida era cancelar, y esa renta sí se cumplió.
                     Tables\Actions\Action::make('pick_up')
                         ->visible(fn(WashingMachine $record) => in_array($record->status, ['rentada', 'mantenimiento']) && in_array($record->activeRental?->status, ['activa', 'vencida']))
-                        ->label('Recoger Lavadora')
+                        ->label('Recoger equipo')
                         ->icon('heroicon-s-check-circle')
                         ->color('success')
-                        ->requiresConfirmation()
-                        ->modalHeading('Recoger la lavadora')
-                        ->modalDescription('La renta queda como completada y la lavadora vuelve a estar disponible.')
+                        ->modalHeading('Recoger el equipo')
+                        ->modalDescription('La renta queda como completada y el equipo vuelve a estar disponible.')
+                        ->modalSubmitActionLabel('Recoger')
+                        // Al recoger es cuando toca devolver el depósito, y es
+                        // justo cuando se olvida: el formulario lo pone enfrente.
+                        ->form(fn (WashingMachine $record) => $record->activeRental?->hasPendingDeposit()
+                            ? [
+                                Forms\Components\Placeholder::make('deposito_dejado')
+                                    ->label('Dejó de depósito')
+                                    ->content('$' . number_format($record->activeRental->deposit, 2)),
+                                Forms\Components\TextInput::make('deposit_returned')
+                                    ->label('Cuánto le devuelves')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->step('0.01')
+                                    ->prefix('$')
+                                    ->default(fn () => $record->activeRental->deposit)
+                                    ->required()
+                                    ->helperText('Si le descuentas algo por daños, ponlo aquí y anótalo en las notas.'),
+                                Forms\Components\Textarea::make('deposit_notes')
+                                    ->label('Notas de la devolución')
+                                    ->rows(2),
+                            ]
+                            : []
+                        )
                         ->action(function (array $data, WashingMachine $record) use ($tenant) {
+                            $renta = $record->activeRental;
+
                             $record->update(['status' => 'disponible']);
+
+                            $cambios = ['status' => 'completada', 'end_date' => now()->toDateString()];
+
+                            if ($renta?->hasPendingDeposit() && isset($data['deposit_returned'])) {
+                                $cambios['deposit_returned'] = (float) $data['deposit_returned'];
+                                $cambios['deposit_returned_at'] = now();
+
+                                if (filled($data['deposit_notes'] ?? null)) {
+                                    $cambios['notes'] = trim(($renta->notes ? $renta->notes . ' · ' : '')
+                                        . 'Depósito: ' . $data['deposit_notes']);
+                                }
+                            }
+
                             $record->rentals()
                                 ->whereIn('status', ['activa', 'vencida'])
-                                ->update(['status' => 'completada', 'end_date' => now()->toDateString()]);
+                                ->update($cambios);
+
+                            $retenido = isset($cambios['deposit_returned'])
+                                ? (float) $renta->deposit - $cambios['deposit_returned']
+                                : 0.0;
+
                             Notification::make()
-                                ->title('La lavadora esta disponible y la lavadora ha sido recogida')
+                                ->title($record->kindLabel() . ' recogida y disponible')
+                                ->body(match (true) {
+                                    ! isset($cambios['deposit_returned']) => null,
+                                    $retenido > 0 => 'Le devolviste $' . number_format($cambios['deposit_returned'], 2)
+                                        . ' y retuviste $' . number_format($retenido, 2) . '.',
+                                    default => 'Depósito devuelto completo.',
+                                })
                                 ->success()
                                 ->send();
                         }),
