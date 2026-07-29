@@ -32,13 +32,14 @@ class ListWashingMachines extends ListRecords
 
     public function getSubheading(): ?string
     {
-        return 'Tu inventario. Cada lavadora te dice si está rentada, libre o parada, y cuánto te ha dado.';
+        return 'Tu inventario de lavadoras y secadoras. Cada equipo te dice si está rentado, libre o parado, y cuánto te ha dado.';
     }
 
     public function getTabs(): array
     {
         return [
-            'all' => Tab::make(),
+            // Sin etiqueta, Filament imprime la clave: la pestaña decía "All".
+            'all' => Tab::make('Todos'),
             'disponible' => Tab::make()
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'disponible')),
             'rentada' => Tab::make()

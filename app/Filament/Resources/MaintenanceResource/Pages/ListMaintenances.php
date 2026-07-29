@@ -25,6 +25,6 @@ class ListMaintenances extends ListRecords
 
     public function getSubheading(): ?string
     {
-        return 'El historial de servicio de cada lavadora y lo que te ha costado. Con eso decides cuál ya no conviene reparar.';
+        return 'El historial de servicio de cada equipo y lo que te ha costado. Con eso decides cuál ya no conviene reparar.';
     }
 }

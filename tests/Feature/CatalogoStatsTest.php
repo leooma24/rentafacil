@@ -210,10 +210,20 @@ class CatalogoStatsTest extends TestCase
     {
         $maquina = $this->maquina('LAV-001', 'mantenimiento');
 
+        // Las fechas van ancladas al mes en curso y no a "hoy más tres días":
+        // corriendo la prueba a fin de mes, ese +3 caía en el mes siguiente y el
+        // servicio se salía del filtro. La prueba fallaba sola cada 28 del mes.
+        $mes = now()->startOfMonth();
+        $hoy = today();
+
+        // Uno atrasado: el día 1 del mes ya pasó salvo que hoy sea día 1.
+        $atrasado = $hoy->day > 1 ? $mes->copy() : $hoy->copy();
+        $porVenir = $mes->copy()->endOfMonth();
+
         $servicios = [
-            ['programada', now()->subDays(4), 300],   // atrasado
-            ['programada', now()->addDays(3), 150],
-            ['completado', now()->subDays(2), 450],
+            ['programada', $atrasado, 300],
+            ['programada', $porVenir, 150],
+            ['completado', $mes->copy()->addDay(), 450],
             // Del mes pasado: no debe sumar al costo.
             ['completado', now()->subMonthNoOverflow()->startOfMonth(), 900],
         ];

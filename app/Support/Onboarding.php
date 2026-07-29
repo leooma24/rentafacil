@@ -31,8 +31,8 @@ class Onboarding
             ],
             [
                 'clave' => 'lavadoras',
-                'titulo' => 'Carga tus lavadoras',
-                'ayuda' => 'Una por una, o importa tu Excel de un jalón.',
+                'titulo' => 'Carga tus equipos',
+                'ayuda' => 'Lavadoras y secadoras. Una por una, o importa tu Excel de un jalón.',
                 'hecho' => $company->washingMachines()->exists(),
             ],
             [
@@ -44,7 +44,7 @@ class Onboarding
             [
                 'clave' => 'renta',
                 'titulo' => 'Registra tu primera renta',
-                'ayuda' => 'Asigna una lavadora a un cliente y empieza a llevar el control.',
+                'ayuda' => 'Asigna un equipo a un cliente y empieza a llevar el control.',
                 'hecho' => $company->rentals()->exists(),
             ],
         ]);

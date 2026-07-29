@@ -72,18 +72,28 @@ class DemoCompanyBuilderTest extends TestCase
         $this->assertSame(7, (int) $company->settings->days_per_payment);
     }
 
-    public function test_genera_catorce_lavadoras_y_veinte_clientes_con_direccion(): void
+    public function test_genera_catorce_lavadoras_tres_secadoras_y_veinte_clientes(): void
     {
         $this->seedPackage();
 
         $company = (new DemoCompanyBuilder())->build();
 
         $machines = $company->washingMachines;
-        $this->assertCount(14, $machines);
-        $this->assertSame(10, $machines->where('status', 'rentada')->count());
-        $this->assertSame(2, $machines->where('status', 'disponible')->count());
-        $this->assertSame(1, $machines->where('status', 'mantenimiento')->count());
-        $this->assertSame(1, $machines->where('status', 'fuera_de_servicio')->count());
+        $this->assertCount(17, $machines);
+
+        $lavadoras = $machines->where('kind', 'lavadora');
+        $this->assertCount(14, $lavadoras);
+        $this->assertSame(10, $lavadoras->where('status', 'rentada')->count());
+        $this->assertSame(2, $lavadoras->where('status', 'disponible')->count());
+        $this->assertSame(1, $lavadoras->where('status', 'mantenimiento')->count());
+        $this->assertSame(1, $lavadoras->where('status', 'fuera_de_servicio')->count());
+
+        // El negocio también renta secadoras: sin ellas en el demo, el prospecto
+        // que las renta no ve que la app las contempla.
+        $secadoras = $machines->where('kind', 'secadora');
+        $this->assertCount(3, $secadoras);
+        $this->assertSame(2, $secadoras->where('status', 'rentada')->count());
+
         $this->assertSame('LAV-001', $machines->sortBy('machine_code')->first()->machine_code);
         $this->assertTrue($machines->every(fn ($m) => $m->purchase_price > 0));
 
@@ -93,6 +103,24 @@ class DemoCompanyBuilderTest extends TestCase
         $this->assertTrue($customers->every(fn ($c) => filled($c->phone)));
     }
 
+    /**
+     * Una máquina marcada como rentada sin renta que la respalde descuadra la
+     * ocupación y el desglose por tipo diría "0/3 secadoras".
+     */
+    public function test_toda_maquina_rentada_del_demo_tiene_su_renta(): void
+    {
+        $this->seedPackage();
+
+        $company = (new DemoCompanyBuilder())->build();
+
+        foreach ($company->washingMachines->where('status', 'rentada') as $maquina) {
+            $this->assertNotNull(
+                $maquina->activeRental,
+                "{$maquina->machine_code} figura como rentada y no tiene renta activa."
+            );
+        }
+    }
+
     public function test_genera_rentas_activas_vencidas_y_completadas_con_pagos(): void
     {
         $this->seedPackage();
@@ -100,7 +128,8 @@ class DemoCompanyBuilderTest extends TestCase
         $company = (new DemoCompanyBuilder())->build();
         $rentals = $company->rentals;
 
-        $this->assertSame(8, $rentals->where('status', 'activa')->count());
+        // 8 de lavadora + 2 de secadora.
+        $this->assertSame(10, $rentals->where('status', 'activa')->count());
         $this->assertSame(2, $rentals->where('status', 'vencida')->count());
         $this->assertSame(15, $rentals->where('status', 'completada')->count());
 

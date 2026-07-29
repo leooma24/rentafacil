@@ -139,7 +139,7 @@ class Provecho
                 clave: 'abonos',
                 titulo: 'Acepta lo que el cliente traiga',
                 beneficio: 'Si te trae menos de la renta completa, lo registras como abono en vez de rechazarlo. El saldo baja y cuando junta el periodo la renta se extiende sola.',
-                comoSeUsa: 'En Rentas o en Lavadoras, toca "Abonar" y escribe lo que te dio.',
+                comoSeUsa: 'En Rentas o en Equipos, toca "Abonar" y escribe lo que te dio.',
                 pista: $abonos > 0
                     ? "Llevas {$abonos} " . ($abonos === 1 ? 'abono registrado' : 'abonos registrados') . '.'
                     : 'Nunca has registrado un abono: cada vez que alguien traiga incompleto, esto te evita perder el cobro.',
@@ -152,13 +152,13 @@ class Provecho
 
             new Herramienta(
                 clave: 'mantenimientos',
-                titulo: 'Lleva el historial de cada lavadora',
+                titulo: 'Lleva el historial de cada equipo',
                 beneficio: 'Sabes qué se le ha hecho a cada aparato y cuánto llevas gastado en él. Con eso decides cuál ya no conviene reparar y cuál cambiar.',
-                comoSeUsa: 'En Mantenimientos, registra el servicio con su costo. La lavadora queda marcada mientras dura.',
+                comoSeUsa: 'En Mantenimientos, registra el servicio con su costo. El equipo queda marcado mientras dura.',
                 pista: $mantenimientos > 0
                     ? "Llevas {$mantenimientos} " . ($mantenimientos === 1 ? 'servicio registrado' : 'servicios registrados') . '.'
                     : ($lavadoras > 0
-                        ? "Tienes {$lavadoras} lavadoras y ningún servicio registrado: sin esto no sabes cuánto te cuesta cada una."
+                        ? "Tienes {$lavadoras} equipos y ningún servicio registrado: sin esto no sabes cuánto te cuesta cada uno."
                         : null),
                 estado: $mantenimientos > 0 ? self::USANDO : self::SIN_ESTRENAR,
                 icono: 'heroicon-o-wrench-screwdriver',
@@ -219,11 +219,11 @@ class Provecho
                     titulo: 'Sube tu Excel de un jalón',
                     beneficio: 'No tienes que capturar uno por uno. Si ya llevas tu lista en Excel, se sube completa en un paso.',
                     comoSeUsa: 'En Lavadoras y en Clientes, con el botón "Importar".',
-                    pista: "Llevas {$lavadoras} lavadoras y {$clientes} clientes cargados.",
+                    pista: "Llevas {$lavadoras} equipos y {$clientes} clientes cargados.",
                     estado: null,
                     icono: 'heroicon-o-arrow-up-tray',
                     ruta: 'filament.propietario.resources.lavadoras.index',
-                    accion: 'Ir a lavadoras',
+                    accion: 'Ir a equipos',
                     peso: 85,
                 )
                 : null,

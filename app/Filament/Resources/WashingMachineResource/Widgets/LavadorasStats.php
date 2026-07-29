@@ -11,16 +11,17 @@ class LavadorasStats extends CatalogoStats
     {
         $tenant = $this->tenant();
 
-        // Un solo recorrido en vez de una consulta por estado.
-        $porEstado = $tenant->washingMachines()
-            ->selectRaw('status, count(*) as total')
-            ->groupBy('status')
-            ->pluck('total', 'status');
+        // Un solo recorrido en vez de una consulta por estado y tipo.
+        $filas = $tenant->washingMachines()
+            ->selectRaw('kind, status, count(*) as total')
+            ->groupBy('kind', 'status')
+            ->get();
 
-        $rentadas = (int) $porEstado->get('rentada', 0);
-        $disponibles = (int) $porEstado->get('disponible', 0);
-        $detenidas = (int) $porEstado->get('mantenimiento', 0)
-            + (int) $porEstado->get('fuera_de_servicio', 0);
+        $cuantas = fn (string $estado) => (int) $filas->where('status', $estado)->sum('total');
+
+        $rentadas = $cuantas('rentada');
+        $disponibles = $cuantas('disponible');
+        $detenidas = $cuantas('mantenimiento') + $cuantas('fuera_de_servicio');
 
         // Las vendidas ya no son del parque: no cuentan para la ocupación.
         $parque = $rentadas + $disponibles + $detenidas;
@@ -28,7 +29,7 @@ class LavadorasStats extends CatalogoStats
 
         return [
             Stat::make('Ocupación', $ocupacion . '%')
-                ->description("{$rentadas} de {$parque} rentadas")
+                ->description($this->desglosePorTipo($filas) ?? "{$rentadas} de {$parque} rentadas")
                 ->descriptionIcon('heroicon-m-chart-pie')
                 ->color($ocupacion >= 70 ? 'success' : ($ocupacion >= 40 ? 'warning' : 'danger')),
 
@@ -42,5 +43,35 @@ class LavadorasStats extends CatalogoStats
                 ->descriptionIcon($detenidas > 0 ? 'heroicon-m-wrench-screwdriver' : 'heroicon-m-check-circle')
                 ->color($detenidas > 0 ? 'danger' : 'success'),
         ];
+    }
+
+    /**
+     * "8/10 lavadoras · 2/4 secadoras", pero sólo cuando hay más de un tipo.
+     *
+     * A quien nada más renta lavadoras el desglose le sobra y le quita lugar al
+     * dato: en ese caso devuelve null y la tarjeta usa su texto de siempre.
+     */
+    private function desglosePorTipo(\Illuminate\Support\Collection $filas): ?string
+    {
+        $tipos = $filas->pluck('kind')->unique()->filter();
+
+        if ($tipos->count() < 2) {
+            return null;
+        }
+
+        return $tipos
+            ->sort()
+            ->map(function (string $tipo) use ($filas) {
+                $delTipo = $filas->where('kind', $tipo);
+                $rentadas = (int) $delTipo->where('status', 'rentada')->sum('total');
+                $parque = (int) $delTipo
+                    ->whereIn('status', ['rentada', 'disponible', 'mantenimiento', 'fuera_de_servicio'])
+                    ->sum('total');
+
+                $nombre = \App\Models\WashingMachine::KINDS_PLURAL[$tipo] ?? $tipo;
+
+                return "{$rentadas}/{$parque} {$nombre}";
+            })
+            ->join(' · ');
     }
 }

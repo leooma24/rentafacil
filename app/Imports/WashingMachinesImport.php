@@ -22,8 +22,23 @@ class WashingMachinesImport implements ToModel, WithHeadingRow, WithValidation
             'model' => $row['modelo'] ?? null,
             'serial_number' => $row['numero_serie'] ?? null,
             'type' => $row['tipo'] ?? null,
+            'kind' => $this->kind($row['que_es'] ?? null),
             'status' => 'disponible',
         ]);
+    }
+
+    /**
+     * La columna "que_es" es opcional y viene escrita a mano, así que se acepta
+     * "Secadora", "secadora" o "SECADORA". Lo que no se reconozca cae a lavadora,
+     * que es lo que trae el 100% de los archivos de hoy.
+     */
+    private function kind(?string $valor): string
+    {
+        $normalizado = mb_strtolower(trim((string) $valor));
+
+        return array_key_exists($normalizado, WashingMachine::KINDS)
+            ? $normalizado
+            : 'lavadora';
     }
 
     public function rules(): array
@@ -34,6 +49,7 @@ class WashingMachinesImport implements ToModel, WithHeadingRow, WithValidation
             'modelo' => 'nullable|string|max:255',
             'numero_serie' => 'nullable|string|max:255',
             'tipo' => 'nullable|string|max:255',
+            'que_es' => 'nullable|string|max:255',
         ];
     }
 }

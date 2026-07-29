@@ -25,6 +25,6 @@ class ListRentals extends ListRecords
 
     public function getSubheading(): ?string
     {
-        return 'Quién trae qué lavadora y hasta cuándo pagó. Al registrar un cobro, la fecha se recorre sola.';
+        return 'Quién trae qué equipo y hasta cuándo pagó. Al registrar un cobro, la fecha se recorre sola.';
     }
 }

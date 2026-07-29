@@ -29,9 +29,11 @@ class WashingMachineResource extends Resource
     protected static ?int $navigationSort = 2;
 
     protected static ?string $navigationGroup = 'Gestión Principal';
-    protected static ?string $modelLabel = 'Lavadora';
-    protected static ?string $pluralModelLabel = 'Lavadoras';
-    protected static ?string $navigationLabel = 'Lavadoras';
+    // "Equipos" y no "Lavadoras": el negocio también renta secadoras. El slug se
+    // queda en /lavadoras para no romper los enlaces que ya andan por ahí.
+    protected static ?string $modelLabel = 'Equipo';
+    protected static ?string $pluralModelLabel = 'Equipos';
+    protected static ?string $navigationLabel = 'Equipos';
     protected static ?string $slug = 'lavadoras';
     protected static ?string $recordTitleAttribute = 'machine_code';
 
@@ -53,9 +55,16 @@ class WashingMachineResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make('Información Básica')
-                    ->description('Datos generales de la lavadora')
+                    ->description('Datos generales del equipo')
                     ->icon('heroicon-o-information-circle')
                     ->schema([
+                        Forms\Components\Select::make('kind')
+                            ->label('Qué es')
+                            ->options(WashingMachine::KINDS)
+                            ->default('lavadora')
+                            ->required()
+                            ->native(false)
+                            ->helperText('Lavadora, secadora o las dos en un mismo aparato.'),
                         Forms\Components\TextInput::make('machine_code')
                             ->label('Código')
                             ->required(),
@@ -74,12 +83,12 @@ class WashingMachineResource extends Resource
                             ->label('Precio de compra')
                             ->nullable()
                             ->numeric(),
+                        // Cómo carga, no qué es: eso ahora vive en kind.
                         Forms\Components\Select::make('type')
-                            ->label('Tipo')
+                            ->label('Cómo carga')
                             ->options([
                                 'Carga frontal' => 'Carga frontal',
                                 'Carga superior' => 'Carga superior',
-                                'Lavadora-secadora' => 'Lavadora-secadora',
                             ])
                             ->nullable(),
                         Forms\Components\TextInput::make('color')
@@ -190,11 +199,24 @@ class WashingMachineResource extends Resource
                 // como subtítulo, para que la fila quepa con sus acciones.
                 Tables\Columns\TextColumn::make('machine_code')
                     ->label('Código')
+                    // En celular el subtítulo carga qué es, cómo está y con quién.
                     ->description(fn (WashingMachine $record): string => collect([
+                        $record->kindLabel(),
                         ucfirst(str_replace('_', ' ', (string) $record->status)),
                         $record->activeRental?->customer?->name,
                     ])->filter()->join(' · '))
                     ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('kind')
+                    ->label('Qué es')
+                    ->badge()
+                    ->visibleFrom('md')
+                    ->formatStateUsing(fn (?string $state) => WashingMachine::KINDS[$state] ?? 'Lavadora')
+                    ->color(fn (?string $state): string => match ($state) {
+                        'secadora' => 'warning',
+                        'combo' => 'info',
+                        default => 'gray',
+                    })
                     ->sortable(),
                 Tables\Columns\TextColumn::make('brand')
                     ->visibleFrom('md')
@@ -274,6 +296,9 @@ class WashingMachineResource extends Resource
                     }),
             ])
             ->filters([
+                SelectFilter::make('kind')
+                    ->options(WashingMachine::KINDS)
+                    ->label('Qué es'),
                 SelectFilter::make('status')
                     ->options([
                         'disponible' => 'Disponible',
@@ -282,7 +307,7 @@ class WashingMachineResource extends Resource
                         'vendida' => 'Vendida',
                         'fuera_de_servicio' => 'Fuera de Servicio',
                     ])
-                    ->label('Status'),
+                    ->label('Estatus'),
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([

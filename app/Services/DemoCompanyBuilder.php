@@ -44,6 +44,20 @@ class DemoCompanyBuilder
         'disponible', 'disponible', 'mantenimiento', 'fuera_de_servicio',
     ];
 
+    /**
+     * Las secadoras van con código SEC- para que al ordenar por código queden
+     * después de las lavadoras: las rentas de ejemplo se reparten por posición y
+     * moverlas descuadraría todo lo demás.
+     */
+    private const DRYER_MODELS = [
+        ['brand' => 'Whirlpool', 'model' => '7MWED1730JQ', 'capacity' => 16, 'price' => 9400],
+        ['brand' => 'Mabe', 'model' => 'SME26N5MSBAB', 'capacity' => 22, 'price' => 8100],
+        ['brand' => 'LG', 'model' => 'DLE3400W', 'capacity' => 20, 'price' => 12300],
+    ];
+
+    /** Dos rentadas y una libre, para que la ocupación por tipo se vea viva. */
+    private const DRYER_STATUSES = ['rentada', 'rentada', 'disponible'];
+
     private const CUSTOMER_NAMES = [
         'María González', 'Juan Pérez', 'Guadalupe Ramírez', 'José Luis Torres',
         'Ana Beltrán', 'Carlos Medina', 'Rosa Elena Ochoa', 'Miguel Ángel Cota',
@@ -126,7 +140,25 @@ class DemoCompanyBuilder
                 'serial_number' => 'SN' . str_pad((string) (1000 + $index), 6, '0', STR_PAD_LEFT),
                 'purchase_date' => now()->subMonths(6 + $index)->toDateString(),
                 'purchase_price' => $spec['price'],
-                'type' => 'automatica',
+                'type' => 'Carga superior',
+                'kind' => 'lavadora',
+                'color' => 'blanco',
+                'load_capacity' => $spec['capacity'],
+            ]);
+        }
+
+        foreach (self::DRYER_STATUSES as $index => $status) {
+            $spec = self::DRYER_MODELS[$index % count(self::DRYER_MODELS)];
+
+            $company->washingMachines()->create([
+                'machine_code' => sprintf('SEC-%03d', $index + 1),
+                'brand' => $spec['brand'],
+                'model' => $spec['model'],
+                'status' => $status,
+                'kind' => 'secadora',
+                'serial_number' => 'SN' . str_pad((string) (2000 + $index), 6, '0', STR_PAD_LEFT),
+                'purchase_date' => now()->subMonths(4 + $index)->toDateString(),
+                'purchase_price' => $spec['price'],
                 'color' => 'blanco',
                 'load_capacity' => $spec['capacity'],
             ]);
@@ -231,6 +263,24 @@ class DemoCompanyBuilder
             ]);
             // Deja de pagar justo cuando se atrasó.
             $this->collectWeeklyPayments($payments, $company, $rental, $start, $end);
+        }
+
+        // Las dos secadoras rentadas, a clientes que todavía no traían nada. Sin
+        // esto quedarían marcadas como rentadas sin renta que las respalde, y el
+        // desglose de ocupación diría 0/3 secadoras.
+        $secadoras = $machines->where('kind', 'secadora')->where('status', 'rentada')->values();
+        foreach ($secadoras as $s => $secadora) {
+            $index = 10 + $s;
+            $start = now()->subWeeks(4 + $s * 3)->startOfDay();
+            $rental = $company->rentals()->create([
+                'customer_id' => $customers[$index]->id,
+                'washing_machine_id' => $secadora->id,
+                'start_date' => $start->toDateString(),
+                'end_date' => now()->addDays(12 + $s * 9)->toDateString(),
+                'status' => 'activa',
+                'notes' => 'Renta de secadora generada para la demo.',
+            ]);
+            $this->collectWeeklyPayments($payments, $company, $rental, $start, now());
         }
 
         // 15 completadas en los últimos 6 meses, reusando máquinas y clientes.
