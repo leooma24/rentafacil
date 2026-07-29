@@ -902,6 +902,42 @@
     color: #64748b;
 }
 
+/* ---------------------------------------------------------------
+   11. Preferencias: el resumen de lo que se está configurando
+   Dos números sueltos no dejan ver si quedó como se quería.
+   --------------------------------------------------------------- */
+
+.rf-cfg-resumen {
+    padding: .85rem 1.05rem;
+    border-radius: 12px;
+    border: 1px solid rgba(6, 182, 212, .28);
+    background: linear-gradient(135deg, #f7feff 45%, rgba(6, 182, 212, .08));
+    font-size: .875rem;
+    line-height: 1.55;
+    color: #0f172a;
+}
+
+.rf-cfg-resumen strong {
+    font-weight: 700;
+}
+
+.rf-cfg-resumen-falta {
+    border-color: rgba(249, 115, 22, .32);
+    background: linear-gradient(135deg, #fffbf5 45%, rgba(249, 115, 22, .09));
+    color: #7c2d12;
+}
+
+.rf-cfg-resumen-aviso {
+    border-color: rgba(249, 115, 22, .28);
+    background: linear-gradient(135deg, #fffbf5 45%, rgba(249, 115, 22, .07));
+}
+
+.rf-cfg-resumen-neutro {
+    border-color: rgba(148, 163, 184, .3);
+    background: #f8fafc;
+    color: #475569;
+}
+
 /* El botón de ubicación del planificador de rutas */
 .rf-ubicacion-nota {
     margin-top: .5rem;

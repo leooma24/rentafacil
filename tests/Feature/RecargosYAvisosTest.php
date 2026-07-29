@@ -293,4 +293,56 @@ class RecargosYAvisosTest extends TestCase
             ->get("/propietario/{$this->company->id}/avisos")
             ->assertOk();
     }
+
+    /**
+     * Preferencias enseña un ejemplo con números reales.
+     *
+     * Un recargo mal calibrado espanta clientes, y en abstracto no se nota: dos
+     * campos sueltos no dejan ver cuánto acabaría pagando alguien.
+     */
+    public function test_preferencias_enseña_lo_que_pagaria_un_cliente_atrasado(): void
+    {
+        $html = \Livewire\Livewire::test(
+            \App\Filament\Pages\Settings::class,
+            ['tenant' => $this->company],
+        )
+            ->set('data.price', 250)
+            ->set('data.days_per_payment', 7)
+            ->set('data.late_fee_amount', 50)
+            ->set('data.late_fee_type', 'fijo')
+            ->set('data.late_fee_grace_days', 3)
+            ->html();
+
+        // 2 periodos: $500 de renta + $100 de recargo.
+        $this->assertStringContainsString('$500.00 de renta', $html);
+        $this->assertStringContainsString('$100.00', $html);
+        $this->assertStringContainsString('$600.00', $html);
+        $this->assertStringContainsString('3 días o menos, no lleva recargo', $html);
+    }
+
+    public function test_preferencias_resume_la_tarifa_en_una_frase(): void
+    {
+        $html = \Livewire\Livewire::test(
+            \App\Filament\Pages\Settings::class,
+            ['tenant' => $this->company],
+        )
+            ->set('data.price', 250)
+            ->set('data.days_per_payment', 7)
+            ->html();
+
+        $this->assertStringContainsString('Cobras $250.00 cada 7 días', $html);
+    }
+
+    /** Sin tarifa no se puede cobrar, y la pantalla lo dice en vez de callarse. */
+    public function test_preferencias_avisa_cuando_falta_la_tarifa(): void
+    {
+        $html = \Livewire\Livewire::test(
+            \App\Filament\Pages\Settings::class,
+            ['tenant' => $this->company],
+        )
+            ->set('data.price', 0)
+            ->html();
+
+        $this->assertStringContainsString('Falta tu tarifa', $html);
+    }
 }
