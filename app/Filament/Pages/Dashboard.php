@@ -21,6 +21,8 @@ class Dashboard extends BaseDashboard
         // no sólo sobra, le pone enfrente números que no le tocan.
         if (\App\Support\Acceso::esCobrador()) {
             return [
+                // Sus tareas del día con el botón para hacerlas.
+                \App\Filament\Widgets\PendientesWidget::class,
                 SectionHeading::make([
                     'titulo' => 'Tu día',
                     'descripcion' => 'A quién hay que cobrarle antes de que se acabe el día.',
@@ -33,6 +35,9 @@ class Dashboard extends BaseDashboard
         return [
             // Primeros pasos: se esconde solo cuando ya no hay pendientes.
             \App\Filament\Widgets\OnboardingWidget::class,
+            // Lo que hay que HACER hoy, antes de los números. También se esconde
+            // solo cuando no queda nada pendiente.
+            \App\Filament\Widgets\PendientesWidget::class,
 
             SectionHeading::make([
                 'titulo' => 'Hoy',

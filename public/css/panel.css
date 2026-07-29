@@ -644,6 +644,125 @@
     color: #0f172a;
 }
 
+/* ---------------------------------------------------------------
+   9. Los pendientes del día, arriba del escritorio
+   --------------------------------------------------------------- */
+
+.rf-pendientes-titulo {
+    margin-bottom: .6rem;
+    font-size: .6875rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+.rf-pendientes-lista {
+    display: grid;
+    gap: .65rem;
+}
+
+.rf-pendiente {
+    display: flex;
+    align-items: center;
+    gap: .9rem;
+    padding: .9rem 1.1rem;
+    border-radius: 14px;
+    border: 1px solid rgba(148, 163, 184, .2);
+    background: #fff;
+    box-shadow:
+        0 1px 2px rgba(15, 23, 42, .04),
+        0 8px 22px -16px rgba(15, 23, 42, .18);
+}
+
+.rf-pendiente-icono {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 11px;
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.rf-pendiente-svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.rf-pendiente-texto {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.rf-pendiente-que {
+    font-size: .9375rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -.01em;
+}
+
+.rf-pendiente-porque {
+    margin-top: .1rem;
+    font-size: .8125rem;
+    line-height: 1.4;
+    color: #64748b;
+}
+
+.rf-pendiente-accion {
+    flex: none;
+}
+
+/* Cada pendiente con el color de su urgencia, en el filo y en el icono */
+.rf-pendiente-info {
+    border-color: rgba(6, 182, 212, .3);
+    background: linear-gradient(135deg, #fff 60%, rgba(6, 182, 212, .05));
+}
+.rf-pendiente-info .rf-pendiente-icono {
+    background: rgba(6, 182, 212, .13);
+    color: #0e7490;
+}
+
+.rf-pendiente-warning {
+    border-color: rgba(249, 115, 22, .3);
+    background: linear-gradient(135deg, #fff 60%, rgba(249, 115, 22, .06));
+}
+.rf-pendiente-warning .rf-pendiente-icono {
+    background: rgba(249, 115, 22, .13);
+    color: #c2410c;
+}
+
+.rf-pendiente-success {
+    border-color: rgba(16, 185, 129, .3);
+    background: linear-gradient(135deg, #fff 60%, rgba(16, 185, 129, .06));
+}
+.rf-pendiente-success .rf-pendiente-icono {
+    background: rgba(16, 185, 129, .13);
+    color: #047857;
+}
+
+/* En celular el botón se va abajo y ocupa el ancho: apretado al lado del
+   texto quedaba de dos renglones y sin lugar para el dedo. */
+@media (max-width: 640px) {
+    .rf-pendiente {
+        flex-wrap: wrap;
+    }
+
+    .rf-pendiente-texto {
+        flex: 1 1 60%;
+    }
+
+    .rf-pendiente-accion {
+        flex: 1 1 100%;
+    }
+
+    .rf-pendiente-accion .fi-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
 /* El botón de ubicación del planificador de rutas */
 .rf-ubicacion-nota {
     margin-top: .5rem;

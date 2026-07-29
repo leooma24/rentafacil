@@ -29,7 +29,14 @@ class UtilidadStats extends BaseWidget
 
         $dinero = fn (float $monto) => '$' . number_format($monto, 2);
 
-        return [
+        // Lo que trae en depósitos de sus clientes. Es dinero en su poder que no
+        // es suyo, y confundirlo con ganancia es justo lo que esta sección viene
+        // a evitar. Sólo aparece cuando hay.
+        $enGarantia = (float) $tenant->rentals()
+            ->whereNull('deposit_returned_at')
+            ->sum('deposit');
+
+        return array_values(array_filter([
             Stat::make('Entró este mes', $dinero($utilidad->ingresos))
                 ->description('cobros registrados')
                 ->descriptionIcon('heroicon-m-arrow-trending-up')
@@ -50,6 +57,13 @@ class UtilidadStats extends BaseWidget
                         : "el {$margen}% de lo que cobraste"))
                 ->descriptionIcon($utilidad->pierde() ? 'heroicon-m-exclamation-triangle' : 'heroicon-m-banknotes')
                 ->color($utilidad->pierde() ? 'danger' : 'success'),
-        ];
+
+            $enGarantia > 0
+                ? Stat::make('En garantía', $dinero($enGarantia))
+                    ->description('depósitos de tus clientes: no son tuyos')
+                    ->descriptionIcon('heroicon-m-lock-closed')
+                    ->color('gray')
+                : null,
+        ]));
     }
 }

@@ -129,14 +129,38 @@ class MobileListsTest extends TestCase
         return substr_count($html, 'fi-wi-stats-overview-stat ');
     }
 
-    public function test_las_lavadoras_se_resumen_en_un_solo_recuadro(): void
+    public function test_los_equipos_se_resumen_en_un_solo_recuadro(): void
     {
         $html = Livewire::test(StatsOverview::class)->html();
 
         $this->assertSame(1, $this->contarRecuadros($html), 'Eran cuatro recuadros de un número cada uno.');
-        $this->assertStringContainsString('rentadas', $html);
+        // "Equipos" y no "Lavadoras": el parque también trae secadoras.
+        $this->assertStringContainsString('Equipos', $html);
+        $this->assertStringContainsString('rentados', $html);
         $this->assertStringContainsString('libres', $html);
-        $this->assertStringContainsString('mantenimiento', $html);
+    }
+
+    /**
+     * El mantenimiento y las secadoras sólo se nombran cuando los hay: "0 en
+     * mantenimiento" es ruido en la tarjeta de quien no tiene ninguno.
+     */
+    public function test_el_recuadro_solo_nombra_lo_que_existe(): void
+    {
+        $this->assertStringNotContainsString(
+            'mantenimiento',
+            Livewire::test(StatsOverview::class)->html(),
+            'Sin equipos en mantenimiento, no debería nombrarlo.'
+        );
+
+        Filament::getTenant()->washingMachines()->create([
+            'machine_code' => 'SEC-001', 'brand' => 'Mabe',
+            'kind' => 'secadora', 'status' => 'mantenimiento',
+        ]);
+
+        $html = Livewire::test(StatsOverview::class)->html();
+
+        $this->assertStringContainsString('en mantenimiento', $html);
+        $this->assertStringContainsString('son secadoras', $html);
     }
 
     public function test_los_pagos_se_resumen_en_tres_recuadros(): void

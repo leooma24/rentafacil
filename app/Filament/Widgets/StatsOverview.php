@@ -15,16 +15,31 @@ class StatsOverview extends BaseWidget
     protected function getStats(): array
     {
         $tenant = Filament::getTenant();
-        $washingMachines = $tenant->washingMachines()->count();
-        $washingMachinesRented = $tenant->washingMachines()->where('status', 'rentada')->count();
-        $washingMachinesAvailable = $tenant->washingMachines()->where('status', 'disponible')->count();
-        $washingMachinesMaintenance = $tenant->washingMachines()->where('status', 'mantenimiento')->count();
+
+        $porEstado = $tenant->washingMachines()
+            ->selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $total = (int) $porEstado->sum();
+        $rentadas = (int) $porEstado->get('rentada', 0);
+        $libres = (int) $porEstado->get('disponible', 0);
+        $mantenimiento = (int) $porEstado->get('mantenimiento', 0);
+
+        // Cuántas secadoras hay, para que el recuadro no siga hablando sólo de
+        // lavadoras cuando el parque ya trae de las dos.
+        $secadoras = $tenant->washingMachines()->where('kind', 'secadora')->count();
 
         // Un solo recuadro en vez de cuatro: en el celular cada uno ocupaba
         // un renglón completo y el escritorio se volvía interminable.
         return [
-            Stat::make('Lavadoras', $washingMachines)
-                ->description("{$washingMachinesRented} rentadas · {$washingMachinesAvailable} libres · {$washingMachinesMaintenance} en mantenimiento")
+            Stat::make('Equipos', $total)
+                ->description(collect([
+                    "{$rentadas} rentados",
+                    "{$libres} libres",
+                    $mantenimiento > 0 ? "{$mantenimiento} en mantenimiento" : null,
+                    $secadoras > 0 ? "{$secadoras} son secadoras" : null,
+                ])->filter()->join(' · '))
                 ->descriptionIcon('heroicon-m-archive-box')
                 ->color('info'),
         ];

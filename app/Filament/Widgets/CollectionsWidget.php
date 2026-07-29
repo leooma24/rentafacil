@@ -65,7 +65,7 @@ class CollectionsWidget extends BaseWidget
                     ->color('primary'),
 
                 Tables\Columns\TextColumn::make('washingMachine.machine_code')
-                    ->label('Lavadora'),
+                    ->label('Equipo'),
 
                 Tables\Columns\TextColumn::make('end_date')
                     ->label('Situación')

@@ -170,6 +170,7 @@ class DashboardTest extends TestCase
 
         $this->assertSame([
             \App\Filament\Widgets\OnboardingWidget::class,
+            \App\Filament\Widgets\PendientesWidget::class,
             \App\Filament\Widgets\SectionHeading::class,
             \App\Filament\Widgets\TodayStats::class,
             \App\Filament\Widgets\CollectionsWidget::class,
