@@ -115,10 +115,35 @@ class Company extends Model
         return $this->hasOne(Setting::class);
     }
 
+    /** Todos los periodos que ha tenido la empresa, del más viejo al más nuevo. */
+    public function companyPackages()
+    {
+        return $this->hasMany(CompanyPackage::class);
+    }
+
+    /**
+     * Si la empresa está en su periodo de prueba.
+     *
+     * Antes tenía los 15 días escritos a mano, así que una prueba de 30 dejaba
+     * de contarse como prueba a la mitad: la cuenta seguía funcionando pero el
+     * letrero de "prueba, X días" se apagaba y el dueño no sabía cuánto le
+     * quedaba.
+     *
+     * Ahora es prueba mientras sea el PRIMER periodo de la empresa: en cuanto
+     * paga, se registra otro y deja de serlo. Así el plazo lo decide quien crea
+     * el periodo y no una constante escondida aquí.
+     */
     public function isOnTrial(): bool
     {
         $cp = $this->companyPackage;
-        return $cp && $cp->end_date && $cp->end_date >= now() && $cp->start_date >= now()->subDays(15);
+
+        if (! $cp || ! $cp->end_date || $cp->end_date < now()) {
+            return false;
+        }
+
+        return ! CompanyPackage::where('company_id', $this->id)
+            ->where('id', '<', $cp->id)
+            ->exists();
     }
 
     public function trialDaysLeft(): int

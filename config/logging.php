@@ -51,9 +51,15 @@ return [
     */
 
     'channels' => [
+        /*
+         * "daily" y no "single": con un solo archivo, laravel.log llevaba 16 MB
+         * acumulados desde abril y nadie lo miraba, así que los errores de hoy
+         * quedaban enterrados bajo los de hace cuatro meses. Con rotación diaria
+         * se conservan 14 días y cada archivo es de un solo día.
+         */
         'stack' => [
             'driver' => 'stack',
-            'channels' => ['single'],
+            'channels' => ['daily'],
             'ignore_exceptions' => false,
         ],
 

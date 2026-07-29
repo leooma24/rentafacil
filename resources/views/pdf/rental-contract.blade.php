@@ -24,7 +24,7 @@
 <body>
     <div class="header">
         <h1>{{ $company->name }}</h1>
-        <p>Contrato de Renta de Lavadora</p>
+        <p>Contrato de Renta de {{ $machine?->kindLabel() ?? 'Equipo' }}</p>
         <p>Folio: RNT-{{ str_pad($rental->id, 6, '0', STR_PAD_LEFT) }}</p>
     </div>
 
@@ -47,12 +47,15 @@
     </div>
 
     <div class="section">
-        <h2>Datos de la Lavadora</h2>
+        <h2>Datos del Equipo</h2>
         <table>
             <tr><td>Código</td><td>{{ $machine->machine_code }}</td></tr>
+            <tr><td>Qué es</td><td>{{ $machine->kindLabel() }}</td></tr>
             <tr><td>Marca / Modelo</td><td>{{ $machine->brand }} {{ $machine->model }}</td></tr>
             <tr><td>Número de Serie</td><td>{{ $machine->serial_number ?? 'N/A' }}</td></tr>
-            <tr><td>Tipo</td><td>{{ $machine->type ?? 'N/A' }}</td></tr>
+            @if ($machine->type)
+                <tr><td>Cómo carga</td><td>{{ $machine->type }}</td></tr>
+            @endif
         </table>
     </div>
 
@@ -61,8 +64,26 @@
         <table>
             <tr><td>Fecha de Inicio</td><td>{{ \Carbon\Carbon::parse($rental->start_date)->format('d/m/Y') }}</td></tr>
             <tr><td>Fecha de Fin</td><td>{{ \Carbon\Carbon::parse($rental->end_date)->format('d/m/Y') }}</td></tr>
-            <tr><td>Precio por Periodo</td><td>${{ number_format($settings->price ?? 0, 2) }} MXN</td></tr>
-            <tr><td>Periodo de Pago</td><td>Cada {{ $settings->days_per_payment ?? 'N/A' }} días</td></tr>
+            <tr><td>Precio por Periodo</td><td>${{ number_format($terms->price ?? 0, 2) }} MXN</td></tr>
+            <tr><td>Periodo de Pago</td><td>Cada {{ $terms->days }} días</td></tr>
+            @if ($rental->deposit > 0)
+                <tr><td>Depósito en Garantía</td><td>${{ number_format($rental->deposit, 2) }} MXN</td></tr>
+            @endif
+            @if ($settings?->chargesLateFee())
+                <tr>
+                    <td>Recargo por Atraso</td>
+                    <td>
+                        @if ($settings->late_fee_type === 'porcentaje')
+                            {{ rtrim(rtrim(number_format($settings->late_fee_amount, 2), '0'), '.') }}% por periodo vencido
+                        @else
+                            ${{ number_format($settings->late_fee_amount, 2) }} MXN por periodo vencido
+                        @endif
+                        @if ($settings->late_fee_grace_days > 0)
+                            (después de {{ $settings->late_fee_grace_days }} días de gracia)
+                        @endif
+                    </td>
+                </tr>
+            @endif
             <tr><td>Estado</td><td>{{ ucfirst($rental->status) }}</td></tr>
         </table>
     </div>
@@ -77,6 +98,19 @@
             <li>La empresa se reserva el derecho de recoger el equipo en caso de incumplimiento de pago.</li>
             <li>El cliente debe notificar cualquier falla o problema técnico dentro de las primeras 24 horas.</li>
             <li>Al término del contrato, el equipo debe ser devuelto en las mismas condiciones en que fue entregado.</li>
+            @if ($rental->deposit > 0)
+                {{-- Lo que el cliente dejó tiene que estar escrito: es su dinero. --}}
+                <li>
+                    El cliente entrega ${{ number_format($rental->deposit, 2) }} MXN como depósito en garantía,
+                    que le será devuelto al entregar el equipo, descontando los daños que hubiera por mal uso.
+                </li>
+            @endif
+            @if ($settings?->chargesLateFee())
+                <li>
+                    Los pagos que se realicen después de la fecha acordada generan un recargo por cada
+                    periodo vencido, en los términos indicados en este contrato.
+                </li>
+            @endif
         </ol>
     </div>
 

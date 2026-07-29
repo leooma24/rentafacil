@@ -63,7 +63,7 @@
                     <span>{{ $customer?->name ?? '—' }}</span>
                 </div>
                 <div class="dato">
-                    <span>Lavadora</span>
+                    <span>Equipo</span>
                     <span>{{ $machine?->machine_code ?? '—' }}</span>
                 </div>
                 <div class="dato">

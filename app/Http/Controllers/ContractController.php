@@ -18,6 +18,10 @@ class ContractController extends Controller
             'machine' => $rental->washingMachine,
             'company' => $rental->company,
             'settings' => $rental->company->settings,
+            // Las condiciones DE ESTA RENTA y no las de la empresa: el contrato
+            // decía el precio general aunque a este cliente se le cobrara otro,
+            // y es el papel que respalda el cobro.
+            'terms' => \App\Support\RentalTerms::forRental($rental),
         ]);
 
         $filename = "contrato-RNT-" . str_pad($rental->id, 6, '0', STR_PAD_LEFT) . ".pdf";

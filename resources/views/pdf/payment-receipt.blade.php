@@ -45,7 +45,7 @@
             <tr><td>Fecha de Pago</td><td>{{ \Carbon\Carbon::parse($payment->payment_date)->format('d/m/Y') }}</td></tr>
             <tr><td>Método de Pago</td><td>{{ $payment->payment_method }}</td></tr>
             <tr><td>Referencia</td><td>{{ $payment->reference ?? 'N/A' }}</td></tr>
-            <tr><td>Lavadora</td><td>{{ $machine->machine_code }} - {{ $machine->brand }} {{ $machine->model }}</td></tr>
+            <tr><td>Equipo</td><td>{{ $machine->machine_code }} - {{ $machine->kindLabel() }} {{ $machine->brand }} {{ $machine->model }}</td></tr>
             <tr><td>Periodo de Renta</td><td>{{ \Carbon\Carbon::parse($rental->start_date)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($rental->end_date)->format('d/m/Y') }}</td></tr>
             <tr class="total-row"><td>TOTAL</td><td>${{ number_format($payment->amount, 2) }} MXN</td></tr>
         </table>
