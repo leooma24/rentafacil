@@ -411,6 +411,31 @@ class DemoCompanyBuilder
             $this->collectWeeklyPayments($payments, $company, $rental, $start, $end);
         }
 
+        // Una recolección de hace tres días donde el cliente quedó a deber, y su
+        // equipo todavía esperando revisión.
+        //
+        // Es la historia completa del ciclo en una sola fila: se le recogió, lo
+        // que debía quedó anotado, y el aparato no vuelve a la calle hasta que
+        // alguien lo abra. Sin este ejemplo, ni la advertencia del formulario de
+        // renta ni el estatus "en revisión" tienen nada que enseñar.
+        $enRevision = $machines->firstWhere('status', 'en_revision');
+        if ($enRevision) {
+            $start = now()->subWeeks(11)->startOfDay();
+            $rental = $company->rentals()->create([
+                'customer_id' => $customers[15]->id,
+                'washing_machine_id' => $enRevision->id,
+                'start_date' => $start->toDateString(),
+                'end_date' => now()->subDays(3)->toDateString(),
+                'status' => 'completada',
+                // Lo que debía el día que se le quitó la lavadora: tres periodos.
+                'debt_at_close' => self::RENT_PRICE * 3,
+                'debt_settled' => false,
+                'notes' => 'Se le recogió el equipo por falta de pago. Quedó a deber tres semanas.',
+            ]);
+            // Dejó de pagar cinco semanas antes de que se le recogiera.
+            $this->collectWeeklyPayments($payments, $company, $rental, $start, now()->subWeeks(5));
+        }
+
         // 15 completadas en los últimos 6 meses, reusando máquinas y clientes.
         for ($k = 0; $k < 15; $k++) {
             $start = now()->subDays(175 - $k * 10)->startOfDay();

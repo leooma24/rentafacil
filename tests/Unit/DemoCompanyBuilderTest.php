@@ -144,7 +144,8 @@ class DemoCompanyBuilderTest extends TestCase
         $this->assertSame(10, $rentals->where('status', 'activa')->count());
         // 2 morosos + la del equipo extraviado, que se deja abierta a propósito.
         $this->assertSame(3, $rentals->where('status', 'vencida')->count());
-        $this->assertSame(15, $rentals->where('status', 'completada')->count());
+        // 15 de historial más la recolección donde el cliente quedó a deber.
+        $this->assertSame(16, $rentals->where('status', 'completada')->count());
 
         // Hay al menos una renta que vence dentro de los próximos 7 días.
         $this->assertTrue(
@@ -491,5 +492,35 @@ class DemoCompanyBuilderTest extends TestCase
         $this->assertGreaterThan(0, (float) $ajustes->late_fee_amount);
         $this->assertSame('fijo', $ajustes->late_fee_type);
         $this->assertGreaterThan(0, (int) $ajustes->late_fee_grace_days);
+    }
+
+    /**
+     * El demo enseña una recolección donde el cliente quedó a deber.
+     *
+     * Sin este ejemplo, ni la advertencia del formulario de renta ni el estatus
+     * "en revisión" tienen nada que enseñarle al que ve el demo, y son de las
+     * cosas que más separan esto de una libreta.
+     */
+    public function test_el_demo_trae_una_recoleccion_con_adeudo_pendiente(): void
+    {
+        $this->seedPackage();
+
+        $company = (new DemoCompanyBuilder())->build();
+
+        $recogida = $company->rentals()
+            ->where('debt_settled', false)
+            ->where('debt_at_close', '>', 0)
+            ->with('customer')
+            ->first();
+
+        $this->assertNotNull($recogida, 'Ninguna recolección dejó adeudo anotado.');
+        $this->assertSame('completada', $recogida->status);
+
+        // Y ese cliente sale advertido en su ficha.
+        $historial = \App\Support\HistorialDelCliente::for($recogida->customer);
+
+        $this->assertTrue($historial->yaFallo());
+        $this->assertTrue($historial->hayQueAdvertir());
+        $this->assertSame('Quedó a deber', $historial->etiqueta());
     }
 }

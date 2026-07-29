@@ -99,6 +99,21 @@ class RentalResource extends Resource
                             ->createOptionUsing(fn (array $data) => $tenant->customers()->create($data)->id)
                             ->helperText('Si es nuevo, lo das de alta aquí mismo.'),
 
+                        // Cómo se ha portado, ANTES de entregarle el aparato.
+                        //
+                        // Volverle a dar una lavadora a quien ya te falló es el
+                        // error más caro del negocio —se pierde el aparato
+                        // completo, no una semana de renta— y se cometía sin un
+                        // solo aviso: la ficha del cliente sólo tenía nombre,
+                        // correo y teléfono.
+                        Forms\Components\Placeholder::make('historial')
+                            ->hiddenLabel()
+                            ->columnSpanFull()
+                            ->visible(fn (Forms\Get $get) => filled($get('customer_id')))
+                            ->content(fn (Forms\Get $get) => new \Illuminate\Support\HtmlString(
+                                self::comoSeHaPortado($get, $tenant)
+                            )),
+
                         Forms\Components\Select::make('washing_machine_id')
                             ->label('Equipo')
                             ->options(function ($record) use ($tenant) {
@@ -215,6 +230,32 @@ class RentalResource extends Resource
                             ->columnSpanFull(),
                     ]),
             ]);
+    }
+
+    /**
+     * El aviso de cómo se ha portado el cliente escogido.
+     *
+     * Va pegado al selector y no al pie del formulario a propósito: la decisión
+     * de entregarle o no se toma en el momento de escogerlo, y un aviso hasta
+     * abajo se lee cuando ya se decidió.
+     */
+    private static function comoSeHaPortado(Forms\Get $get, $tenant): string
+    {
+        $cliente = $tenant->customers()->find($get('customer_id'));
+
+        if (! $cliente) {
+            return '';
+        }
+
+        $historial = \App\Support\HistorialDelCliente::for($cliente);
+
+        if (! $historial->hayQueAdvertir()) {
+            // Del bueno también se dice algo: saber que alguien lleva dos años
+            // pagando puntual es justo lo que permite no pedirle depósito.
+            return '<p class="rf-cfg-resumen">' . e($historial->resumen()) . '</p>';
+        }
+
+        return '<p class="rf-cfg-resumen rf-cfg-resumen-falta">' . $historial->advertencia() . '</p>';
     }
 
     /** El trato en una frase, con lo que el dueño acaba de capturar. */

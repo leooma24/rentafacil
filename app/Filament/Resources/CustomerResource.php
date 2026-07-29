@@ -113,6 +113,14 @@ class CustomerResource extends Resource
                             ->content(fn (?Customer $record) => $record
                                 ? new \Illuminate\Support\HtmlString(self::comoVaElCliente($record))
                                 : ''),
+
+                        // Cómo se ha portado, que es lo que decide si se le
+                        // vuelve a entregar un aparato de once mil pesos.
+                        Forms\Components\Placeholder::make('historial')
+                            ->hiddenLabel()
+                            ->content(fn (?Customer $record) => $record
+                                ? new \Illuminate\Support\HtmlString(self::comoSeHaPortado($record))
+                                : ''),
                     ]),
             ]);
     }
@@ -162,6 +170,23 @@ class CustomerResource extends Resource
         return '<p class="' . $clase . '">' . implode(' ', $partes) . '</p>';
     }
 
+    /**
+     * Su historial de pago, en una frase, y la advertencia si la hay.
+     *
+     * Volverle a rentar a quien ya te falló es el error más caro del negocio: se
+     * pierde el aparato completo, no una semana de renta.
+     */
+    public static function comoSeHaPortado(Customer $record): string
+    {
+        $historial = \App\Support\HistorialDelCliente::for($record);
+
+        if ($historial->hayQueAdvertir()) {
+            return '<p class="rf-cfg-resumen rf-cfg-resumen-falta">' . $historial->advertencia() . '</p>';
+        }
+
+        return '<p class="rf-cfg-resumen">' . e($historial->resumen()) . '</p>';
+    }
+
     public static function table(Table $table): Table
     {
         return $table
@@ -194,6 +219,15 @@ class CustomerResource extends Resource
                     ->label('Teléfono')
                     ->visibleFrom('md')
                     ->searchable(),
+                // Se lee de un tirón en la lista: es el dato que se busca antes
+                // de aceptar rentarle otra vez.
+                Tables\Columns\TextColumn::make('portada')
+                    ->label('Cómo paga')
+                    ->badge()
+                    ->visibleFrom('lg')
+                    ->state(fn (Customer $record) => \App\Support\HistorialDelCliente::for($record)->etiqueta())
+                    ->color(fn (Customer $record) => \App\Support\HistorialDelCliente::for($record)->color()),
+
                 Tables\Columns\TextColumn::make('debt')
                     ->label('Debe')
                     ->visibleFrom('md')
