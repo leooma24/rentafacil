@@ -296,6 +296,15 @@ return [
          */
         'strategy' => \Spatie\Backup\Tasks\Cleanup\Strategies\DefaultStrategy::class,
 
+        /*
+         * SIETE DÍAS Y SE ACABÓ.
+         *
+         * La configuración que traía el paquete no era eso: guardaba todo 7 días
+         * y de ahí adelgazaba —uno diario por 16 días, uno semanal por 8 semanas,
+         * uno mensual por 4 meses—, así que quedaban respaldos de hace medio año
+         * ocupando disco. Poniendo en cero todo lo que sigue a
+         * keep_all_backups_for_days, lo que pasa de 7 días se borra.
+         */
         'default_strategy' => [
             /*
              * The number of days for which backups must be kept.
@@ -303,30 +312,15 @@ return [
             'keep_all_backups_for_days' => 7,
 
             /*
-             * After the "keep_all_backups_for_days" period is over, the most recent backup
-             * of that day will be kept. Older backups within the same day will be removed.
-             * If you create backups only once a day, no backups will be removed yet.
+             * En cero: pasados los 7 días no se conserva nada.
              */
-            'keep_daily_backups_for_days' => 16,
+            'keep_daily_backups_for_days' => 0,
 
-            /*
-             * After the "keep_daily_backups_for_days" period is over, the most recent backup
-             * of that week will be kept. Older backups within the same week will be removed.
-             * If you create backups only once a week, no backups will be removed yet.
-             */
-            'keep_weekly_backups_for_weeks' => 8,
+            'keep_weekly_backups_for_weeks' => 0,
 
-            /*
-             * After the "keep_weekly_backups_for_weeks" period is over, the most recent backup
-             * of that month will be kept. Older backups within the same month will be removed.
-             */
-            'keep_monthly_backups_for_months' => 4,
+            'keep_monthly_backups_for_months' => 0,
 
-            /*
-             * After the "keep_monthly_backups_for_months" period is over, the most recent backup
-             * of that year will be kept. Older backups within the same year will be removed.
-             */
-            'keep_yearly_backups_for_years' => 2,
+            'keep_yearly_backups_for_years' => 0,
 
             /*
              * After cleaning up the backups remove the oldest backup until

@@ -125,4 +125,39 @@ class PruebaYBitacoraTest extends TestCase
         $this->assertNotContains('single', $canales);
         $this->assertSame(14, config('logging.channels.daily.days'));
     }
+
+    /**
+     * Los respaldos se guardan 7 días y ya.
+     *
+     * La configuración de fábrica del paquete guarda todo 7 días y de ahí
+     * adelgaza: uno diario por 16 días, uno semanal por 8 semanas y uno mensual
+     * por 4 meses. Con eso quedaban respaldos de hace medio año ocupando disco.
+     */
+    public function test_los_respaldos_se_guardan_siete_dias_y_no_mas(): void
+    {
+        $estrategia = config('backup.cleanup.default_strategy');
+
+        $this->assertSame(7, $estrategia['keep_all_backups_for_days']);
+
+        foreach (['keep_daily_backups_for_days', 'keep_weekly_backups_for_weeks',
+                  'keep_monthly_backups_for_months', 'keep_yearly_backups_for_years'] as $clave) {
+            $this->assertSame(
+                0,
+                $estrategia[$clave],
+                "{$clave} volvió a su valor de fábrica y se van a acumular respaldos viejos."
+            );
+        }
+    }
+
+    /** Y el respaldo incluye los archivos subidos, no sólo la base. */
+    public function test_el_respaldo_incluye_los_archivos_que_sube_la_gente(): void
+    {
+        $incluye = config('backup.backup.source.files.include');
+
+        $this->assertContains(
+            storage_path('app/public'),
+            $incluye,
+            'Las fotos de entrega y las identificaciones de clientes no se respaldarían.'
+        );
+    }
 }
