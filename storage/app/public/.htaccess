@@ -1,0 +1,13 @@
+# Aquí viven los archivos que sube la gente: fotos de entrega, de recolección e
+# identificaciones de clientes. Nada de eso es PHP, así que nada de eso se
+# ejecuta.
+#
+# No es teoría: en febrero aparecieron aquí dos archivos que nadie subió desde la
+# app, uno con enlaces ocultos a sitios de apuestas y otro con código para
+# ejecutar cosas en el servidor. Esta regla es lo que los mantiene en 403.
+#
+# Va versionado a propósito. Antes existía sólo en el servidor, así que un
+# despliegue que sobrescribiera la carpeta dejaba el hueco abierto otra vez.
+<FilesMatch "\.php$">
+    Deny from all
+</FilesMatch>

@@ -1,2 +1,5 @@
 *
 !.gitignore
+# El .htaccess que impide ejecutar PHP aquí sí se versiona: existía sólo en el
+# servidor, y un despliegue que sobrescribiera la carpeta reabría el hueco.
+!.htaccess

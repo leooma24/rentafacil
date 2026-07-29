@@ -5,6 +5,14 @@
 
     RewriteEngine On
 
+    # Block suspicious file extensions
+    RewriteCond %{REQUEST_URI} \.(phtml|php3|php4|php5|php7|phps|phar|inc)$ [NC]
+    RewriteRule .* - [F,L]
+
+    # Block access to hidden files
+    RewriteCond %{REQUEST_URI} (^|/)\. [NC]
+    RewriteRule .* - [F,L]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
@@ -19,3 +27,16 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# Security Headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Block direct PHP access in subdirectories
+<FilesMatch "^(admin|bnn_|rip|cache|shell|cmd|eval|wp-|xmlrpc).*\.php$">
+    Deny from all
+</FilesMatch>
