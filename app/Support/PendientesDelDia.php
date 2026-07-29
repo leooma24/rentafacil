@@ -32,8 +32,42 @@ class PendientesDelDia
         return new self(array_values(array_filter([
             self::entregas($empresa),
             self::cobranza($empresa),
+            self::equiposParados($empresa),
             self::corte($empresa, $usuario),
         ])));
+    }
+
+    /**
+     * Equipos marcados en mantenimiento sin ninguna orden abierta que lo explique.
+     *
+     * Es dinero parado y en silencio: el aparato no aparece para rentar, no hay
+     * nada en la pantalla de mantenimientos que diga por qué, y el dueño se
+     * entera cuando le hace falta una lavadora y no la encuentra. En producción
+     * hay dos así, uno de ellos sin una sola orden en su historial.
+     */
+    private static function equiposParados(Company $empresa): ?Pendiente
+    {
+        $parados = $empresa->washingMachines()
+            ->where('status', 'mantenimiento')
+            ->whereDoesntHave('maintenances', fn ($query) => $query
+                ->whereIn('status', ['programada', 'en_progreso']))
+            ->count();
+
+        if ($parados === 0) {
+            return null;
+        }
+
+        return new Pendiente(
+            clave: 'parados',
+            titulo: $parados === 1
+                ? '1 equipo parado sin orden abierta'
+                : "{$parados} equipos parados sin orden abierta",
+            detalle: 'Está marcado en mantenimiento pero no hay trabajo pendiente. Así no aparece para rentar.',
+            accion: 'Revisarlos',
+            icono: 'heroicon-o-wrench-screwdriver',
+            color: 'warning',
+            ruta: 'filament.propietario.resources.lavadoras.index',
+        );
     }
 
     /** Equipos que ya están con el cliente y nadie registró cómo se entregaron. */

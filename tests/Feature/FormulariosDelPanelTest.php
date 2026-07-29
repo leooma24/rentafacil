@@ -54,6 +54,7 @@ class FormulariosDelPanelTest extends TestCase
             Permission::findOrCreate('create_payment', 'web'),
             Permission::findOrCreate('view_any_maintenance', 'web'),
             Permission::findOrCreate('create_maintenance', 'web'),
+            Permission::findOrCreate('update_maintenance', 'web'),
         ]);
         $this->company->members()->attach($this->dueno);
         $this->actingAs($this->dueno);
@@ -257,5 +258,113 @@ class FormulariosDelPanelTest extends TestCase
             ])
             ->call('create')
             ->assertHasFormErrors(['end_date']);
+    }
+
+    /**
+     * ESTE HUECO LO ABRIMOS AL PODER CAPTURAR EL ESTATUS.
+     *
+     * Antes la única forma de dar por terminada una orden era el botón
+     * "Terminar mantenimiento", que sí soltaba el equipo. Al poder marcarla
+     * como terminada desde el formulario quedaba la trampa: la reparación se
+     * daba por hecha, el aparato seguía marcado en mantenimiento y ya no
+     * aparecía para rentar, sin ninguna orden abierta que lo explicara.
+     */
+    public function test_terminar_el_mantenimiento_desde_el_formulario_suelta_el_equipo(): void
+    {
+        $equipo = $this->company->washingMachines()->create([
+            'machine_code' => 'LAV-902',
+            'kind' => 'lavadora',
+            'status' => 'disponible',
+        ]);
+
+        $orden = $this->company->maintenances()->create([
+            'washing_machine_id' => $equipo->id,
+            'technician_name' => 'Luis Herrera',
+            'maintenance_type' => 'correctivo',
+            'status' => 'en_progreso',
+            'description' => 'Bomba de desagüe.',
+            'start_date' => now()->subDays(3)->toDateString(),
+        ]);
+
+        $equipo->update(['status' => 'mantenimiento']);
+
+        Livewire::test(\App\Filament\Resources\MaintenanceResource\Pages\EditMaintenance::class, [
+            'record' => $orden->id,
+            'tenant' => $this->company,
+        ])
+            ->fillForm([
+                'status' => 'completado',
+                'end_date' => now()->toDateString(),
+                'cost' => 1250,
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertSame(
+            'disponible',
+            $equipo->refresh()->status,
+            'La orden quedó terminada y el equipo se quedó atorado en mantenimiento.'
+        );
+    }
+
+    /** Y si el cliente nunca la soltó, regresa a rentada y no a disponible. */
+    public function test_el_equipo_reparado_vuelve_a_rentada_si_la_renta_sigue_abierta(): void
+    {
+        $renta = $this->renta();
+        $equipo = $renta->washingMachine;
+
+        $orden = $this->company->maintenances()->create([
+            'washing_machine_id' => $equipo->id,
+            'technician_name' => 'Luis Herrera',
+            'maintenance_type' => 'correctivo',
+            'status' => 'en_progreso',
+            'description' => 'No centrifugaba.',
+            'start_date' => now()->subDays(2)->toDateString(),
+        ]);
+
+        $equipo->update(['status' => 'mantenimiento']);
+
+        Livewire::test(\App\Filament\Resources\MaintenanceResource\Pages\EditMaintenance::class, [
+            'record' => $orden->id,
+            'tenant' => $this->company,
+        ])
+            ->fillForm(['status' => 'completado', 'end_date' => now()->toDateString()])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertSame('rentada', $equipo->refresh()->status);
+    }
+
+    /**
+     * Y el equipo parado sin razón se le avisa al dueño: es dinero detenido en
+     * silencio, porque no aparece para rentar y nada dice por qué.
+     */
+    public function test_avisa_del_equipo_parado_sin_orden_abierta(): void
+    {
+        $equipo = $this->company->washingMachines()->create([
+            'machine_code' => 'LAV-903',
+            'kind' => 'lavadora',
+            'status' => 'mantenimiento',
+        ]);
+
+        $claves = collect(\App\Support\PendientesDelDia::for($this->company)->pendientes)
+            ->pluck('clave');
+
+        $this->assertTrue($claves->contains('parados'), 'Nadie avisa del equipo detenido.');
+
+        // Con su orden abierta ya no molesta: ahí sí está justificado.
+        $this->company->maintenances()->create([
+            'washing_machine_id' => $equipo->id,
+            'technician_name' => 'Luis Herrera',
+            'maintenance_type' => 'correctivo',
+            'status' => 'en_progreso',
+            'description' => 'En taller.',
+            'start_date' => now()->toDateString(),
+        ]);
+
+        $this->assertFalse(
+            collect(\App\Support\PendientesDelDia::for($this->company)->pendientes)
+                ->pluck('clave')->contains('parados')
+        );
     }
 }

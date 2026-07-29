@@ -209,6 +209,9 @@ class MaintenanceResource extends Resource
                                 'cost' => $data['cost']
                             ]);
 
+                            // Los días que el cliente estuvo sin su equipo se le
+                            // regalan: no tiene por qué pagar el tiempo que la
+                            // lavadora pasó en el taller.
                             $rental = $record->washingMachine->rentals()->where('status', 'activa')->first();
                             if ($rental) {
                                 $days = $record->getDurationInDays();
@@ -218,10 +221,11 @@ class MaintenanceResource extends Resource
                                     $rental->end_date = $newDate->format('Y-m-d');
                                     $rental->save();
                                 }
-                                $record->washingMachine->update(['status' => 'rentada']);
-                            } else {
-                                $record->washingMachine->update(['status' => 'disponible']);
                             }
+
+                            // Una sola regla para soltar el equipo, compartida
+                            // con el formulario de edición.
+                            $record->devolverEquipoACirculacion();
 
                             Notification::make()
                                 ->title('Mantenimiento Terminado')

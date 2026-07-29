@@ -39,6 +39,34 @@ class Maintenance extends Model
 
 
     /**
+     * Saca al equipo del taller y lo regresa a circulación.
+     *
+     * Vive aquí y no dentro del botón "Terminar mantenimiento" porque hay dos
+     * caminos para dar por terminada una orden —ese botón y el formulario de
+     * edición— y sólo uno liberaba el aparato. El otro lo dejaba marcado como en
+     * mantenimiento para siempre: sin orden abierta que lo explique, sin
+     * aparecer para rentar y sin que nadie se enterara.
+     *
+     * Vuelve a "rentada" y no a "disponible" cuando el cliente sigue con ella:
+     * el equipo se le prestó, se reparó y se le regresó; la renta nunca se
+     * cerró.
+     */
+    public function devolverEquipoACirculacion(): void
+    {
+        $equipo = $this->washingMachine;
+
+        if (! $equipo || $equipo->status !== 'mantenimiento') {
+            return;
+        }
+
+        $equipo->update([
+            'status' => $equipo->rentals()->where('status', 'activa')->exists()
+                ? 'rentada'
+                : 'disponible',
+        ]);
+    }
+
+    /**
      * Calcula la duración del mantenimiento en días.
      */
     public function getDurationInDays(): int
