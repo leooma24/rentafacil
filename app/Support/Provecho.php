@@ -64,6 +64,12 @@ class Provecho
             ->whereMonth('expense_date', now()->month)
             ->count();
 
+        $porAvisar = $company->rentals()
+            ->whereIn('status', ['activa', 'vencida'])
+            ->whereDate('end_date', '<=', today()->addDays(AvisosDelDia::DIAS_DE_ANTICIPACION))
+            ->whereHas('customer', fn ($q) => $q->whereNotNull('phone')->where('phone', '<>', ''))
+            ->count();
+
         $porVencer = $company->rentals()
             ->where('status', 'activa')
             ->whereDate('end_date', '>=', today())
@@ -101,6 +107,21 @@ class Provecho
                 ruta: 'filament.propietario.pages.rutas',
                 accion: 'Abrir el planificador',
                 peso: 95,
+            ),
+
+            new Herramienta(
+                clave: 'avisos',
+                titulo: 'Avisa antes de que se venza',
+                beneficio: 'Te arma la lista de a quién avisarle hoy, con el mensaje ya escrito. Tocas y se abre WhatsApp. Avisar antes es lo que evita el atraso.',
+                comoSeUsa: 'En Gestión Principal, entra a "Avisos de hoy".',
+                pista: $porAvisar > 0
+                    ? "Hoy hay {$porAvisar} " . ($porAvisar === 1 ? 'cliente' : 'clientes') . ' a quien avisarle.'
+                    : 'Aquí van a salir los que se vencen en los próximos días.',
+                estado: null,
+                icono: 'heroicon-o-chat-bubble-left-right',
+                ruta: 'filament.propietario.pages.avisos',
+                accion: 'Ver los avisos',
+                peso: $porAvisar > 0 ? 97 : 45,
             ),
 
             new Herramienta(

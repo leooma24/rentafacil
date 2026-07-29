@@ -86,7 +86,7 @@ class AccountStatement
             $rental->load('payments');
         }
 
-        return $this->debtFor($rental, $daysPerPeriod, $defaultPrice);
+        return $this->debtFor($rental, $daysPerPeriod, $defaultPrice, $settings);
     }
 
     /**
@@ -106,7 +106,7 @@ class AccountStatement
         $owingSince = null;
 
         foreach ($rentals as $rental) {
-            $line = $this->debtFor($rental, $daysPerPeriod, $defaultPrice);
+            $line = $this->debtFor($rental, $daysPerPeriod, $defaultPrice, $settings);
             $lines[] = $line;
             $total += $line->amount;
 
@@ -121,8 +121,12 @@ class AccountStatement
         return new Statement($customer, $total, $owingSince, $lines, true);
     }
 
-    private function debtFor(Rental $rental, int $daysPerPeriod, float $defaultPrice): RentalDebt
-    {
+    private function debtFor(
+        Rental $rental,
+        int $daysPerPeriod,
+        float $defaultPrice,
+        ?Setting $settings = null,
+    ): RentalDebt {
         $price = $this->priceFor($rental, $defaultPrice);
         $end = Carbon::parse($rental->end_date)->startOfDay();
         $today = Carbon::today();
@@ -137,10 +141,42 @@ class AccountStatement
         $daysOverdue = $end->diffInDays($today);
         $periods = (int) ceil($daysOverdue / $daysPerPeriod);
 
-        // Nunca baja de cero: un abono grande no vuelve el saldo negativo.
-        $amount = max(0.0, $periods * $price - $credit);
+        $lateFee = $this->lateFeeFor($settings, $periods, $price, $daysOverdue);
 
-        return new RentalDebt($rental, $periods, $price, $amount, $credit);
+        // Nunca baja de cero: un abono grande no vuelve el saldo negativo.
+        $amount = max(0.0, $periods * $price + $lateFee - $credit);
+
+        return new RentalDebt($rental, $periods, $price, $amount, $credit, $lateFee);
+    }
+
+    /**
+     * El recargo por atraso.
+     *
+     * Se cobra por periodo vencido, no por día: cobrar diario convierte un
+     * atraso de un mes en una cifra impagable, y un cliente que se ve imposible
+     * de alcanzar deja de intentar.
+     *
+     * Con late_fee_amount en cero devuelve cero y el cálculo queda idéntico al
+     * de siempre. Las 17 empresas que ya usan la app no ven ningún cambio hasta
+     * que ellas lo configuren.
+     */
+    private function lateFeeFor(?Setting $settings, int $periods, float $price, int $daysOverdue): float
+    {
+        $monto = (float) ($settings->late_fee_amount ?? 0);
+
+        if ($monto <= 0 || $periods <= 0) {
+            return 0.0;
+        }
+
+        // Los días de gracia perdonan el atraso corto entero, no sólo su primer
+        // periodo: quien paga dos días tarde no debería llevarse un recargo.
+        if ($daysOverdue <= (int) ($settings->late_fee_grace_days ?? 0)) {
+            return 0.0;
+        }
+
+        return ($settings->late_fee_type ?? 'fijo') === 'porcentaje'
+            ? round($periods * $price * ($monto / 100), 2)
+            : round($periods * $monto, 2);
     }
 
     private function creditFor(Rental $rental): float

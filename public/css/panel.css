@@ -763,6 +763,145 @@
     }
 }
 
+/* ---------------------------------------------------------------
+   10. Avisos de hoy
+   --------------------------------------------------------------- */
+
+.rf-avisos-resumen {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.rf-avisos-cifra {
+    flex: 1 1 0;
+    padding: 1rem 1.25rem;
+    border-radius: 14px;
+    border: 1px solid rgba(148, 163, 184, .2);
+    background: #fff;
+}
+
+.rf-avisos-cifra-mal {
+    border-color: rgba(225, 29, 72, .3);
+    background: linear-gradient(135deg, #fff 58%, rgba(244, 63, 94, .06));
+}
+
+.rf-avisos-num {
+    display: block;
+    font-size: 1.9rem;
+    font-weight: 800;
+    letter-spacing: -.03em;
+    color: #0f172a;
+}
+
+.rf-avisos-cifra-mal .rf-avisos-num {
+    color: #be123c;
+}
+
+.rf-avisos-etiqueta {
+    font-size: .75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #64748b;
+}
+
+.rf-avisos-lista {
+    display: grid;
+    gap: .75rem;
+}
+
+.rf-aviso {
+    display: grid;
+    gap: .75rem;
+    padding: 1rem 1.2rem;
+    border-radius: 14px;
+    border: 1px solid rgba(148, 163, 184, .2);
+    background: #fff;
+    box-shadow:
+        0 1px 2px rgba(15, 23, 42, .04),
+        0 8px 22px -16px rgba(15, 23, 42, .18);
+}
+
+@media (min-width: 900px) {
+    .rf-aviso {
+        grid-template-columns: 15rem 1fr auto;
+        align-items: center;
+    }
+}
+
+.rf-aviso-vencido {
+    border-color: rgba(225, 29, 72, .28);
+    background: linear-gradient(135deg, #fff 62%, rgba(244, 63, 94, .05));
+}
+
+.rf-aviso-cliente {
+    font-size: .9375rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.rf-aviso-equipo {
+    font-size: .8125rem;
+    color: #64748b;
+}
+
+.rf-aviso-cuando {
+    margin-top: .15rem;
+    font-size: .8125rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.rf-aviso-cuando-mal {
+    color: #be123c;
+}
+
+/* El mensaje se enseña completo: mandar algo sin leerlo es como no mandarlo. */
+.rf-aviso-mensaje {
+    padding: .6rem .8rem;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid rgba(148, 163, 184, .16);
+    font-size: .8125rem;
+    line-height: 1.5;
+    color: #334155;
+}
+
+@media (max-width: 899px) {
+    .rf-aviso-accion .fi-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+.rf-avisos-vacio {
+    padding: 2.5rem 1.5rem;
+    border-radius: 14px;
+    border: 1px dashed rgba(148, 163, 184, .4);
+    text-align: center;
+}
+
+.rf-avisos-vacio-titulo {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.rf-avisos-vacio-texto {
+    margin-top: .3rem;
+    font-size: .875rem;
+    color: #64748b;
+}
+
+.rf-avisos-pie {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(148, 163, 184, .22);
+    font-size: .8125rem;
+    line-height: 1.55;
+    color: #64748b;
+}
+
 /* El botón de ubicación del planificador de rutas */
 .rf-ubicacion-nota {
     margin-top: .5rem;
