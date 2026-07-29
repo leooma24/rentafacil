@@ -165,17 +165,38 @@ class WashingMachinesRelationManager extends RelationManager
                                 ->success()
                                 ->send();
                         }),
+                    // Este era el atajo peligroso: sólo aparecía con la renta
+                    // vencida —o sea, justo con los morosos— y cerraba la renta
+                    // con una simple confirmación. El adeudo se borraba sin que
+                    // nadie lo viera, porque se deduce de end_date y cerrar la
+                    // renta mueve esa fecha a hoy.
+                    //
+                    // Ahora pasa por la misma lógica que el botón de Equipos, y
+                    // pregunta qué hacer con lo que quedó debiendo.
                     Tables\Actions\Action::make('pick_up')
-                        ->visible(fn(Rental $record) => $record->status == 'vencida')
-                        ->label('Recoger Lavadora')
+                        ->visible(fn (Rental $record) => in_array($record->status, ['activa', 'vencida']))
+                        ->label('Recoger equipo')
                         ->icon('heroicon-s-check-circle')
-                        ->requiresConfirmation()
-                        ->action(function (array $data, Rental $record) use ($tenant) {
-                            $record->update(['status' => 'completada']);
-                            $record->washingMachine->update(['status' => 'disponible']);
+                        ->color('success')
+                        ->modalHeading('Recoger el equipo')
+                        ->modalDescription('La renta se cierra y el equipo queda en revisión.')
+                        ->modalSubmitActionLabel('Recoger')
+                        ->form(fn (Rental $record) => \App\Filament\Resources\WashingMachineResource::preguntaDelAdeudo($record))
+                        ->action(function (array $data, Rental $record) {
+                            $debia = app(\App\Support\Recoleccion::class)->ejecutar(
+                                $record,
+                                quedaronEnPaz: ($data['adeudo'] ?? 'anotado') === 'perdonado',
+                            );
+
                             Notification::make()
-                                ->title('La lavadora esta disponible y la lavadora ha sido recogida')
+                                ->title('Equipo recogido y en revisión')
+                                ->body($debia > 0
+                                    ? (($data['adeudo'] ?? 'anotado') === 'perdonado'
+                                        ? 'Le perdonaste $' . number_format($debia, 2) . '.'
+                                        : 'Quedó anotado que te debe $' . number_format($debia, 2) . '.')
+                                    : 'El cliente quedó al corriente.')
                                 ->success()
+                                ->persistent()
                                 ->send();
                         }),
                 ]),

@@ -22,6 +22,7 @@ class Setting extends Model
         'late_fee_amount',
         'late_fee_type',
         'late_fee_grace_days',
+        'periodos_para_recoger',
     ];
 
     /** Con el monto en cero no hay recargo y el adeudo se calcula como siempre. */

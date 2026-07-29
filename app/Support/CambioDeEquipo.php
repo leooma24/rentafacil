@@ -57,8 +57,27 @@ class CambioDeEquipo
                 'notes' => $notas,
             ]);
 
-            $anterior->update(['status' => self::DESTINO[$motivo] ?? 'disponible']);
+            $destino = self::DESTINO[$motivo] ?? 'disponible';
+
+            $anterior->update(['status' => $destino]);
             $nuevo->update(['status' => 'rentada']);
+
+            // Si se va al taller, se le abre su orden.
+            //
+            // Antes se quedaba marcado en mantenimiento sin ninguna orden que lo
+            // explicara: no aparecía para rentar, la pantalla de mantenimientos
+            // no decía por qué, y no había con qué darlo por terminado para
+            // volverlo a colocar. Un aparato perdido en su propio inventario.
+            if ($destino === 'mantenimiento') {
+                $anterior->company->maintenances()->create([
+                    'washing_machine_id' => $anterior->id,
+                    'technician_name' => 'Por asignar',
+                    'start_date' => now()->toDateString(),
+                    'maintenance_type' => 'correctivo',
+                    'status' => 'programada',
+                    'description' => trim('Entró al taller al cambiárselo al cliente. ' . ($notas ?? '')),
+                ]);
+            }
 
             // La renta conserva pagos, fechas, precio, depósito y saldo: para el
             // cliente no cambió nada más que el aparato que tiene enfrente.

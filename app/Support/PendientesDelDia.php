@@ -31,10 +31,79 @@ class PendientesDelDia
 
         return new self(array_values(array_filter([
             self::entregas($empresa),
+            // Va antes que la cobranza: al que ya pasó de la raya no se le vuelve
+            // a avisar, se va por la lavadora.
+            self::recolecciones($empresa),
             self::cobranza($empresa),
             self::equiposParados($empresa),
+            self::equiposSinColocar($empresa),
             self::corte($empresa, $usuario),
         ])));
+    }
+
+    /**
+     * A quién ya toca irle a quitar el equipo.
+     *
+     * El número que se enseña no es lo que te deben —eso ya está perdido— sino lo
+     * que sigue costando cada semana que ese aparato está allá en vez de estar con
+     * alguien que sí paga. Es lo que hace que uno se suba a la camioneta.
+     */
+    private static function recolecciones(Company $empresa): ?Pendiente
+    {
+        $cola = ParaRecoger::for($empresa);
+
+        if (! $cola->hay()) {
+            return null;
+        }
+
+        $cuantas = $cola->cuantas();
+        $detenido = $cola->rentaDetenidaPorPeriodo();
+
+        return new Pendiente(
+            clave: 'recoger',
+            titulo: $cuantas === 1
+                ? '1 equipo para recoger'
+                : "{$cuantas} equipos para recoger",
+            detalle: $detenido > 0
+                ? 'Llevan ' . $cola->periodosDeTolerancia . ' periodos o más sin pagar. Son $'
+                    . number_format($detenido, 2) . ' de renta detenida cada periodo.'
+                : 'Llevan ' . $cola->periodosDeTolerancia . ' periodos o más sin pagar.',
+            accion: 'Ver a quiénes',
+            icono: 'heroicon-o-arrow-uturn-left',
+            color: 'danger',
+            ruta: 'filament.propietario.pages.avisos',
+        );
+    }
+
+    /**
+     * Equipo libre que lleva demasiado tiempo sin salir.
+     *
+     * Una lavadora parada no avisa: no manda notificaciones y no le duele a nadie
+     * hasta que la cuenta del mes no cuadra. En este negocio el aparato ya está
+     * pagado, así que el único costo real es el tiempo que pasa en la bodega.
+     */
+    private static function equiposSinColocar(Company $empresa): ?Pendiente
+    {
+        $olvidados = EquipoParado::for($empresa)->olvidados();
+
+        if ($olvidados->isEmpty()) {
+            return null;
+        }
+
+        $cuantos = $olvidados->count();
+        $peor = (int) $olvidados->first()->dias;
+
+        return new Pendiente(
+            clave: 'sin_colocar',
+            titulo: $cuantos === 1
+                ? '1 equipo lleva ' . $peor . ' días sin rentarse'
+                : "{$cuantos} equipos llevan más de un mes sin rentarse",
+            detalle: 'Están libres y no generan nada. Tienes prospectos sin contactar a quienes ofrecérselos.',
+            accion: 'Ver a quién ofrecerle',
+            icono: 'heroicon-o-clock',
+            color: 'warning',
+            ruta: 'filament.propietario.pages.contactar',
+        );
     }
 
     /**

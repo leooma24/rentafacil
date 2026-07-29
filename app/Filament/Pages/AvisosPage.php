@@ -56,6 +56,14 @@ class AvisosPage extends Page
 
     public function getViewData(): array
     {
-        return ['avisos' => AvisosDelDia::for(Filament::getTenant())];
+        $empresa = Filament::getTenant();
+
+        return [
+            'avisos' => AvisosDelDia::for($empresa),
+            // Los que ya pasaron de la raya van aparte y arriba: a ésos no se les
+            // vuelve a avisar, se va por la lavadora. Tratarlos igual que a los de
+            // tres días era lo que hacía que un equipo se quedara meses allá.
+            'recoger' => \App\Support\ParaRecoger::for($empresa),
+        ];
     }
 }

@@ -222,7 +222,9 @@ class FlujosDelDiaTest extends TestCase
             ->callTableAction('pick_up', $machine);
 
         $this->assertSame('completada', $rental->fresh()->status, 'El cliente estaba al corriente: la renta se cumplió.');
-        $this->assertSame('disponible', $machine->fresh()->status);
+        // A revisión y no directo a disponible: la lavadora regresa sucia o con
+        // algo roto, y sin este paso eso se descubría en la puerta del siguiente.
+        $this->assertSame('en_revision', $machine->fresh()->status);
     }
 
     public function test_recoger_una_renta_vencida_tambien_la_deja_completada(): void
@@ -234,7 +236,14 @@ class FlujosDelDiaTest extends TestCase
             ->callTableAction('pick_up', $machine);
 
         $this->assertSame('completada', $rental->fresh()->status);
-        $this->assertSame('disponible', $machine->fresh()->status);
+        $this->assertSame('en_revision', $machine->fresh()->status);
+
+        // Y lo que quedó debiendo NO se borra al recogerle el equipo.
+        $this->assertGreaterThan(
+            0,
+            (float) $rental->fresh()->debt_at_close,
+            'Se le recogió la lavadora a un moroso y su adeudo quedó en cero.'
+        );
     }
 
     public function test_cancelar_sigue_dejando_la_renta_cancelada(): void

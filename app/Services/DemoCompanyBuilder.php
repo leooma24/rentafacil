@@ -52,7 +52,8 @@ class DemoCompanyBuilder
 
     /**
      * 10 rentadas (8 rentas activas + 2 vencidas), 2 disponibles, 1 en
-     * mantenimiento, 1 fuera de servicio y 1 extraviada.
+     * mantenimiento, 1 fuera de servicio, 1 extraviada y 1 recién recogida que
+     * está esperando revisión.
      *
      * La extraviada va al final a propósito: las rentas se reparten por
      * posición sobre las diez primeras, y meterla antes descuadraría todo.
@@ -61,7 +62,7 @@ class DemoCompanyBuilder
         'rentada', 'rentada', 'rentada', 'rentada', 'rentada',
         'rentada', 'rentada', 'rentada', 'rentada', 'rentada',
         'disponible', 'disponible', 'mantenimiento', 'fuera_de_servicio',
-        'extraviada',
+        'extraviada', 'en_revision',
     ];
 
     /**
@@ -150,6 +151,10 @@ class DemoCompanyBuilder
             'late_fee_amount' => 50,
             'late_fee_type' => 'fijo',
             'late_fee_grace_days' => 3,
+            // Dos periodos sin pagar y pasa a la cola de recolección, que es lo
+            // que hace el negocio. Sin esto la cola sale vacía y no se ve que
+            // exista.
+            'periodos_para_recoger' => 2,
         ]);
 
         $this->createMachines($company);

@@ -1081,3 +1081,93 @@
     background: #334155;
     color: #cbd5e1;
 }
+
+/* ---------------------------------------------------------------------------
+   "Ya toca ir por ella": la cola de recolección, arriba de los avisos.
+
+   Se distingue en rojo del resto de la pantalla a propósito: no es un
+   recordatorio más, es la decisión de subirse a la camioneta.
+   --------------------------------------------------------------------------- */
+.rf-recoger {
+    padding: 1.05rem 1.15rem;
+    margin-bottom: 1.25rem;
+    border: 1px solid rgba(239, 68, 68, .35);
+    border-left: 4px solid #ef4444;
+    border-radius: .75rem;
+    background: linear-gradient(180deg, rgba(239, 68, 68, .06), rgba(239, 68, 68, .015));
+}
+
+.rf-recoger-encabezado {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: .75rem;
+}
+
+.rf-recoger-titulo {
+    font-size: .9375rem;
+    font-weight: 700;
+    color: #991b1b;
+}
+
+.rf-recoger-texto {
+    margin-top: .2rem;
+    font-size: .8125rem;
+    line-height: 1.5;
+    color: #7f1d1d;
+}
+
+.rf-recoger-lista {
+    margin-top: .9rem;
+    border-top: 1px solid rgba(239, 68, 68, .2);
+}
+
+.rf-recoger-fila {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: .35rem .6rem;
+    padding: .45rem 0;
+    border-bottom: 1px solid rgba(239, 68, 68, .12);
+    font-size: .8125rem;
+}
+
+.rf-recoger-cliente {
+    font-weight: 650;
+    color: #0f172a;
+}
+
+.rf-recoger-equipo {
+    color: #475569;
+}
+
+.rf-recoger-atraso {
+    margin-left: auto;
+    color: #b91c1c;
+    font-weight: 600;
+}
+
+.rf-recoger-pie {
+    margin-top: .85rem;
+    font-size: .75rem;
+    line-height: 1.55;
+    color: #7f1d1d;
+}
+
+.dark .rf-recoger-titulo {
+    color: #fca5a5;
+}
+
+.dark .rf-recoger-texto,
+.dark .rf-recoger-pie {
+    color: #fecaca;
+}
+
+.dark .rf-recoger-cliente {
+    color: #e2e8f0;
+}
+
+.dark .rf-recoger-equipo {
+    color: #cbd5e1;
+}

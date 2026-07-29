@@ -362,6 +362,6 @@ class PrecioYDepositoTest extends TestCase
         $this->assertSame('800.00', $renta->deposit_returned);
         $this->assertNotNull($renta->deposit_returned_at);
         $this->assertStringContainsString('manguera', $renta->notes);
-        $this->assertSame('disponible', $equipo->fresh()->status);
+        $this->assertSame('en_revision', $equipo->fresh()->status);
     }
 }

@@ -72,23 +72,27 @@ class DemoCompanyBuilderTest extends TestCase
         $this->assertSame(7, (int) $company->settings->days_per_payment);
     }
 
-    public function test_genera_quince_lavadoras_tres_secadoras_y_veinte_clientes(): void
+    public function test_genera_dieciseis_lavadoras_tres_secadoras_y_veinte_clientes(): void
     {
         $this->seedPackage();
 
         $company = (new DemoCompanyBuilder())->build();
 
         $machines = $company->washingMachines;
-        $this->assertCount(18, $machines);
+        $this->assertCount(19, $machines);
 
         $lavadoras = $machines->where('kind', 'lavadora');
-        $this->assertCount(15, $lavadoras);
+        $this->assertCount(16, $lavadoras);
         $this->assertSame(10, $lavadoras->where('status', 'rentada')->count());
         $this->assertSame(1, $lavadoras->where('status', 'fuera_de_servicio')->count());
 
         // Un equipo extraviado: es de las cosas que de verdad pasan y el demo
         // enseñaba un parque impecable donde nunca se pierde nada.
         $this->assertSame(1, $lavadoras->where('status', 'extraviada')->count());
+
+        // Y uno recién recogido esperando revisión: es el paso entre que vuelve
+        // del cliente y que se puede volver a colocar.
+        $this->assertSame(1, $lavadoras->where('status', 'en_revision')->count());
 
         // Disponibles y en mantenimiento no se cuentan a número fijo: el cambio
         // de equipo del demo mueve una de cada, y clavar el número aquí obliga a
@@ -183,9 +187,15 @@ class DemoCompanyBuilderTest extends TestCase
 
         $company = (new DemoCompanyBuilder())->build();
 
+        // Cuatro de ejemplo más la que abre el cambio de equipo al mandar la
+        // lavadora anterior al taller.
         $maintenances = $company->maintenances;
-        $this->assertCount(4, $maintenances);
-        $this->assertTrue($maintenances->every(fn ($m) => $m->cost > 0));
+        $this->assertCount(5, $maintenances);
+
+        // La del cambio nace sin costo: todavía nadie la revisó.
+        $this->assertTrue(
+            $maintenances->where('status', '!=', 'programada')->every(fn ($m) => $m->cost > 0)
+        );
         $this->assertTrue($maintenances->every(
             fn ($m) => in_array($m->maintenance_type, ['preventivo', 'correctivo'], true)
         ));

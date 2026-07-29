@@ -142,6 +142,7 @@ class WashingMachineResource extends Resource
                             ->options([
                                 'disponible' => 'Disponible — se puede rentar',
                                 'rentada' => 'Rentada — está con un cliente',
+                                'en_revision' => 'En revisión — regresó y falta checarla',
                                 'mantenimiento' => 'En mantenimiento',
                                 'vendida' => 'Vendida',
                                 'extraviada' => 'Extraviada',
@@ -232,6 +233,88 @@ class WashingMachineResource extends Resource
                     ])
                     ->columns(3),
             ]);
+    }
+
+    /**
+     * Lo que quedó debiendo, y la decisión de qué hacer con eso.
+     *
+     * Va en el formulario de recoger porque es el último momento en que se puede
+     * tomar: cerrar la renta mueve end_date, y a partir de ahí el adeudo ya no se
+     * puede reconstruir. Antes se cerraba en silencio y el saldo se evaporaba.
+     *
+     * @return array<int, \Filament\Forms\Components\Component>
+     */
+    public static function preguntaDelAdeudo(?\App\Models\Rental $renta): array
+    {
+        if (! $renta) {
+            return [];
+        }
+
+        $recoleccion = app(\App\Support\Recoleccion::class);
+        $debia = $recoleccion->adeudo($renta);
+
+        if ($debia <= 0) {
+            return [
+                Forms\Components\Placeholder::make('sin_adeudo')
+                    ->hiddenLabel()
+                    ->columnSpanFull()
+                    ->content(new \Illuminate\Support\HtmlString(
+                        '<p class="rf-cfg-resumen">' . $recoleccion->resumen($renta) . '</p>'
+                    )),
+            ];
+        }
+
+        return [
+            Forms\Components\Placeholder::make('adeudo_actual')
+                ->hiddenLabel()
+                ->columnSpanFull()
+                ->content(new \Illuminate\Support\HtmlString(
+                    '<p class="rf-cfg-resumen rf-cfg-resumen-falta">' . $recoleccion->resumen($renta) . '</p>'
+                )),
+
+            Forms\Components\Radio::make('adeudo')
+                ->label('¿Y ese adeudo?')
+                ->options([
+                    'anotado' => 'Queda anotado — lo sigues viendo aunque ya no tenga equipo',
+                    'perdonado' => 'Quedaron en paz — te llevaste la lavadora y ahí quedó',
+                ])
+                ->default('anotado')
+                ->required()
+                ->columnSpanFull(),
+        ];
+    }
+
+    /** El aviso de qué pasó: el adeudo primero, que es lo que se olvidaba. */
+    private static function avisoDeRecoleccion(
+        WashingMachine $equipo,
+        \App\Models\Rental $renta,
+        array $datos,
+        float $debia,
+    ): void {
+        $lineas = [];
+
+        if ($debia > 0) {
+            $lineas[] = ($datos['adeudo'] ?? 'anotado') === 'perdonado'
+                ? 'Le perdonaste $' . number_format($debia, 2) . '.'
+                : 'Quedó anotado que te debe $' . number_format($debia, 2) . '.';
+        }
+
+        if (isset($datos['deposit_returned']) && $renta->deposit > 0) {
+            $retenido = (float) $renta->deposit - (float) $datos['deposit_returned'];
+            $lineas[] = $retenido > 0
+                ? 'Le devolviste $' . number_format((float) $datos['deposit_returned'], 2)
+                    . ' de depósito y retuviste $' . number_format($retenido, 2) . '.'
+                : 'Depósito devuelto completo.';
+        }
+
+        $lineas[] = 'Queda en revisión: márcala lista cuando la hayas checado.';
+
+        Notification::make()
+            ->title($equipo->kindLabel() . ' ' . $equipo->machine_code . ' recogida')
+            ->body(implode(' ', $lineas))
+            ->success()
+            ->persistent()
+            ->send();
     }
 
     /**
@@ -343,6 +426,7 @@ class WashingMachineResource extends Resource
                     ->color(fn(string $state): string => match ($state) {
                         'disponible' => 'primary',
                         'rentada' => 'success',
+                        'en_revision' => 'warning',
                         'mantenimiento' => 'gray',
                         'vendida' => 'info',
                         'extraviada' => 'danger',
@@ -477,17 +561,50 @@ class WashingMachineResource extends Resource
                     // Antes solo aparecía con la renta vencida: si el cliente
                     // estaba al corriente y devolvía la lavadora, la única
                     // salida era cancelar, y esa renta sí se cumplió.
+                    // El paso que faltaba entre recoger y volver a colocar. La
+                    // lavadora regresa sucia o con algo roto, y sin este paso eso
+                    // se descubria en la puerta del cliente siguiente.
+                    Tables\Actions\Action::make('marcar_lista')
+                        ->visible(fn (WashingMachine $record) => $record->status === 'en_revision')
+                        ->label('Ya está lista')
+                        ->icon('heroicon-o-sparkles')
+                        ->color('success')
+                        ->modalHeading('Dejarla lista para el siguiente cliente')
+                        ->modalDescription('Confirma que ya la revisaste y la puedes volver a rentar.')
+                        ->modalSubmitActionLabel('Está lista')
+                        ->form([
+                            Forms\Components\Textarea::make('notas')
+                                ->label('¿Le hiciste algo?')
+                                ->placeholder('Se lavó, se le cambió la manguera.')
+                                ->rows(2)
+                                ->helperText('Opcional. Si necesita reparación, mejor mándala a mantenimiento.'),
+                        ])
+                        ->action(function (array $data, WashingMachine $record) {
+                            $record->update(['status' => 'disponible']);
+
+                            Notification::make()
+                                ->title($record->machine_code . ' lista para rentar')
+                                ->body(filled($data['notas'] ?? null) ? $data['notas'] : null)
+                                ->success()
+                                ->send();
+                        }),
                     Tables\Actions\Action::make('pick_up')
                         ->visible(fn(WashingMachine $record) => in_array($record->status, ['rentada', 'mantenimiento']) && in_array($record->activeRental?->status, ['activa', 'vencida']))
                         ->label('Recoger equipo')
                         ->icon('heroicon-s-check-circle')
                         ->color('success')
                         ->modalHeading('Recoger el equipo')
-                        ->modalDescription('La renta queda como completada y el equipo vuelve a estar disponible.')
+                        ->modalDescription('La renta se cierra y el equipo queda en revisión, para que nadie se lo lleve sin que lo hayas abierto.')
                         ->modalSubmitActionLabel('Recoger')
                         // Al recoger es cuando toca devolver el depósito, y es
                         // justo cuando se olvida: el formulario lo pone enfrente.
-                        ->form(fn (WashingMachine $record) => array_merge([
+                        ->form(fn (WashingMachine $record) => array_merge(
+                            // Lo que quedó debiendo se pone enfrente ANTES de
+                            // cerrar: al recoger es cuando se decide si queda
+                            // anotado o si quedaron en paz, y es lo único que
+                            // después ya no se puede reconstruir.
+                            self::preguntaDelAdeudo($record->activeRental),
+                            [
                             // Las fotos de recolección son las que le dan sentido a
                             // las de entrega: sin el después, el antes no compara
                             // contra nada.
@@ -502,7 +619,7 @@ class WashingMachineResource extends Resource
                                     ? 'Compáralas con las de la entrega antes de devolver el depósito.'
                                     : 'De esta entrega no hay fotos previas para comparar.')
                                 ->columnSpanFull(),
-                        ], $record->activeRental?->hasPendingDeposit()
+                            ], $record->activeRental?->hasPendingDeposit()
                             ? [
                                 Forms\Components\Placeholder::make('deposito_dejado')
                                     ->label('Dejó de depósito')
@@ -522,48 +639,20 @@ class WashingMachineResource extends Resource
                             ]
                             : []
                         ))
-                        ->action(function (array $data, WashingMachine $record) use ($tenant) {
+                        ->action(function (array $data, WashingMachine $record) {
                             $renta = $record->activeRental;
 
-                            $record->update(['status' => 'disponible']);
-
-                            $cambios = [
-                                'status' => 'completada',
-                                'end_date' => now()->toDateString(),
-                                'pickup_photos' => $data['pickup_photos'] ?? [],
-                            ];
-
-                            if ($renta?->hasPendingDeposit() && isset($data['deposit_returned'])) {
-                                $cambios['deposit_returned'] = (float) $data['deposit_returned'];
-                                $cambios['deposit_returned_at'] = now();
-
-                                if (filled($data['deposit_notes'] ?? null)) {
-                                    $cambios['notes'] = trim(($renta->notes ? $renta->notes . ' · ' : '')
-                                        . 'Depósito: ' . $data['deposit_notes']);
-                                }
+                            if (! $renta) {
+                                return;
                             }
 
-                            // Por el modelo y no por el query builder: una
-                            // actualización masiva se salta los casts y guardaría
-                            // el arreglo de fotos como texto basura.
-                            foreach ($record->rentals()->whereIn('status', ['activa', 'vencida'])->get() as $abierta) {
-                                $abierta->update($cambios);
-                            }
+                            $debia = app(\App\Support\Recoleccion::class)->ejecutar(
+                                $renta,
+                                quedaronEnPaz: ($data['adeudo'] ?? 'anotado') === 'perdonado',
+                                extra: $data,
+                            );
 
-                            $retenido = isset($cambios['deposit_returned'])
-                                ? (float) $renta->deposit - $cambios['deposit_returned']
-                                : 0.0;
-
-                            Notification::make()
-                                ->title($record->kindLabel() . ' recogida y disponible')
-                                ->body(match (true) {
-                                    ! isset($cambios['deposit_returned']) => null,
-                                    $retenido > 0 => 'Le devolviste $' . number_format($cambios['deposit_returned'], 2)
-                                        . ' y retuviste $' . number_format($retenido, 2) . '.',
-                                    default => 'Depósito devuelto completo.',
-                                })
-                                ->success()
-                                ->send();
+                            self::avisoDeRecoleccion($record, $renta, $data, $debia);
                         }),
                     Tables\Actions\Action::make('make_maintenance')
                         ->visible(fn(WashingMachine $record) => !in_array($record->status, ['mantenimiento']))

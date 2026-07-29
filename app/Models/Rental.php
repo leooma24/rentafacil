@@ -25,9 +25,11 @@ class Rental extends Model
         'company_id', 'customer_id', 'washing_machine_id', 'start_date', 'end_date',
         'status', 'notes', 'price', 'deposit', 'deposit_returned', 'deposit_returned_at',
         'delivered_at', 'delivery_notes', 'delivery_photos', 'pickup_photos',
+        'debt_at_close', 'debt_settled',
     ];
 
     protected $casts = [
+        'debt_settled' => 'boolean',
         'deposit_returned_at' => 'datetime',
         'delivered_at' => 'datetime',
         'delivery_photos' => 'array',

@@ -56,6 +56,7 @@ class Settings extends Page implements HasForms
             'late_fee_amount' => $this->tenant->settings?->late_fee_amount ?? 0,
             'late_fee_type' => $this->tenant->settings?->late_fee_type ?? 'fijo',
             'late_fee_grace_days' => $this->tenant->settings?->late_fee_grace_days ?? 0,
+            'periodos_para_recoger' => $this->tenant->settings?->periodos_para_recoger ?? 2,
         ]);
     }
 
@@ -164,8 +165,59 @@ class Settings extends Page implements HasForms
                             ->content(fn (Get $get) => new HtmlString($this->ejemploDeRecargo($get))),
                     ])
                     ->columns(3),
+
+                Section::make('Cuándo ir por el equipo')
+                    ->description('A partir de cuántos periodos sin pagar el cliente deja de estar en "avisarle" y pasa a "ir por la lavadora".')
+                    ->icon('heroicon-o-arrow-uturn-left')
+                    ->iconColor('danger')
+                    ->schema([
+                        TextInput::make('periodos_para_recoger')
+                            ->label('Periodos sin pagar')
+                            ->numeric()
+                            ->integer()
+                            ->minValue(0)
+                            ->maxValue(52)
+                            ->required()
+                            ->live(onBlur: true)
+                            ->suffix('periodos')
+                            ->helperText('En cero se apaga y nadie entra a la cola de recolección.'),
+
+                        Placeholder::make('ejemplo_recoger')
+                            ->hiddenLabel()
+                            ->columnSpanFull()
+                            ->content(fn (Get $get) => new HtmlString($this->ejemploDeRecoleccion($get))),
+                    ])
+                    ->columns(2),
             ])
             ->statePath('data');
+    }
+
+    /**
+     * Cuántos días de tolerancia son esos periodos, en días de calendario.
+     *
+     * "2 periodos" no le dice nada a nadie hasta que se traduce a "14 días", que
+     * es como se piensa cuando uno decide si ya va o si espera otra semana.
+     */
+    private function ejemploDeRecoleccion(Get $get): string
+    {
+        $periodos = (int) ($get('periodos_para_recoger') ?? 0);
+        $dias = (int) ($get('days_per_payment') ?? 0);
+
+        if ($periodos <= 0) {
+            return '<p class="rf-cfg-resumen">Apagado: nadie va a entrar a la cola de recolección. '
+                . 'Los atrasados van a seguir saliendo sólo en Avisos.</p>';
+        }
+
+        if ($dias <= 0) {
+            return '<p class="rf-cfg-resumen rf-cfg-resumen-falta">Falta el periodo de tu tarifa '
+                . 'para poder traducir esto a días.</p>';
+        }
+
+        $total = $periodos * $dias;
+
+        return '<p class="rf-cfg-resumen">Al cliente que lleve <strong>' . $total . ' días</strong> '
+            . 'sin pagar le va a aparecer el aviso de <strong>ir por el equipo</strong>. '
+            . 'Antes de eso sólo sale en la lista de avisos.</p>';
     }
 
     /**

@@ -287,4 +287,32 @@ class CambioDeEquipoTest extends TestCase
         $this->assertSame('100%', (string) $ocupacion->getValue());
         $this->assertSame('1/1 lavadoras · 1/1 secadoras', (string) $ocupacion->getDescription());
     }
+
+    /**
+     * El equipo que se retira al taller se queda con su orden abierta.
+     *
+     * Antes quedaba marcado en mantenimiento sin nada que lo explicara: no
+     * aparecía para rentar, la pantalla de mantenimientos no decía por qué, y no
+     * había con qué darlo por terminado para volverlo a colocar.
+     */
+    public function test_el_equipo_que_se_va_al_taller_queda_con_su_orden_abierta(): void
+    {
+        $anterior = $this->equipo('LAV-800', 'rentada');
+        $renta = $this->renta($anterior, ['status' => 'activa', 'end_date' => now()->addDays(5)->toDateString()]);
+        $nuevo = $this->equipo('LAV-900');
+
+        app(\App\Support\CambioDeEquipo::class)->ejecutar($renta, $nuevo, 'falla', 'No centrifugaba.');
+
+        $this->assertSame('mantenimiento', $anterior->fresh()->status);
+
+        $orden = \App\Models\Maintenance::where('washing_machine_id', $anterior->id)->first();
+
+        $this->assertNotNull($orden, 'Se mandó al taller sin abrirle orden.');
+        $this->assertSame('programada', $orden->status);
+        $this->assertStringContainsString('centrifugaba', $orden->description);
+
+        // Y por lo tanto no sale como "parado sin orden abierta".
+        $claves = collect(\App\Support\PendientesDelDia::for($this->company)->pendientes)->pluck('clave');
+        $this->assertFalse($claves->contains('parados'));
+    }
 }

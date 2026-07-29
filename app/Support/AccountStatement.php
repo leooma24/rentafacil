@@ -31,7 +31,40 @@ class AccountStatement
                 ->with(['payments', 'washingMachine'])
                 ->get();
 
-        return $this->buildStatement($customer, $rentals, $customer->company?->settings);
+        return $this->buildStatement(
+            $customer,
+            $rentals,
+            $customer->company?->settings,
+            $this->congeladas($customer),
+        );
+    }
+
+    /**
+     * Las rentas ya cerradas donde el cliente quedó a deber.
+     *
+     * El adeudo normal se deduce de qué tan atrás quedó end_date, y al recoger el
+     * equipo esa fecha se mueve a hoy: el saldo se evaporaba justo cuando había
+     * que acordarse de él. Ahora la cifra queda congelada al cerrar, y sigue
+     * contando hasta que el dueño diga que quedaron en paz.
+     *
+     * @return Collection<int, Rental>
+     */
+    private function congeladas(Customer $customer): Collection
+    {
+        $pendiente = fn (Rental $renta) => ! $renta->debt_settled
+            && (float) $renta->debt_at_close > 0
+            && ! in_array($renta->status, self::ACTIVE_STATUSES, true);
+
+        if ($customer->relationLoaded('rentals')) {
+            return $customer->rentals->filter($pendiente)->values();
+        }
+
+        return $customer->rentals()
+            ->whereNotIn('status', self::ACTIVE_STATUSES)
+            ->where('debt_settled', false)
+            ->where('debt_at_close', '>', 0)
+            ->with('washingMachine')
+            ->get();
     }
 
     /**
@@ -48,16 +81,33 @@ class AccountStatement
         $settings = $company->settings;
 
         $customers = Customer::where('company_id', $company->id)
-            ->whereHas('rentals', fn ($query) => $query
-                ->whereIn('status', self::ACTIVE_STATUSES)
-                ->whereDate('end_date', '<', Carbon::today()))
+            ->where(fn ($query) => $query
+                ->whereHas('rentals', fn ($sub) => $sub
+                    ->whereIn('status', self::ACTIVE_STATUSES)
+                    ->whereDate('end_date', '<', Carbon::today()))
+                // Quien ya no tiene equipo pero quedó a deber sigue debiendo. Sin
+                // esto desaparecía de la cobranza en el momento en que se le
+                // recogía la lavadora, que es cuando más caro sale olvidarlo.
+                ->orWhereHas('rentals', fn ($sub) => $sub
+                    ->whereNotIn('status', self::ACTIVE_STATUSES)
+                    ->where('debt_settled', false)
+                    ->where('debt_at_close', '>', 0)))
             ->with(['rentals' => fn ($query) => $query
-                ->whereIn('status', self::ACTIVE_STATUSES)
+                ->where(fn ($sub) => $sub
+                    ->whereIn('status', self::ACTIVE_STATUSES)
+                    ->orWhere(fn ($cerrada) => $cerrada
+                        ->where('debt_settled', false)
+                        ->where('debt_at_close', '>', 0)))
                 ->with(['payments', 'washingMachine'])])
             ->get();
 
         return $customers
-            ->map(fn (Customer $customer) => $this->buildStatement($customer, $customer->rentals, $settings))
+            ->map(fn (Customer $customer) => $this->buildStatement(
+                $customer,
+                $customer->rentals->whereIn('status', self::ACTIVE_STATUSES)->values(),
+                $settings,
+                $this->congeladas($customer),
+            ))
             ->filter(fn (Statement $statement) => $statement->hasDebt())
             ->sortByDesc(fn (Statement $statement) => $statement->total)
             ->values();
@@ -92,8 +142,15 @@ class AccountStatement
     /**
      * @param Collection<int, Rental> $rentals
      */
-    private function buildStatement(Customer $customer, Collection $rentals, ?Setting $settings): Statement
-    {
+    /**
+     * @param Collection<int, Rental>|null $congeladas Rentas cerradas donde quedó a deber.
+     */
+    private function buildStatement(
+        Customer $customer,
+        Collection $rentals,
+        ?Setting $settings,
+        ?Collection $congeladas = null,
+    ): Statement {
         $daysPerPeriod = (int) ($settings->days_per_payment ?? 0);
         $defaultPrice = (float) ($settings->price ?? 0);
 
@@ -105,20 +162,37 @@ class AccountStatement
         $total = 0.0;
         $owingSince = null;
 
+        $desde = function (Rental $rental) use (&$owingSince) {
+            $end = Carbon::parse($rental->end_date)->startOfDay();
+
+            if ($owingSince === null || $end->lt($owingSince)) {
+                $owingSince = $end;
+            }
+        };
+
         foreach ($rentals as $rental) {
             $line = $this->debtFor($rental, $daysPerPeriod, $defaultPrice, $settings);
             $lines[] = $line;
             $total += $line->amount;
 
             if ($line->amount > 0) {
-                $end = Carbon::parse($rental->end_date)->startOfDay();
-                if ($owingSince === null || $end->lt($owingSince)) {
-                    $owingSince = $end;
-                }
+                $desde($rental);
             }
         }
 
-        return new Statement($customer, $total, $owingSince, $lines, true);
+        // Lo que quedó debiendo de equipos ya recogidos. No se recalcula: lo que
+        // debía el día que se le quitó la lavadora es un hecho de ese día, y no
+        // puede cambiar porque mañana se corrija un cobro viejo.
+        $congelado = 0.0;
+
+        foreach ($congeladas ?? collect() as $cerrada) {
+            $monto = (float) $cerrada->debt_at_close;
+            $congelado += $monto;
+            $total += $monto;
+            $desde($cerrada);
+        }
+
+        return new Statement($customer, $total, $owingSince, $lines, true, $congelado);
     }
 
     private function debtFor(
