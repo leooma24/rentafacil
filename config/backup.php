@@ -14,8 +14,18 @@ return [
                 /*
                  * The list of directories and files that will be included in the backup.
                  */
+                /*
+                 * Sólo los archivos que sube la gente, no el proyecto entero.
+                 *
+                 * Venía con base_path(), que mete el código completo en cada
+                 * respaldo diario. El código ya vive en git y se recupera con un
+                 * clone; lo que no se recupera de ningún lado son las fotos de
+                 * entrega, las de recolección y las identificaciones de los
+                 * clientes, que hasta ahora no se respaldaban porque el comando
+                 * corría con --only-db.
+                 */
                 'include' => [
-                    base_path(),
+                    storage_path('app/public'),
                 ],
 
                 /*

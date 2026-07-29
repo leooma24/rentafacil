@@ -20,7 +20,15 @@ class Kernel extends ConsoleKernel
         $schedule->command('users:check-inactive')->dailyAt('10:00');
         $schedule->command('users:lifecycle-emails')->dailyAt('09:30');
         $schedule->command('backup:clean')->daily()->at('01:00');
-        $schedule->command('backup:run --only-db')->daily()->at('02:00');
+        // Sin --only-db: ahora también entran los archivos que sube la gente
+        // (fotos de entrega, de recolección e identificaciones de clientes), que
+        // no se recuperan de ningún lado. El config acota qué se incluye para
+        // que no se respalde el proyecto entero.
+        $schedule->command('backup:run')->daily()->at('02:00');
+        // Avisa si el respaldo lleva más de un día sin correr o creció de más.
+        // Sin esto, un respaldo que deja de hacerse no se nota hasta que hace
+        // falta, que es cuando ya no sirve enterarse.
+        $schedule->command('backup:monitor')->daily()->at('02:30');
         $schedule->command('demo:cleanup')->hourly();
     }
 
