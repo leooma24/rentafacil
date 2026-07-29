@@ -67,80 +67,202 @@ class RentalResource extends Resource
     public static function form(Form $form): Form
     {
         $tenant = Filament::getTenant();
+        $terms = \App\Support\RentalTerms::for($tenant);
+
         return $form
             ->schema([
-                //
-                Forms\Components\Select::make('customer_id')
-                    ->label('Cliente')
-                    ->options(
-                        $tenant->customers()->pluck('name', 'id')
-                    )
-                    ->required(),
-                Forms\Components\Select::make('washing_machine_id')
-                    ->label('Equipo')
-                    ->options(function ($record) use ($tenant) {
-                        $options = $tenant->washingMachines()
-                            ->where('status', 'disponible');
-                        if ($record) {
-                            $options->orWhere('id', $record->washing_machine_id);
-                        }
-                        // Con secadoras en el parque, el puro código no basta para
-                        // saber qué se está asignando.
-                        return $options->get()
-                            ->mapWithKeys(fn ($equipo) => [
-                                $equipo->id => "{$equipo->machine_code} · {$equipo->kindLabel()}"
-                                    . ($equipo->brand ? " {$equipo->brand}" : ''),
-                            ]);
-                    })
-                    ->searchable()
-                    ->required(),
-                Forms\Components\DatePicker::make('start_date')
-                    ->label('Fecha de Inicio')
-                    ->default(now())
-                    ->native(false)
-                    ->format('Y-m-d')
-                    ->required(),
-                Forms\Components\DatePicker::make('end_date')
-                    ->label('Fecha de Fin')
-                    ->native(false)
-                    ->format('Y-m-d')
-                    ->afterOrEqual('start_date'),
-                Forms\Components\Select::make('status')
-                    ->label('Estatus')
-                    ->options([
-                        'activa' => 'Activa',
-                        'vencida' => 'Vencida',
-                        'completada' => 'Completada',
-                        'cancelada' => 'Cancelada',
+                Forms\Components\Section::make('Quién y qué se lleva')
+                    ->description('A qué cliente y cuál equipo. Sólo aparecen los que están disponibles.')
+                    ->icon('heroicon-o-user-group')
+                    ->iconColor('primary')
+                    ->schema([
+                        Forms\Components\Select::make('customer_id')
+                            ->label('Cliente')
+                            ->options($tenant->customers()->orderBy('name')->pluck('name', 'id'))
+                            ->searchable()
+                            ->preload()
+                            ->required()
+                            ->live()
+                            // Darlo de alta sin salirse: si hay que ir a otra
+                            // pantalla, se pierde lo capturado aquí.
+                            ->createOptionForm([
+                                Forms\Components\TextInput::make('name')
+                                    ->label('Nombre')
+                                    ->required(),
+                                Forms\Components\TextInput::make('phone')
+                                    ->label('Teléfono')
+                                    ->tel(),
+                                Forms\Components\TextInput::make('email')
+                                    ->label('Correo')
+                                    ->email(),
+                            ])
+                            ->createOptionUsing(fn (array $data) => $tenant->customers()->create($data)->id)
+                            ->helperText('Si es nuevo, lo das de alta aquí mismo.'),
+
+                        Forms\Components\Select::make('washing_machine_id')
+                            ->label('Equipo')
+                            ->options(function ($record) use ($tenant) {
+                                $options = $tenant->washingMachines()
+                                    ->where('status', 'disponible');
+
+                                if ($record) {
+                                    $options->orWhere('id', $record->washing_machine_id);
+                                }
+
+                                // Con secadoras en el parque, el puro código no
+                                // basta para saber qué se está asignando.
+                                return $options->orderBy('machine_code')->get()
+                                    ->mapWithKeys(fn ($equipo) => [
+                                        $equipo->id => "{$equipo->machine_code} · {$equipo->kindLabel()}"
+                                            . ($equipo->brand ? " {$equipo->brand}" : ''),
+                                    ]);
+                            })
+                            ->searchable()
+                            ->preload()
+                            ->required()
+                            ->live()
+                            ->helperText('Al guardar queda marcado como rentado.'),
                     ])
-                    ->default('activa')
-                    ->hiddenOn(['edit'])
-                    ->required(),
-                // El precio vive en la renta y no sólo en la configuración de la
-                // empresa: así se cobra distinto por equipo o por cliente, y
-                // cambiarle el precio a la empresa no mueve lo ya rentado.
-                Forms\Components\TextInput::make('price')
-                    ->label('Precio de esta renta')
-                    ->numeric()
-                    ->minValue(0)
-                    ->step('0.01')
-                    ->prefix('$')
-                    ->default(fn () => \App\Support\RentalTerms::for($tenant)->price)
-                    ->helperText('Puedes cobrar distinto por equipo o por cliente. Vacío usa el precio de tus Preferencias.'),
+                    ->columns(2),
 
-                Forms\Components\TextInput::make('deposit')
-                    ->label('Depósito en garantía')
-                    ->numeric()
-                    ->minValue(0)
-                    ->step('0.01')
-                    ->prefix('$')
-                    ->default(0)
-                    ->helperText('Lo que dejó el cliente y hay que devolverle al terminar.'),
+                Forms\Components\Section::make('Cuánto y hasta cuándo')
+                    ->description('El precio se precarga del de tus Preferencias; cámbialo si a este cliente le cobras distinto.')
+                    ->icon('heroicon-o-banknotes')
+                    ->iconColor('success')
+                    ->schema([
+                        Forms\Components\TextInput::make('price')
+                            ->label('Precio de la renta')
+                            ->numeric()
+                            ->minValue(0)
+                            ->step('0.01')
+                            ->prefix('$')
+                            ->suffix('MXN')
+                            ->live(onBlur: true)
+                            ->default(fn () => $terms->price)
+                            ->helperText('Vacío usa el de tus Preferencias.'),
 
-                Forms\Components\Textarea::make('notes')
-                    ->label('Notas')
-                    ->columnSpanFull(),
+                        Forms\Components\TextInput::make('deposit')
+                            ->label('Depósito en garantía')
+                            ->numeric()
+                            ->minValue(0)
+                            ->step('0.01')
+                            ->prefix('$')
+                            ->suffix('MXN')
+                            ->default(0)
+                            ->live(onBlur: true)
+                            ->helperText('Se lo devuelves al recoger el equipo.'),
+
+                        Forms\Components\DatePicker::make('start_date')
+                            ->label('Empieza')
+                            ->default(now())
+                            ->native(false)
+                            ->displayFormat('d/m/Y')
+                            ->format('Y-m-d')
+                            ->required()
+                            ->live(onBlur: true)
+                            // La fecha de fin se recorre sola al mover el inicio:
+                            // capturar las dos a mano es de donde salen las rentas
+                            // que nacen vencidas.
+                            ->afterStateUpdated(function ($state, Forms\Set $set) use ($terms) {
+                                if ($state) {
+                                    $set('end_date', $terms->endDateFrom($state)->toDateString());
+                                }
+                            }),
+
+                        Forms\Components\DatePicker::make('end_date')
+                            ->label('Pagada hasta')
+                            ->native(false)
+                            ->displayFormat('d/m/Y')
+                            ->format('Y-m-d')
+                            ->default(fn () => $terms->endDateFrom())
+                            ->afterOrEqual('start_date')
+                            ->live(onBlur: true)
+                            ->helperText('Cada cobro la recorre ' . $terms->days . ' días.'),
+
+                        Forms\Components\Select::make('status')
+                            ->label('Estatus')
+                            ->options([
+                                'activa' => 'Activa',
+                                'vencida' => 'Vencida',
+                                'completada' => 'Completada',
+                                'cancelada' => 'Cancelada',
+                            ])
+                            ->default('activa')
+                            ->native(false)
+                            ->hiddenOn(['create'])
+                            ->columnSpanFull(),
+
+                        // El trato, en una frase. Cinco campos sueltos no dejan
+                        // ver si quedó como se acordó con el cliente.
+                        Forms\Components\Placeholder::make('resumen')
+                            ->hiddenLabel()
+                            ->columnSpanFull()
+                            ->content(fn (Forms\Get $get) => new \Illuminate\Support\HtmlString(
+                                self::resumenDelTrato($get, $tenant, $terms)
+                            )),
+                    ])
+                    ->columns(2),
+
+                Forms\Components\Section::make('Notas')
+                    ->icon('heroicon-o-pencil-square')
+                    ->collapsed(fn (?Rental $record) => blank($record?->notes))
+                    ->collapsible()
+                    ->schema([
+                        Forms\Components\Textarea::make('notes')
+                            ->hiddenLabel()
+                            ->rows(3)
+                            ->placeholder('Vive en la parte de atrás. Cobrar los sábados.')
+                            ->columnSpanFull(),
+                    ]),
             ]);
+    }
+
+    /** El trato en una frase, con lo que el dueño acaba de capturar. */
+    private static function resumenDelTrato(
+        Forms\Get $get,
+        $tenant,
+        \App\Support\RentalTerms $terms,
+    ): string {
+        $cliente = $get('customer_id')
+            ? $tenant->customers()->whereKey($get('customer_id'))->value('name')
+            : null;
+
+        $equipo = $get('washing_machine_id')
+            ? $tenant->washingMachines()->find($get('washing_machine_id'))
+            : null;
+
+        if (! $cliente || ! $equipo) {
+            return '<div class="rf-cfg-resumen rf-cfg-resumen-neutro">'
+                . 'Escoge cliente y equipo para ver cómo queda el trato.'
+                . '</div>';
+        }
+
+        $frase = "<strong>{$cliente}</strong> se lleva {$equipo->machine_code} · "
+            . mb_strtolower($equipo->kindLabel()) . '.';
+
+        $precio = (float) ($get('price') ?: $terms->price ?: 0);
+
+        if ($precio <= 0) {
+            return '<div class="rf-cfg-resumen rf-cfg-resumen-falta">'
+                . $frase . ' Falta ponerle precio: sin eso no se pueden registrar cobros.'
+                . '</div>';
+        }
+
+        $frase .= ' Paga <strong>$' . number_format($precio, 2) . '</strong> cada '
+            . $terms->days . ' días';
+
+        $frase .= $get('end_date')
+            ? ', cubierto hasta el ' . \Carbon\Carbon::parse($get('end_date'))->format('d/m/Y') . '.'
+            : '.';
+
+        $deposito = (float) ($get('deposit') ?: 0);
+
+        if ($deposito > 0) {
+            $frase .= ' Deja <strong>$' . number_format($deposito, 2)
+                . '</strong> de depósito, que se le devuelve al entregar.';
+        }
+
+        return '<div class="rf-cfg-resumen">' . $frase . '</div>';
     }
 
     public static function table(Table $table): Table

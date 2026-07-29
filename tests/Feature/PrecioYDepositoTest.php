@@ -257,6 +257,76 @@ class PrecioYDepositoTest extends TestCase
         $this->assertSame('rentada', $equipo->fresh()->status);
     }
 
+    /**
+     * El formulario resume el trato en una frase.
+     *
+     * Cinco campos sueltos no dejan ver si quedó como se acordó con el cliente,
+     * que es justo lo que se revisa antes de darle Guardar.
+     */
+    public function test_el_formulario_de_renta_resume_el_trato(): void
+    {
+        \Filament\Facades\Filament::setCurrentPanel(\Filament\Facades\Filament::getPanel('propietario'));
+        \Filament\Facades\Filament::setTenant($this->company, true);
+
+        auth()->user()->givePermissionTo([
+            \Spatie\Permission\Models\Permission::findOrCreate('view_any_rental', 'web'),
+            \Spatie\Permission\Models\Permission::findOrCreate('create_rental', 'web'),
+        ]);
+
+        $equipo = $this->company->washingMachines()->create([
+            'machine_code' => 'SEC-001', 'brand' => 'Mabe',
+            'kind' => 'secadora', 'status' => 'disponible',
+        ]);
+
+        $html = \Livewire\Livewire::test(
+            \App\Filament\Resources\RentalResource\Pages\CreateRental::class,
+            ['tenant' => $this->company],
+        )
+            ->assertOk()
+            ->set('data.customer_id', $this->cliente->id)
+            ->set('data.washing_machine_id', $equipo->id)
+            ->set('data.price', 300)
+            ->set('data.deposit', 500)
+            ->set('data.end_date', '2026-08-15')
+            ->html();
+
+        $this->assertStringContainsString('Cliente', $html);
+        $this->assertStringContainsString('SEC-001 · secadora', $html);
+        $this->assertStringContainsString('$300.00', $html);
+        $this->assertStringContainsString('15/08/2026', $html);
+        $this->assertStringContainsString('$500.00', $html);
+    }
+
+    /** Sin precio no se puede cobrar, y el formulario lo dice antes de guardar. */
+    public function test_el_formulario_avisa_si_la_renta_va_sin_precio(): void
+    {
+        \Filament\Facades\Filament::setCurrentPanel(\Filament\Facades\Filament::getPanel('propietario'));
+        \Filament\Facades\Filament::setTenant($this->company, true);
+
+        auth()->user()->givePermissionTo([
+            \Spatie\Permission\Models\Permission::findOrCreate('view_any_rental', 'web'),
+            \Spatie\Permission\Models\Permission::findOrCreate('create_rental', 'web'),
+        ]);
+
+        // La empresa tampoco tiene precio configurado, así que no hay de dónde caer.
+        $this->company->settings->update(['price' => 0]);
+
+        $equipo = $this->company->washingMachines()->create([
+            'machine_code' => 'LAV-500', 'brand' => 'Mabe', 'status' => 'disponible',
+        ]);
+
+        $html = \Livewire\Livewire::test(
+            \App\Filament\Resources\RentalResource\Pages\CreateRental::class,
+            ['tenant' => $this->company->fresh()],
+        )
+            ->set('data.customer_id', $this->cliente->id)
+            ->set('data.washing_machine_id', $equipo->id)
+            ->set('data.price', null)
+            ->html();
+
+        $this->assertStringContainsString('Falta ponerle precio', $html);
+    }
+
     /** Y al recoger se devuelve, con la posibilidad de retener parte. */
     public function test_al_recoger_se_devuelve_el_deposito(): void
     {
