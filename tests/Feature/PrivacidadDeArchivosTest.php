@@ -172,6 +172,53 @@ class PrivacidadDeArchivosTest extends TestCase
         }
     }
 
+    // --- Fotos ---
+
+    /**
+     * Las fotos también salieron de la carpeta pública: son del equipo y muchas
+     * veces del interior de la casa del cliente.
+     */
+    public function test_las_fotos_se_guardan_en_el_disco_privado(): void
+    {
+        $puntos = [
+            'Filament/Resources/RentalResource/Actions/EntregarAction.php',
+            'Filament/Resources/WashingMachineResource.php',
+            'Filament/Resources/IncidentResource.php',
+            'Filament/Client/Resources/TicketResource.php',
+        ];
+
+        foreach ($puntos as $archivo) {
+            $this->assertStringContainsString(
+                "->disk('privado')",
+                file_get_contents(app_path($archivo)),
+                "{$archivo} sigue subiendo fotos a la carpeta pública."
+            );
+        }
+    }
+
+    public function test_sin_sesion_no_se_puede_ver_una_foto(): void
+    {
+        $this->get('/archivos/entregas/lo-que-sea.jpg')
+            ->assertRedirect(route('login'));
+    }
+
+    /**
+     * La ruta recibe la ruta del archivo, así que sin candado sería la puerta
+     * para leer cualquier archivo del servidor.
+     */
+    public function test_no_se_puede_salir_de_las_carpetas_permitidas(): void
+    {
+        $this->actingAs($this->dueno);
+
+        foreach ([
+            '/archivos/../../../.env',
+            '/archivos/documentos-clientes/ine.jpg',
+            '/archivos/otra-carpeta/x.jpg',
+        ] as $intento) {
+            $this->get($intento)->assertForbidden("Dejó pasar {$intento}");
+        }
+    }
+
     /** Y se borra en cuanto se leyó: no tiene por qué quedarse guardado. */
     public function test_el_excel_se_borra_despues_de_importar(): void
     {

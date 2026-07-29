@@ -33,6 +33,7 @@ class EntregarAction
             ->form([
                 Forms\Components\FileUpload::make('delivery_photos')
                     ->label('Fotos del equipo')
+                    ->disk('privado')
                     ->image()
                     ->multiple()
                     ->maxFiles(6)
@@ -93,6 +94,7 @@ class EntregarAction
                     ->state(fn () => $resolver($record)->delivery_notes ?: 'Sin notas.'),
                 \Filament\Infolists\Components\ImageEntry::make('fotos')
                     ->label('Fotos')
+                    ->disk('privado')
                     ->state(fn () => $resolver($record)->delivery_photos ?: [])
                     ->columnSpanFull(),
             ]);

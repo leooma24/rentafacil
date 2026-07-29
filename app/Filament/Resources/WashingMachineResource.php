@@ -390,6 +390,7 @@ class WashingMachineResource extends Resource
                             // contra nada.
                             Forms\Components\FileUpload::make('pickup_photos')
                                 ->label('Fotos de cómo lo devolvieron')
+                                ->disk('privado')
                                 ->image()
                                 ->multiple()
                                 ->maxFiles(6)

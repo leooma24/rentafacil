@@ -44,6 +44,25 @@ return [
             'throw' => false,
         ],
 
+        /*
+         * Las fotos de entregas, recolecciones e incidencias.
+         *
+         * Vive fuera de storage/app/public a propósito: esa carpeta se sirve tal
+         * cual en /storage/..., así que cualquiera con la liga bajaba fotos del
+         * equipo y muchas veces del interior de la casa del cliente.
+         *
+         * La 'url' apunta a una ruta propia que pide sesión antes de entregar el
+         * archivo. Con eso, todo lo que llama a Storage::disk('privado')->url()
+         * —las columnas y los ImageEntry de Filament— sigue funcionando igual.
+         */
+        'privado' => [
+            'driver' => 'local',
+            'root' => storage_path('app/privado'),
+            'url' => env('APP_URL') . '/archivos',
+            'visibility' => 'private',
+            'throw' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

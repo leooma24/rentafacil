@@ -116,6 +116,7 @@ class IncidentResource extends Resource
                             ->nullable(),
                         Forms\Components\FileUpload::make('photos')
                             ->label('Fotos')
+                            ->disk('privado')
                             ->image()
                             ->multiple()
                             ->maxFiles(5)
@@ -244,6 +245,7 @@ class IncidentResource extends Resource
                         TextEntry::make('resolved_at')->label('Fecha de Resolución')->formatStateUsing(fn($state) => $state ? $state->format('d/m/Y H:i') : 'No resuelta'),
                         TextEntry::make('comments')->label('Comentarios'),
                         InfolistComponent\ImageEntry::make('photos')
+                            ->disk('privado')
                             ->label('Fotos')
                             ->disk('public')
                             ->columnSpanFull(),

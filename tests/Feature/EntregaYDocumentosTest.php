@@ -40,6 +40,9 @@ class EntregaYDocumentosTest extends TestCase
         parent::setUp();
         Mail::fake();
         Storage::fake('public');
+        // Las fotos viven en el disco privado: la carpeta pública se sirve tal
+        // cual en /storage/... y las bajaba cualquiera con la liga.
+        Storage::fake('privado');
 
         if (! Package::find(1)) {
             Package::forceCreate([
@@ -125,7 +128,7 @@ class EntregaYDocumentosTest extends TestCase
         $this->assertFalse($renta->needsDelivery());
         $this->assertSame('Funcionando, sin golpes.', $renta->delivery_notes);
         $this->assertCount(1, $renta->delivery_photos);
-        Storage::disk('public')->assertExists($renta->delivery_photos[0]);
+        Storage::disk('privado')->assertExists($renta->delivery_photos[0]);
     }
 
     /** Se puede entregar sin fotos, pero la app lo dice en vez de callarse. */
@@ -161,7 +164,7 @@ class EntregaYDocumentosTest extends TestCase
 
         $this->assertSame('completada', $renta->status);
         $this->assertCount(1, $renta->pickup_photos);
-        Storage::disk('public')->assertExists($renta->pickup_photos[0]);
+        Storage::disk('privado')->assertExists($renta->pickup_photos[0]);
     }
 
     // --- Documentos del cliente ---

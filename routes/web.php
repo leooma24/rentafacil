@@ -74,6 +74,13 @@ Route::get('/documentos/{document}', [\App\Http\Controllers\CustomerDocumentCont
     ->name('documentos.ver')
     ->middleware('auth');
 
+// Las fotos de entregas, recolecciones e incidencias. Es la 'url' del disco
+// privado, así que las columnas y los ImageEntry de Filament apuntan aquí solos.
+Route::get('/archivos/{ruta}', [\App\Http\Controllers\ArchivoPrivadoController::class, 'show'])
+    ->where('ruta', '.*')
+    ->name('archivos.ver')
+    ->middleware('auth');
+
 Route::get('/recibo/{payment}/descargar', [ContractController::class, 'receipt'])
     ->name('receipt.download')
     ->middleware('auth');

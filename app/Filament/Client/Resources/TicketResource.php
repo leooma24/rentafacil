@@ -78,6 +78,7 @@ class TicketResource extends Resource
                             ->maxLength(65535),
                         Forms\Components\FileUpload::make('photos')
                             ->label('Fotos del problema')
+                            ->disk('privado')
                             ->image()
                             ->multiple()
                             ->maxFiles(5)
