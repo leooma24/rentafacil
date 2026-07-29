@@ -39,9 +39,12 @@ class CustomerDocument extends Model
 
         // El archivo se va con el registro: dejarlo huérfano en el disco es
         // guardar la identificación de alguien sin que nadie sepa que está ahí.
+        //
+        // Disco local y no público: estos papeles no se sirven por el navegador,
+        // salen por una ruta que comprueba quién los pide.
         static::deleted(function (CustomerDocument $documento) {
             if ($documento->file_path) {
-                Storage::disk('public')->delete($documento->file_path);
+                Storage::disk('local')->delete($documento->file_path);
             }
         });
     }

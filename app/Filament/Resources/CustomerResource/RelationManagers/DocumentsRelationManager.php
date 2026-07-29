@@ -44,13 +44,22 @@ class DocumentsRelationManager extends RelationManager
                 ->required()
                 ->native(false),
 
+            // Disco privado, NO el público.
+            //
+            // storage/app/public se sirve tal cual en /storage/..., así que un
+            // archivo ahí lo baja cualquiera que tenga la liga, sin sesión.
+            // Para una identificación oficial eso no es aceptable: se guarda
+            // fuera del alcance del navegador y se entrega por una ruta que
+            // comprueba quién la pide.
             Forms\Components\FileUpload::make('file_path')
                 ->label('Archivo')
+                ->disk('local')
                 ->directory('documentos-clientes')
+                ->visibility('private')
                 ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'application/pdf'])
                 ->maxSize(8192)
                 ->required()
-                ->helperText('Foto o PDF, hasta 8 MB.')
+                ->helperText('Foto o PDF, hasta 8 MB. Sólo tú puedes verlo.')
                 ->columnSpanFull(),
 
             Forms\Components\Textarea::make('notes')
@@ -88,7 +97,9 @@ class DocumentsRelationManager extends RelationManager
                 Tables\Actions\Action::make('ver')
                     ->label('Ver')
                     ->icon('heroicon-o-eye')
-                    ->url(fn (CustomerDocument $record) => Storage::disk('public')->url($record->file_path))
+                    // Por una ruta que comprueba la sesión y la empresa, no por
+                    // una liga pública.
+                    ->url(fn (CustomerDocument $record) => route('documentos.ver', $record))
                     ->openUrlInNewTab(),
                 Tables\Actions\DeleteAction::make(),
             ])

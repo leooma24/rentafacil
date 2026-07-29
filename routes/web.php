@@ -54,8 +54,24 @@ Route::post('/create-payment-intent', [PaymentController::class, 'createPaymentI
 Route::get('/sitemap.xml', [SitemapController::class, 'index']);
 Route::get('/renta-lavadoras/{city}', CityLanding::class)->name('city.landing');
 
+/*
+ * El middleware auth manda a route('login') cuando no hay sesión, y ese nombre
+ * no estaba definido: el panel de Filament registra el suyo como
+ * filament.propietario.auth.login. Resultado: cualquier ruta protegida
+ * respondía 500 en lugar de mandar a iniciar sesión, y así llevaba desde
+ * siempre —aparece en el registro de errores.
+ */
+Route::redirect('/entrar', '/propietario/login')->name('login');
+
 Route::get('/contrato/{rental}/descargar', [ContractController::class, 'download'])
     ->name('contract.download')
+    ->middleware('auth');
+
+// Los papeles del cliente (INE, comprobante) viven en el disco privado y salen
+// por aquí: el controlador comprueba sesión, rol y que el cliente sea de la
+// empresa de quien pide.
+Route::get('/documentos/{document}', [\App\Http\Controllers\CustomerDocumentController::class, 'show'])
+    ->name('documentos.ver')
     ->middleware('auth');
 
 Route::get('/recibo/{payment}/descargar', [ContractController::class, 'receipt'])

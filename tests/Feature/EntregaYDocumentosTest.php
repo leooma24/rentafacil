@@ -185,18 +185,20 @@ class EntregaYDocumentosTest extends TestCase
      */
     public function test_borrar_el_documento_borra_el_archivo(): void
     {
-        Storage::disk('public')->put('documentos-clientes/ine.jpg', 'contenido');
+        // Disco privado: estos papeles no se sirven por el navegador.
+        Storage::fake('local');
+        Storage::disk('local')->put('documentos-clientes/ine.jpg', 'contenido');
 
         $documento = $this->cliente->documents()->create([
             'type' => 'ine',
             'file_path' => 'documentos-clientes/ine.jpg',
         ]);
 
-        Storage::disk('public')->assertExists('documentos-clientes/ine.jpg');
+        Storage::disk('local')->assertExists('documentos-clientes/ine.jpg');
 
         $documento->delete();
 
-        Storage::disk('public')->assertMissing('documentos-clientes/ine.jpg');
+        Storage::disk('local')->assertMissing('documentos-clientes/ine.jpg');
     }
 
     public function test_borrar_al_cliente_se_lleva_sus_documentos(): void

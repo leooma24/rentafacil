@@ -283,18 +283,29 @@ class WashingMachineResource extends Resource
                     ->icon('heroicon-o-arrow-up-tray')
                     ->color('success')
                     ->form([
+                        // Disco privado: el archivo trae la lista de clientes de
+                        // la empresa, y storage/app/public se sirve tal cual en
+                        // /storage/..., asi que ahi lo bajaria cualquiera.
                         Forms\Components\FileUpload::make('file')
                             ->label('Archivo Excel (.xlsx)')
+                            ->disk('local')
+                            ->directory('importaciones')
+                            ->visibility('private')
                             ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'])
                             ->required(),
                     ])
                     ->action(function (array $data) {
-                        $file = storage_path('app/public/' . $data['file']);
+                        $file = \Illuminate\Support\Facades\Storage::disk('local')->path($data['file']);
+
                         Excel::import(new WashingMachinesImport(Filament::getTenant()->id), $file);
                         Notification::make()
                             ->title('Lavadoras importadas correctamente')
                             ->success()
                             ->send();
+
+                        // El archivo trae la lista completa de la empresa: se
+                        // borra en cuanto se leyo, no se queda guardado.
+                        \Illuminate\Support\Facades\Storage::disk('local')->delete($data['file']);
                     }),
             ])
             ->filters([
