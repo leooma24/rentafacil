@@ -64,7 +64,13 @@ class Abonos
      */
     public static function applyCompletePeriods(Rental $rental): int
     {
-        $terms = RentalTerms::for($rental->company);
+        // El precio de ESTA renta, no el de la empresa.
+        //
+        // Desde que se puede pactar un precio por renta, esto seguía dividiendo
+        // entre el precio general: a una renta de $300 se le daba el periodo
+        // completo con $250, y el estado de cuenta —que sí mira el precio de la
+        // renta— decía otra cosa. Dinero regalado sin que nadie lo viera.
+        $terms = RentalTerms::forRental($rental);
 
         if (! $terms->isConfigured()) {
             return 0;

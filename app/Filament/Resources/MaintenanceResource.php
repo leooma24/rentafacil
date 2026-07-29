@@ -34,38 +34,118 @@ class MaintenanceResource extends Resource
         $tenant = Filament::getTenant();
         return $form
             ->schema([
-                //
-                Forms\Components\Select::make('washing_machine_id')
-                    ->label('Lavadora')
-                    ->options(function ($record) use ($tenant) {
-                        $options = $tenant->washingMachines()
-                            ->where('status', '!=', 'mantenimiento');
-                        if ($record) {
-                            $options->orWhere('id', $record->washing_machine_id);
-                        }
-                        return $options->get()
-                            ->pluck('machine_code', 'id');
-                    })
-                    ->required(),
-                Forms\Components\TextInput::make('technician_name')
-                    ->label('Técnico')
-                    ->required(),
-                Forms\Components\DatePicker::make('start_date')
-                    ->label('Fecha de Inicio')
-                    ->default(now())
-                    ->required(),
-                Forms\Components\DatePicker::make('end_date')
-                    ->label('Fecha de Fin'),
-                Forms\Components\Select::make('maintenance_type')
-                    ->label('Tipo de Mantenimiento')
-                    ->options([
-                        'preventivo' => 'Preventivo',
-                        'correctivo' => 'Correctivo',
+                Forms\Components\Section::make('Qué equipo y quién lo vio')
+                    ->description('Mientras esté en mantenimiento no aparece para rentar.')
+                    ->icon('heroicon-o-wrench-screwdriver')
+                    ->iconColor('primary')
+                    ->schema([
+                        Forms\Components\Select::make('washing_machine_id')
+                            ->label('Equipo')
+                            ->options(function ($record) use ($tenant) {
+                                $options = $tenant->washingMachines()
+                                    ->where('status', '!=', 'mantenimiento');
+
+                                if ($record) {
+                                    $options->orWhere('id', $record->washing_machine_id);
+                                }
+
+                                // Con secadoras en el parque, el puro código ya
+                                // no dice a qué aparato se le está abriendo la
+                                // orden.
+                                return $options->orderBy('machine_code')->get()
+                                    ->mapWithKeys(fn ($equipo) => [
+                                        $equipo->id => "{$equipo->machine_code} · {$equipo->kindLabel()}"
+                                            . ($equipo->brand ? " {$equipo->brand}" : ''),
+                                    ]);
+                            })
+                            ->searchable()
+                            ->preload()
+                            ->required(),
+
+                        Forms\Components\TextInput::make('technician_name')
+                            ->label('Quién lo revisó')
+                            ->required()
+                            ->maxLength(255)
+                            ->prefixIcon('heroicon-o-user')
+                            ->datalist(fn () => $tenant->maintenances()
+                                ->whereNotNull('technician_name')
+                                ->distinct()
+                                ->pluck('technician_name')
+                                ->all())
+                            ->helperText('Se te sugieren los técnicos que ya has usado.'),
                     ])
-                    ->required(),
-                Forms\Components\Textarea::make('description')
-                    ->label('Descripción')
-                    ->required(),
+                    ->columns(2),
+
+                Forms\Components\Section::make('Qué se le hizo')
+                    ->icon('heroicon-o-clipboard-document-list')
+                    ->iconColor('warning')
+                    ->schema([
+                        Forms\Components\Select::make('maintenance_type')
+                            ->label('Tipo')
+                            ->options([
+                                'preventivo' => 'Preventivo — revisión de rutina',
+                                'correctivo' => 'Correctivo — se descompuso',
+                            ])
+                            ->native(false)
+                            ->required(),
+
+                        Forms\Components\Select::make('status')
+                            ->label('Cómo va')
+                            ->options([
+                                'programada' => 'Programada',
+                                'en_progreso' => 'En proceso',
+                                'completado' => 'Terminado',
+                            ])
+                            ->default('programada')
+                            ->native(false)
+                            ->live()
+                            ->required(),
+
+                        Forms\Components\Textarea::make('description')
+                            ->label('Qué se le hizo')
+                            ->placeholder('Cambio de banda del motor y limpieza de filtros.')
+                            ->rows(3)
+                            ->required()
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2),
+
+                Forms\Components\Section::make('Cuándo y cuánto')
+                    ->description('El costo entra a tus gastos del mes: sin él, la ganancia que ves está inflada.')
+                    ->icon('heroicon-o-banknotes')
+                    ->iconColor('success')
+                    ->schema([
+                        Forms\Components\DatePicker::make('start_date')
+                            ->label('Entró a taller')
+                            ->default(now())
+                            ->native(false)
+                            ->displayFormat('d/m/Y')
+                            ->format('Y-m-d')
+                            ->required(),
+
+                        Forms\Components\DatePicker::make('end_date')
+                            ->label('Salió')
+                            ->native(false)
+                            ->displayFormat('d/m/Y')
+                            ->format('Y-m-d')
+                            // No puede salir antes de entrar. Así se le colaron
+                            // al demo unos mantenimientos que duraban en
+                            // negativo, y el promedio de días salía absurdo.
+                            ->afterOrEqual('start_date')
+                            ->helperText('Déjala vacía mientras siga en el taller.'),
+
+                        // El costo existía en la base y no en el formulario: no
+                        // había forma de anotar lo que costó una reparación.
+                        Forms\Components\TextInput::make('cost')
+                            ->label('Qué costó')
+                            ->numeric()
+                            ->minValue(0)
+                            ->step('0.01')
+                            ->prefix('$')
+                            ->suffix('MXN')
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2),
             ]);
     }
 

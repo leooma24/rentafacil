@@ -16,19 +16,25 @@ class ExtendRentAction
 {
     public static function make(Company $tenant): Tables\Actions\Action
     {
-        $terms = RentalTerms::for($tenant);
-
+        // Las condiciones se resuelven POR RENTA y no una sola vez para toda la
+        // empresa: desde que se puede pactar un precio distinto por cliente o
+        // por equipo, el general dejó de servir como valor precargado. Confirmar
+        // el modal tal cual le cobraba $250 a una renta pactada en $300.
         return Tables\Actions\Action::make('extend_rent')
             ->label('Extender Renta')
             ->icon('heroicon-o-calendar')
             ->modalSubmitActionLabel('Cobrar')
             // El camino normal es confirmar: los seis campos ya vienen llenos y
             // esto se usa parado en la puerta del cliente, desde el celular.
-            ->modalHeading(fn (Rental $rental) => 'Cobrar ' . $terms->summary())
-            ->modalDescription(fn (Rental $rental) => $terms->isConfigured()
-                ? 'Se registra hoy y la renta se extiende al '
-                    . $terms->endDateFrom($rental->end_date)->format('d/m/Y') . '.'
-                : 'Falta configurar tu precio de renta en Preferencias.')
+            ->modalHeading(fn (Rental $rental) => 'Cobrar ' . RentalTerms::forRental($rental)->summary())
+            ->modalDescription(function (Rental $rental) {
+                $terms = RentalTerms::forRental($rental);
+
+                return $terms->isConfigured()
+                    ? 'Se registra hoy y la renta se extiende al '
+                        . $terms->endDateFrom($rental->end_date)->format('d/m/Y') . '.'
+                    : 'Falta configurar tu precio de renta en Preferencias.';
+            })
             ->form([
                 Forms\Components\Section::make('Cambiar monto o método')
                     ->description('Solo si este cobro es distinto al de siempre.')
@@ -42,10 +48,10 @@ class ExtendRentAction
                             ->default(now()),
                         Forms\Components\TextInput::make('price')
                             ->label('Precio de renta')
-                            ->default($terms->price),
+                            ->default(fn (Rental $record) => RentalTerms::forRental($record)->price),
                         Forms\Components\TextInput::make('days')
                             ->label('Días de renta')
-                            ->default($terms->days),
+                            ->default(fn (Rental $record) => RentalTerms::forRental($record)->days),
                         Forms\Components\Select::make('payment_method')
                             ->label('Método de Pago')
                             ->options([

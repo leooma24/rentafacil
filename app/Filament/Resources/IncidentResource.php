@@ -55,75 +55,149 @@ class IncidentResource extends Resource
         $tenant = Filament::getTenant();
         return $form
             ->schema([
-                Forms\Components\Section::make('Detalles de la Incidencia')
-                    ->description('Información detallada sobre la incidencia reportada')
+                Forms\Components\Section::make('Qué pasó')
+                    ->description('Como te lo dijo el cliente. Después esto es lo que buscas para acordarte.')
+                    ->icon('heroicon-o-exclamation-triangle')
+                    ->iconColor('danger')
                     ->schema([
                         Forms\Components\TextInput::make('title')
-                            ->label('Título')
+                            ->label('El reporte')
+                            ->placeholder('No centrifuga')
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->columnSpanFull(),
+
+                        Forms\Components\Select::make('type')
+                            ->label('De qué es')
+                            ->options([
+                                'mecánica' => 'Mecánica',
+                                'eléctrica' => 'Eléctrica',
+                                'software' => 'Tablero / programación',
+                                'otra' => 'Otra',
+                            ])
+                            ->default('otra')
+                            ->native(false)
+                            ->required(),
+
+                        Forms\Components\Select::make('priority')
+                            ->label('Qué tan urgente')
+                            ->options([
+                                'alta' => 'Alta — el cliente no la puede usar',
+                                'media' => 'Media — funciona a medias',
+                                'baja' => 'Baja — puede esperar',
+                            ])
+                            ->default('media')
+                            ->native(false)
+                            ->required(),
+
                         Forms\Components\Textarea::make('description')
-                            ->label('Descripción')
-                            ->maxLength(65535),
+                            ->label('Detalle')
+                            ->rows(3)
+                            ->maxLength(65535)
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2),
+
+                Forms\Components\Section::make('De qué equipo y quién lo atiende')
+                    ->icon('heroicon-o-cube')
+                    ->iconColor('primary')
+                    ->schema([
+                        Forms\Components\Select::make('washing_machine_id')
+                            ->label('Equipo')
+                            ->options(function () use ($tenant) {
+                                // Con quién está: casi siempre el reporte llega
+                                // por nombre del cliente y no por código.
+                                return $tenant->washingMachines()
+                                    ->with('activeRental.customer')
+                                    ->orderBy('machine_code')
+                                    ->get()
+                                    ->mapWithKeys(function ($equipo) {
+                                        $etiqueta = "{$equipo->machine_code} · {$equipo->kindLabel()}";
+                                        $cliente = $equipo->activeRental?->customer?->name;
+
+                                        return [$equipo->id => $cliente
+                                            ? "{$etiqueta} — {$cliente}"
+                                            : $etiqueta];
+                                    });
+                            })
+                            ->searchable()
+                            ->preload()
+                            ->required(),
+
+                        Forms\Components\Select::make('assigned_to')
+                            ->label('Quién lo ve')
+                            ->options(fn () => $tenant->members()->pluck('name', 'users.id'))
+                            ->native(false)
+                            ->nullable()
+                            ->helperText('Opcional.'),
+                    ])
+                    ->columns(2),
+
+                Forms\Components\Section::make('Cómo va')
+                    ->icon('heroicon-o-check-circle')
+                    ->iconColor('success')
+                    ->schema([
                         Forms\Components\Select::make('status')
                             ->label('Estado')
                             ->options([
                                 'abierta' => 'Abierta',
-                                'en_progreso' => 'En Progreso',
+                                'en_progreso' => 'En proceso',
                                 'cerrada' => 'Cerrada',
                             ])
                             ->default('abierta')
-                            ->required(),
-                        Forms\Components\Select::make('priority')
-                            ->label('Prioridad')
-                            ->options([
-                                'baja' => 'Baja',
-                                'media' => 'Media',
-                                'alta' => 'Alta',
-                            ])
-                            ->default('media')
-                            ->required(),
-                        Forms\Components\Select::make('washing_machine_id')
-                            ->label('Lavadora')
-                            ->options(function ($record) use ($tenant) {
-                                return $tenant->washingMachines()->get()
-                                    ->pluck('machine_code', 'id');
-                            })
-                            ->required(),
-                        Forms\Components\Select::make('assigned_to')
-                            ->label('Asignado a')
-                            ->options(function ($record) use ($tenant) {
-                                return $tenant->members()->get()
-                                    ->pluck('name', 'id');
-                            })
-                            ->nullable(),
-                        Forms\Components\Select::make('type')
-                            ->label('Tipo de Incidencia')
-                            ->options([
-                                'mecánica' => 'Mecánica',
-                                'eléctrica' => 'Eléctrica',
-                                'software' => 'Software',
-                                'otra' => 'Otra',
-                            ])
-                            ->default('otra')
-                            ->required(),
+                            ->native(false)
+                            ->required()
+                            ->live()
+                            // Al cerrarla se sella la fecha sola. Escribirla a
+                            // mano es de donde salieron reportes resueltos antes
+                            // de haberse abierto, que dejaban el promedio de
+                            // atención en negativo.
+                            ->afterStateUpdated(function (?string $state, Forms\Set $set, Forms\Get $get) {
+                                if ($state === 'cerrada' && blank($get('resolved_at'))) {
+                                    $set('resolved_at', now()->format('Y-m-d H:i:s'));
+                                }
+
+                                if ($state !== 'cerrada') {
+                                    $set('resolved_at', null);
+                                }
+                            }),
+
                         Forms\Components\DateTimePicker::make('resolved_at')
-                            ->label('Fecha de Resolución')
-                            ->nullable(),
+                            ->label('Cuándo se resolvió')
+                            ->native(false)
+                            ->displayFormat('d/m/Y H:i')
+                            ->seconds(false)
+                            ->nullable()
+                            ->visible(fn (Forms\Get $get) => $get('status') === 'cerrada')
+                            // Un reporte no se puede resolver antes de existir.
+                            ->minDate(fn (?Incident $record) => $record?->created_at)
+                            ->maxDate(now()),
+
                         Forms\Components\Textarea::make('comments')
-                            ->label('Comentarios')
+                            ->label('Qué se hizo')
+                            ->rows(2)
                             ->maxLength(65535)
-                            ->nullable(),
+                            ->nullable()
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2),
+
+                Forms\Components\Section::make('Fotos')
+                    ->description('Cómo se ve el problema. Sirven para pedir la refacción sin ir a verlo otra vez.')
+                    ->icon('heroicon-o-camera')
+                    ->iconColor('gray')
+                    ->collapsible()
+                    ->collapsed(fn (?Incident $record) => blank($record?->photos))
+                    ->schema([
                         Forms\Components\FileUpload::make('photos')
-                            ->label('Fotos')
+                            ->hiddenLabel()
                             ->disk('privado')
                             ->image()
                             ->multiple()
                             ->maxFiles(5)
                             ->directory('incidents')
                             ->columnSpanFull(),
-                    ])
-                    ->columns(2),
+                    ]),
             ]);
     }
 

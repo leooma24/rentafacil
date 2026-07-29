@@ -25,15 +25,22 @@ class AbonarAction
      */
     public static function make(Company $tenant, \Closure $resolver): Tables\Actions\Action
     {
-        $terms = RentalTerms::for($tenant);
-
         return Tables\Actions\Action::make('abonar')
             ->label('Abonar')
             ->icon('heroicon-o-banknotes')
             ->color('warning')
             ->visible(fn ($record) => $resolver($record) !== null)
             ->modalHeading('Registrar un abono')
-            ->modalDescription(fn ($record) => self::descripcion($resolver($record), $terms))
+            // Las condiciones salen de la renta, no de la empresa: con precio
+            // pactado por cliente, el general dice una cifra que no es la suya.
+            ->modalDescription(function ($record) use ($resolver) {
+                $rental = $resolver($record);
+
+                return self::descripcion(
+                    $rental,
+                    $rental ? RentalTerms::forRental($rental) : RentalTerms::for($record->company)
+                );
+            })
             ->modalSubmitActionLabel('Registrar abono')
             ->form([
                 Forms\Components\TextInput::make('amount')

@@ -63,49 +63,69 @@ class ExpenseResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Select::make('category')
-                ->label('En qué')
-                ->options(Expense::CATEGORIAS)
-                ->required()
-                ->native(false)
-                ->searchable(),
+            Forms\Components\Section::make('Qué gastaste')
+                ->description('Cada gasto que anotes se le resta a lo cobrado: es lo que hace que la ganancia del escritorio sea de verdad y no sólo lo que entró.')
+                ->icon('heroicon-o-receipt-percent')
+                ->iconColor('danger')
+                ->schema([
+                    Forms\Components\TextInput::make('description')
+                        ->label('De qué se trata')
+                        ->placeholder('Gasolina de la ruta del norte')
+                        ->required()
+                        ->maxLength(255)
+                        ->columnSpanFull(),
 
-            Forms\Components\TextInput::make('amount')
-                ->label('Cuánto')
-                ->numeric()
-                ->minValue(0)
-                ->step('0.01')
-                ->prefix('$')
-                ->required(),
+                    Forms\Components\Select::make('category')
+                        ->label('En qué')
+                        ->options(Expense::CATEGORIAS)
+                        ->required()
+                        ->native(false)
+                        ->searchable()
+                        ->helperText('Sirve para ver a dónde se te va el dinero.'),
 
-            Forms\Components\TextInput::make('description')
-                ->label('De qué se trata')
-                ->placeholder('Gasolina de la ruta del norte')
-                ->required()
-                ->maxLength(255)
-                ->columnSpanFull(),
-
-            Forms\Components\DatePicker::make('expense_date')
-                ->label('Cuándo')
-                ->native(false)
-                ->default(today())
-                ->maxDate(today())
-                ->required(),
-
-            Forms\Components\Select::make('payment_method')
-                ->label('Cómo lo pagaste')
-                ->options([
-                    'Efectivo' => 'Efectivo',
-                    'transferencia' => 'Transferencia',
-                    'tarjeta' => 'Tarjeta',
+                    Forms\Components\TextInput::make('amount')
+                        ->label('Cuánto')
+                        ->numeric()
+                        ->minValue(0)
+                        ->step('0.01')
+                        ->prefix('$')
+                        ->suffix('MXN')
+                        ->required(),
                 ])
-                ->native(false),
+                ->columns(2),
 
-            Forms\Components\Textarea::make('notes')
-                ->label('Notas')
-                ->rows(2)
-                ->columnSpanFull(),
-        ])->columns(2);
+            Forms\Components\Section::make('Cuándo y cómo lo pagaste')
+                ->icon('heroicon-o-calendar-days')
+                ->iconColor('warning')
+                ->schema([
+                    Forms\Components\DatePicker::make('expense_date')
+                        ->label('Cuándo')
+                        ->native(false)
+                        ->displayFormat('d/m/Y')
+                        ->format('Y-m-d')
+                        ->default(today())
+                        ->maxDate(today())
+                        ->required()
+                        // La ganancia se calcula por mes: un gasto con fecha de
+                        // otro mes se sale del corte sin que nadie lo note.
+                        ->helperText('Cuenta para la ganancia del mes de esta fecha.'),
+
+                    Forms\Components\Select::make('payment_method')
+                        ->label('Cómo lo pagaste')
+                        ->options([
+                            'Efectivo' => 'Efectivo',
+                            'transferencia' => 'Transferencia',
+                            'tarjeta' => 'Tarjeta',
+                        ])
+                        ->native(false),
+
+                    Forms\Components\Textarea::make('notes')
+                        ->label('Notas')
+                        ->rows(2)
+                        ->columnSpanFull(),
+                ])
+                ->columns(2),
+        ]);
     }
 
     public static function table(Table $table): Table
