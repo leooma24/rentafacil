@@ -61,7 +61,7 @@ class PulidoVisualTest extends TestCase
             ->values()
             ->all();
 
-        $this->assertSame(['Hoy', 'El dinero', 'Estado del negocio'], $rotulos);
+        $this->assertSame(['Hoy', 'El dinero', 'Estado del negocio', 'Crecer'], $rotulos);
     }
 
     public function test_el_rotulo_dibuja_el_texto_que_se_le_pasa(): void

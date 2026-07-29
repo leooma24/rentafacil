@@ -111,6 +111,18 @@ class WashingMachine extends Model
         return $this->hasMany(Maintenance::class);
     }
 
+    /**
+     * Los reportes que se han levantado de este aparato.
+     *
+     * Faltaba: las incidencias apuntan al equipo desde su tabla pero no había
+     * cómo llegar en la otra dirección, así que "qué le ha pasado a esta
+     * lavadora" no se podía preguntar sin escribir la consulta a mano.
+     */
+    public function incidents()
+    {
+        return $this->hasMany(Incident::class);
+    }
+
     public function getNameAttribute()
     {
         return $this->machine_code . ' ' . $this->brand . ' ' . $this->model;

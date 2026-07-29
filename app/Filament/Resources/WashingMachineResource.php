@@ -522,6 +522,15 @@ class WashingMachineResource extends Resource
                     ->color('gray')
                     ->url(fn ($record) => route('qr.download', $record))
                     ->openUrlInNewTab(),
+                // Toda la vida del aparato, en vez de repartida en Rentas,
+                // Mantenimientos, Incidencias y el historial de cambios.
+                Tables\Actions\Action::make('bitacora')
+                    ->label('Bitácora')
+                    ->iconButton()
+                    ->tooltip('Toda su historia')
+                    ->icon('heroicon-o-clock')
+                    ->color('gray')
+                    ->url(fn (WashingMachine $record) => static::getUrl('bitacora', ['record' => $record])),
                 ActionGroup::make([
                     \App\Filament\Resources\RentalResource\Actions\AbonarAction::make(
                         $tenant,
@@ -745,6 +754,9 @@ class WashingMachineResource extends Resource
             'index' => Pages\ListWashingMachines::route('/'),
             'create' => Pages\CreateWashingMachine::route('/create'),
             'edit' => Pages\EditWashingMachine::route('/{record}/edit'),
+            // Toda la vida del aparato en una pantalla, en vez de repartida en
+            // Rentas, Mantenimientos, Incidencias y el historial de cambios.
+            'bitacora' => Pages\VerBitacora::route('/{record}/bitacora'),
         ];
     }
 }

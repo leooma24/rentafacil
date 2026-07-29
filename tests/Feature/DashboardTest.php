@@ -186,6 +186,10 @@ class DashboardTest extends TestCase
             \App\Filament\Widgets\RentalStatusChart::class,
             \App\Filament\Widgets\MachineProfitabilityWidget::class,
             \App\Filament\Widgets\BusinessAnalyticsWidget::class,
+            \App\Filament\Widgets\SectionHeading::class,
+            // Se esconde solo hasta que hay equipo dado de alta: la pregunta de
+            // comprar otro no aplica antes del primero.
+            \App\Filament\Widgets\CrecerWidget::class,
         ], $clases);
 
         foreach ($clases as $clase) {

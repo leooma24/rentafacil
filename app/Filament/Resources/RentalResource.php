@@ -97,7 +97,27 @@ class RentalResource extends Resource
                                     ->email(),
                             ])
                             ->createOptionUsing(fn (array $data) => $tenant->customers()->create($data)->id)
-                            ->helperText('Si es nuevo, lo das de alta aquí mismo.'),
+                            ->helperText('Si es nuevo, lo das de alta aquí mismo.')
+                            // Se precarga el depósito sugerido, y sólo si el
+                            // dueño no ha escrito nada: si ya puso una cifra, es
+                            // porque lo acordó con el cliente y manda ella.
+                            ->afterStateUpdated(function ($state, Forms\Get $get, Forms\Set $set) use ($tenant, $terms) {
+                                if (filled($get('deposit')) && (float) $get('deposit') > 0) {
+                                    return;
+                                }
+
+                                $cliente = $tenant->customers()->find($state);
+
+                                if (! $cliente) {
+                                    return;
+                                }
+
+                                $precio = (float) ($get('price') ?: $terms->price ?: 0);
+
+                                if ($precio > 0) {
+                                    $set('deposit', \App\Support\DepositoSugerido::para($cliente, $precio)->monto);
+                                }
+                            }),
 
                         // Cómo se ha portado, ANTES de entregarle el aparato.
                         //
@@ -165,7 +185,15 @@ class RentalResource extends Resource
                             ->suffix('MXN')
                             ->default(0)
                             ->live(onBlur: true)
-                            ->helperText('Se lo devuelves al recoger el equipo.'),
+                            // El depósito es lo único que protege el aparato, y
+                            // se quedaba en cero porque llenarlo obliga a decidir
+                            // un monto parado en la puerta del cliente, con la
+                            // lavadora ya en la camioneta. Aquí se propone uno
+                            // según cómo se ha portado, medido en periodos de
+                            // renta: "dos semanas de garantía" se defiende
+                            // enfrente del cliente, "$500" no se sabe de dónde
+                            // salió.
+                            ->helperText(fn (Forms\Get $get) => self::ayudaDelDeposito($get, $tenant, $terms)),
 
                         Forms\Components\DatePicker::make('start_date')
                             ->label('Empieza')
@@ -230,6 +258,27 @@ class RentalResource extends Resource
                             ->columnSpanFull(),
                     ]),
             ]);
+    }
+
+    /**
+     * La sugerencia de depósito, según cómo se ha portado el cliente.
+     *
+     * Es sugerencia y nunca imposición: el dueño conoce a su gente y hay razones
+     * que no están en la base de datos. Lo que se evita es que el cero sea la
+     * decisión por omisión.
+     */
+    private static function ayudaDelDeposito(Forms\Get $get, $tenant, \App\Support\RentalTerms $terms): string
+    {
+        $base = 'Se lo devuelves al recoger el equipo.';
+
+        $cliente = $get('customer_id') ? $tenant->customers()->find($get('customer_id')) : null;
+        $precio = (float) ($get('price') ?: $terms->price ?: 0);
+
+        if (! $cliente || $precio <= 0) {
+            return $base;
+        }
+
+        return $base . ' ' . \App\Support\DepositoSugerido::para($cliente, $precio)->ayuda();
     }
 
     /**

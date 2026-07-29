@@ -67,6 +67,12 @@ class Dashboard extends BaseDashboard
             \App\Filament\Widgets\RentalStatusChart::class,
             \App\Filament\Widgets\MachineProfitabilityWidget::class,
             \App\Filament\Widgets\BusinessAnalyticsWidget::class,
+
+            SectionHeading::make([
+                'titulo' => 'Crecer',
+                'descripcion' => 'La única decisión grande del negocio: cuándo meter otro equipo.',
+            ]),
+            \App\Filament\Widgets\CrecerWidget::class,
         ];
     }
 
