@@ -102,7 +102,7 @@ class AdminPanelProvider extends PanelProvider
                 // La capa visual del panel. Va como CSS propio y no como tema
                 // compilado: un tema mete npm al despliegue y si falla deja el
                 // panel desnudo. El parámetro es para romper caché al cambiarlo.
-                '<link rel="stylesheet" href="' . url('css/panel.css') . '?v=1">' .
+                '<link rel="stylesheet" href="' . url('css/panel.css') . '?v=2">' .
                 // El estado del menú se deja listo ANTES de que Alpine arranque:
                 // Alpine lo lee de aquí al iniciar, así que no hay parpadeo. Con
                 // el script después de la carga, el menú se dibujaba encogido un

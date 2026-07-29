@@ -72,21 +72,29 @@ class DemoCompanyBuilderTest extends TestCase
         $this->assertSame(7, (int) $company->settings->days_per_payment);
     }
 
-    public function test_genera_catorce_lavadoras_tres_secadoras_y_veinte_clientes(): void
+    public function test_genera_quince_lavadoras_tres_secadoras_y_veinte_clientes(): void
     {
         $this->seedPackage();
 
         $company = (new DemoCompanyBuilder())->build();
 
         $machines = $company->washingMachines;
-        $this->assertCount(17, $machines);
+        $this->assertCount(18, $machines);
 
         $lavadoras = $machines->where('kind', 'lavadora');
-        $this->assertCount(14, $lavadoras);
+        $this->assertCount(15, $lavadoras);
         $this->assertSame(10, $lavadoras->where('status', 'rentada')->count());
-        $this->assertSame(2, $lavadoras->where('status', 'disponible')->count());
-        $this->assertSame(1, $lavadoras->where('status', 'mantenimiento')->count());
         $this->assertSame(1, $lavadoras->where('status', 'fuera_de_servicio')->count());
+
+        // Un equipo extraviado: es de las cosas que de verdad pasan y el demo
+        // enseñaba un parque impecable donde nunca se pierde nada.
+        $this->assertSame(1, $lavadoras->where('status', 'extraviada')->count());
+
+        // Disponibles y en mantenimiento no se cuentan a número fijo: el cambio
+        // de equipo del demo mueve una de cada, y clavar el número aquí obliga a
+        // corregir esta prueba cada vez que se toque aquello.
+        $this->assertGreaterThan(0, $lavadoras->where('status', 'disponible')->count());
+        $this->assertGreaterThan(0, $lavadoras->where('status', 'mantenimiento')->count());
 
         // El negocio también renta secadoras: sin ellas en el demo, el prospecto
         // que las renta no ve que la app las contempla.
@@ -130,7 +138,8 @@ class DemoCompanyBuilderTest extends TestCase
 
         // 8 de lavadora + 2 de secadora.
         $this->assertSame(10, $rentals->where('status', 'activa')->count());
-        $this->assertSame(2, $rentals->where('status', 'vencida')->count());
+        // 2 morosos + la del equipo extraviado, que se deja abierta a propósito.
+        $this->assertSame(3, $rentals->where('status', 'vencida')->count());
         $this->assertSame(15, $rentals->where('status', 'completada')->count());
 
         // Hay al menos una renta que vence dentro de los próximos 7 días.
@@ -152,10 +161,14 @@ class DemoCompanyBuilderTest extends TestCase
         $this->assertGreaterThan(50, $payments->count());
         $this->assertTrue($payments->every(fn ($p) => $p->status === 'completado'));
 
-        // Cada cobro vale lo que su renta: con precios distintos por equipo, un
-        // monto fijo dejaría pagos de 250 en una renta pactada en 300.
+        // Cada cobro aplicado vale lo que su renta: con precios distintos por
+        // equipo, un monto fijo dejaría pagos de 250 en una renta pactada en 300.
+        //
+        // Los abonos quedan fuera a propósito: valen menos que el periodo, que
+        // es justamente lo que los hace abonos.
         $this->assertTrue(
-            $payments->every(fn ($p) => (float) $p->amount === (float) ($p->rental->price ?: 250)),
+            $payments->where('applied', true)
+                ->every(fn ($p) => (float) $p->amount === (float) ($p->rental->price ?: 250)),
             'Hay cobros que no coinciden con el precio de su renta.'
         );
 
@@ -294,5 +307,179 @@ class DemoCompanyBuilderTest extends TestCase
             $company->incidents->whereIn('status', ['abierta', 'en_progreso'])
                 ->every(fn ($i) => $i->resolved_at === null)
         );
+    }
+
+    /**
+     * El planificador de rutas es de lo que más vende la app, y recibía al
+     * prospecto con "todavía no hay clientes ubicados en el mapa": no había
+     * absolutamente nada que enseñar.
+     */
+    public function test_los_clientes_del_demo_estan_ubicados_en_el_mapa(): void
+    {
+        $this->seedPackage();
+
+        $company = (new DemoCompanyBuilder())->build();
+
+        $direcciones = $company->customers->map(fn ($c) => $c->addresses->first());
+
+        $this->assertTrue(
+            $direcciones->every(fn ($d) => $d?->hasCoordinates()),
+            'Hay clientes sin coordenadas: el planificador de rutas los ignora.'
+        );
+
+        // Repartidos, no encimados: veinte clientes en el mismo punto arman una
+        // ruta que no significa nada.
+        $this->assertSame(
+            20,
+            $direcciones->map(fn ($d) => $d->latitude . ',' . $d->longitude)->unique()->count()
+        );
+
+        // Y dentro de Los Mochis, no en medio del mar.
+        $this->assertTrue($direcciones->every(
+            fn ($d) => abs((float) $d->latitude - 25.7933) < 0.05
+                && abs((float) $d->longitude + 108.9942) < 0.05
+        ));
+    }
+
+    /**
+     * Con un solo usuario, "Mi equipo" y el corte por persona salían en blanco y
+     * los permisos del cobrador —una de las razones de comprar esto— no se veían.
+     */
+    public function test_el_demo_trae_dueno_y_cobrador_con_cobros_de_los_dos(): void
+    {
+        $this->seedPackage();
+
+        $company = (new DemoCompanyBuilder())->build();
+        $miembros = $company->members;
+
+        $this->assertCount(2, $miembros);
+
+        $dueno = $miembros->first(fn ($u) => $u->hasRole('propietario'));
+        $cobrador = $miembros->first(fn ($u) => $u->hasRole('cobrador'));
+
+        $this->assertNotNull($dueno, 'Sin rol de dueño se le esconde media app al visitante.');
+        $this->assertNotNull($cobrador);
+        $this->assertTrue($miembros->every(fn ($u) => $u->is_demo));
+
+        $porPersona = Payment::where('company_id', $company->id)
+            ->selectRaw('collected_by, count(*) as n')
+            ->groupBy('collected_by')
+            ->pluck('n', 'collected_by');
+
+        $this->assertGreaterThan(0, $porPersona[$dueno->id] ?? 0);
+        $this->assertGreaterThan(0, $porPersona[$cobrador->id] ?? 0);
+    }
+
+    /** Sin días cerrados, el corte de caja era un formulario en blanco. */
+    public function test_el_demo_trae_cortes_de_caja_cerrados_y_uno_con_faltante(): void
+    {
+        $this->seedPackage();
+
+        $company = (new DemoCompanyBuilder())->build();
+        $cortes = \App\Models\CashClosing::where('company_id', $company->id)->get();
+
+        $this->assertGreaterThan(0, $cortes->count());
+        $this->assertTrue($cortes->every(fn ($c) => $c->expected_cash > 0));
+        $this->assertTrue($cortes->every(fn ($c) => $c->payments_count > 0));
+
+        // Uno sale descuadrado: un demo donde siempre cuadra no le explica a
+        // nadie para qué sirve cerrar la caja.
+        $this->assertSame(1, $cortes->filter(fn ($c) => $c->falta())->count());
+    }
+
+    /**
+     * Se cobra en la puerta y la gente paga lo que trae. El demo enseñaba a
+     * todo mundo pagando completo, que no es este negocio.
+     */
+    public function test_el_demo_trae_abonos_que_todavia_no_compran_tiempo(): void
+    {
+        $this->seedPackage();
+
+        $company = (new DemoCompanyBuilder())->build();
+
+        $abonos = Payment::where('company_id', $company->id)->where('applied', false)->get();
+
+        $this->assertCount(2, $abonos);
+        $this->assertTrue($abonos->every(fn ($p) => $p->status === 'completado'));
+
+        // Un abono vale menos que el periodo: si alcanzara, se habría aplicado
+        // solo y no quedaría nada pendiente que enseñar.
+        $this->assertTrue(
+            $abonos->every(fn ($p) => (float) $p->amount < (float) ($p->rental->price ?: 250)),
+            'Un "abono" del demo alcanza para el periodo completo.'
+        );
+
+        $this->assertTrue(
+            $abonos->every(fn ($p) => \App\Support\Abonos::creditFor($p->rental) > 0)
+        );
+    }
+
+    /**
+     * Que la renta sobreviva al cambio de aparato es de lo que más tranquiliza
+     * a quien lleva su control en libreta.
+     */
+    public function test_el_demo_trae_un_cambio_de_equipo_que_conserva_la_renta(): void
+    {
+        $this->seedPackage();
+
+        $company = (new DemoCompanyBuilder())->build();
+
+        $cambio = \App\Models\RentalMachineChange::whereIn(
+            'rental_id',
+            $company->rentals()->select('id')
+        )->first();
+
+        $this->assertNotNull($cambio, 'Sin un cambio de ejemplo, la pantalla del historial sale vacía.');
+        $this->assertNotSame($cambio->from_machine_id, $cambio->to_machine_id);
+
+        $renta = $cambio->rental;
+        $this->assertSame($cambio->to_machine_id, $renta->washing_machine_id);
+        $this->assertGreaterThan(0, $renta->payments()->count(), 'El cambio le borró los pagos al cliente.');
+        $this->assertSame('rentada', $renta->washingMachine->status);
+    }
+
+    /** Los papeles y las fotos son la defensa del dueño; sin ejemplo no se ven. */
+    public function test_el_demo_trae_papeles_del_cliente_y_fotos_de_entrega(): void
+    {
+        if (! function_exists('imagecreatetruecolor')) {
+            $this->markTestSkipped('Sin GD no se pueden generar las imágenes del demo.');
+        }
+
+        $this->seedPackage();
+        \Illuminate\Support\Facades\Storage::fake('local');
+        \Illuminate\Support\Facades\Storage::fake('privado');
+
+        $company = (new DemoCompanyBuilder())->build();
+
+        $documentos = \App\Models\CustomerDocument::whereIn(
+            'customer_id',
+            $company->customers()->select('id')
+        )->get();
+
+        $this->assertGreaterThan(0, $documentos->count());
+        foreach ($documentos as $documento) {
+            \Illuminate\Support\Facades\Storage::disk('local')->assertExists($documento->file_path);
+        }
+
+        $conFotos = $company->rentals->filter(fn ($r) => filled($r->delivery_photos));
+        $this->assertGreaterThan(0, $conFotos->count());
+
+        foreach ($conFotos as $renta) {
+            foreach ($renta->delivery_photos as $ruta) {
+                \Illuminate\Support\Facades\Storage::disk('privado')->assertExists($ruta);
+            }
+        }
+    }
+
+    /** Con recargo en cero, la pantalla de recargos no dice nada. */
+    public function test_el_demo_trae_recargo_configurado(): void
+    {
+        $this->seedPackage();
+
+        $ajustes = (new DemoCompanyBuilder())->build()->settings;
+
+        $this->assertGreaterThan(0, (float) $ajustes->late_fee_amount);
+        $this->assertSame('fijo', $ajustes->late_fee_type);
+        $this->assertGreaterThan(0, (int) $ajustes->late_fee_grace_days);
     }
 }

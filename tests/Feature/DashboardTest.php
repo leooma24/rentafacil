@@ -169,6 +169,9 @@ class DashboardTest extends TestCase
             ->all();
 
         $this->assertSame([
+            // Va primero, pero sólo se dibuja dentro del demo: canView() lo
+            // esconde en cualquier cuenta real.
+            \App\Filament\Widgets\GuiaDemoWidget::class,
             \App\Filament\Widgets\OnboardingWidget::class,
             \App\Filament\Widgets\PendientesWidget::class,
             \App\Filament\Widgets\SectionHeading::class,

@@ -33,6 +33,9 @@ class Dashboard extends BaseDashboard
         }
 
         return [
+            // Sólo aparece dentro del demo, y ahí va antes que nada: sin ella el
+            // visitante se queda mirando gráficas y se va sin tocar un botón.
+            \App\Filament\Widgets\GuiaDemoWidget::class,
             // Primeros pasos: se esconde solo cuando ya no hay pendientes.
             \App\Filament\Widgets\OnboardingWidget::class,
             // Lo que hay que HACER hoy, antes de los números. También se esconde

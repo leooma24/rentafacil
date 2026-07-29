@@ -23,7 +23,14 @@ class DemoController extends Controller
 
         $company = $builder->build();
 
-        Auth::login($company->members()->first());
+        // Explícitamente el dueño y no "el primero de la lista": el demo ahora
+        // trae también un cobrador, y entrar como él le escondería al visitante
+        // los reportes, los precios y el plan, que es justo lo que viene a ver.
+        $dueno = $company->members()
+            ->whereHas('roles', fn ($query) => $query->where('name', 'propietario'))
+            ->first() ?? $company->members()->first();
+
+        Auth::login($dueno);
         $request->session()->regenerate();
 
         return response()->json([

@@ -2,18 +2,25 @@
 
 namespace App\Services;
 
+use App\Models\CashClosing;
 use App\Models\Company;
 use App\Models\Country;
+use App\Models\CustomerDocument;
 use App\Models\Neighborhood;
 use App\Models\Package;
 use App\Models\Rental;
 use App\Models\State;
 use App\Models\Township;
 use App\Models\User;
+use App\Support\Abonos;
+use App\Support\CambioDeEquipo;
+use App\Support\RentalTerms;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 /**
  * Genera al vuelo una empresa demo desechable con datos de ejemplo.
@@ -26,8 +33,14 @@ class DemoCompanyBuilder
     /** Horas que vive un sandbox antes de que demo:cleanup lo borre. */
     public const LIFETIME_HOURS = 24;
 
-    /** Quién aparece cobrando los pagos del demo. Se resuelve una sola vez. */
-    private ?int $cobradorDemo = null;
+    /**
+     * Los dos que aparecen cobrando. Los pagos se reparten entre ambos para que
+     * el corte de caja por persona tenga algo que cuadrar: con un solo usuario,
+     * "cada quien cuadra lo que trae" no se entiende.
+     *
+     * @var array<int, int>
+     */
+    private array $cobradores = [];
 
     private const MACHINE_MODELS = [
         ['brand' => 'Whirlpool', 'model' => '7MWTW1602BM', 'capacity' => 16, 'price' => 8900],
@@ -37,11 +50,18 @@ class DemoCompanyBuilder
         ['brand' => 'Samsung', 'model' => 'WA17T6260BW', 'capacity' => 17, 'price' => 11200],
     ];
 
-    /** 10 rentadas (8 rentas activas + 2 vencidas), 2 disponibles, 1 en mantenimiento, 1 fuera de servicio. */
+    /**
+     * 10 rentadas (8 rentas activas + 2 vencidas), 2 disponibles, 1 en
+     * mantenimiento, 1 fuera de servicio y 1 extraviada.
+     *
+     * La extraviada va al final a propósito: las rentas se reparten por
+     * posición sobre las diez primeras, y meterla antes descuadraría todo.
+     */
     private const MACHINE_STATUSES = [
         'rentada', 'rentada', 'rentada', 'rentada', 'rentada',
         'rentada', 'rentada', 'rentada', 'rentada', 'rentada',
         'disponible', 'disponible', 'mantenimiento', 'fuera_de_servicio',
+        'extraviada',
     ];
 
     /**
@@ -99,7 +119,15 @@ class DemoCompanyBuilder
             'is_demo' => true,
         ]);
 
+        // El rol se asigna aquí y no se deja al camino que siga la petición:
+        // sin él, Acceso::soloDueno() es falso y al visitante se le esconden
+        // Gastos, Preferencias, Mi plan, Bitácora y "Sácale provecho" —o sea,
+        // media app— sin ningún aviso de por qué.
+        $user->assignRole(Role::findOrCreate('propietario', 'web'));
+
         $company->members()->attach($user);
+
+        $this->cobradores = [$user->id, $this->createCobrador($company)->id];
 
         // CompanyObserver ya le asigna un paquete a toda empresa nueva; lo
         // reemplazamos por el más completo, vigente solo mientras dure el demo.
@@ -116,6 +144,12 @@ class DemoCompanyBuilder
         $company->settings()->create([
             'price' => self::RENT_PRICE,
             'days_per_payment' => 7,
+            // Con recargo en cero la pantalla de recargos no dice nada. $50 por
+            // periodo vencido y tres días de gracia es lo que cobra un rentador
+            // de verdad, y así el adeudo de los morosos se ve desglosado.
+            'late_fee_amount' => 50,
+            'late_fee_type' => 'fijo',
+            'late_fee_grace_days' => 3,
         ]);
 
         $this->createMachines($company);
@@ -123,8 +157,34 @@ class DemoCompanyBuilder
         $this->createRentals($company);
         $this->createMaintenanceAndIncidents($company);
         $this->createExpenses($company);
+        $this->createAbonos($company);
+        $this->createCashClosings($company);
+        $this->createMachineChange($company);
+        $this->createDocumentsAndPhotos($company);
 
         return $company;
+    }
+
+    /**
+     * El segundo par de manos: quien sale a la calle a cobrar.
+     *
+     * "Mi equipo" y el corte de caja por persona son de las cosas que separan a
+     * esta app de una libreta, y con un solo usuario en el demo las dos salían
+     * en blanco.
+     */
+    private function createCobrador(Company $company): User
+    {
+        $cobrador = User::create([
+            'name' => 'Martín Sauceda',
+            'email' => 'cobrador+' . Str::uuid() . '@rentafacil.local',
+            'password' => Hash::make(Str::random(32)),
+            'is_demo' => true,
+        ]);
+
+        $cobrador->assignRole(Role::findOrCreate('cobrador', 'web'));
+        $company->members()->attach($cobrador);
+
+        return $cobrador;
     }
 
     private function createMachines(Company $company): void
@@ -181,17 +241,51 @@ class DemoCompanyBuilder
                 'phone' => '668' . str_pad((string) (1000000 + $index * 37), 7, '0', STR_PAD_LEFT),
             ]);
 
+            [$lat, $lng] = $this->puntoEnLosMochis($index);
+
             $customer->addresses()->create([
                 'street' => $street,
                 'number' => $number,
                 'city' => 'Los Mochis',
                 'postal_code' => '8120' . ($index % 10),
+                'latitude' => $lat,
+                'longitude' => $lng,
                 'country_id' => $geo['country']->id,
                 'state_id' => $geo['state']->id,
                 'township_id' => $geo['township']->id,
                 'neighborhood_id' => $geo['neighborhood']->id,
             ]);
         }
+    }
+
+    /**
+     * Reparte a los clientes del demo por la mancha urbana de Los Mochis.
+     *
+     * Sin coordenadas, el planificador de rutas —de las cosas que más venden la
+     * app— recibía al prospecto con "todavía no hay clientes ubicados en el
+     * mapa" y no había nada que enseñar.
+     *
+     * Van calculadas y no geocodificadas: Nominatim admite una consulta por
+     * segundo, así que ubicar a 20 clientes serían 20 segundos con el visitante
+     * esperando la pantalla. Los clientes del demo son inventados y sus
+     * domicilios también, así que no hay nada que consultar; lo que importa es
+     * que queden repartidos como en una ciudad de verdad para que la ruta que
+     * salga tenga sentido.
+     *
+     * @return array{0: float, 1: float}
+     */
+    private function puntoEnLosMochis(int $index): array
+    {
+        $columna = $index % 5 - 2;          // -2 … 2
+        $renglon = intdiv($index, 5) - 1.5; // -1.5 … 1.5
+
+        // ~6 km de ancho por ~4 de alto, que es la traza de la ciudad. La
+        // diagonal cruzada evita que queden en cuadrícula perfecta, que en el
+        // mapa se ve a leguas que son de mentira.
+        return [
+            round(25.7933 + $renglon * 0.0090 + $columna * 0.0021, 7),
+            round(-108.9942 + $columna * 0.0125 - $renglon * 0.0032, 7),
+        ];
     }
 
     /**
@@ -293,6 +387,25 @@ class DemoCompanyBuilder
             $this->collectWeeklyPayments($payments, $company, $rental, $start, now());
         }
 
+        // El equipo extraviado conserva su renta abierta a propósito: el adeudo
+        // sale de qué tan atrás quedó end_date, así que cerrarla lo borraría del
+        // estado de cuenta justo cuando más falta hace cobrarlo.
+        $extraviada = $machines->firstWhere('status', 'extraviada');
+        if ($extraviada) {
+            $start = now()->subWeeks(14)->startOfDay();
+            $end = now()->subDays(38)->startOfDay();
+            $rental = $company->rentals()->create([
+                'customer_id' => $customers[12]->id,
+                'washing_machine_id' => $extraviada->id,
+                'start_date' => $start->toDateString(),
+                'end_date' => $end->toDateString(),
+                'status' => 'vencida',
+                'deposit' => 500,
+                'notes' => 'El cliente se cambió de domicilio y no se ha podido recuperar el equipo.',
+            ]);
+            $this->collectWeeklyPayments($payments, $company, $rental, $start, $end);
+        }
+
         // 15 completadas en los últimos 6 meses, reusando máquinas y clientes.
         for ($k = 0; $k < 15; $k++) {
             $start = now()->subDays(175 - $k * 10)->startOfDay();
@@ -326,8 +439,8 @@ class DemoCompanyBuilder
 
         // El insert masivo no pasa por el modelo, así que quién cobró se pone a
         // mano: sin eso el corte de caja del demo saldría en cero y parecería
-        // descompuesto. Se resuelve una vez y no en cada una de las 13 rentas.
-        $cobrador = $this->cobradorDemo ??= $company->members()->first()?->id;
+        // descompuesto.
+        $cobradores = $this->cobradores ?: [$company->members()->first()?->id];
 
         // El cobro sigue el precio de SU renta: con precios distintos por equipo,
         // dejarlo fijo dejaría pagos de 250 en una renta pactada en 300.
@@ -342,7 +455,9 @@ class DemoCompanyBuilder
                 'payment_method' => $n % 3 === 0 ? 'transferencia' : 'efectivo',
                 'reference' => 'DEMO-' . $rental->id . '-' . ($n + 1),
                 'status' => 'completado',
-                'collected_by' => $cobrador,
+                // Se alternan por cobro y no por renta: así los dos traen
+                // efectivo el mismo día y el corte por persona tiene sentido.
+                'collected_by' => $cobradores[($rental->id + $n) % count($cobradores)],
                 'created_at' => $now,
                 'updated_at' => $now,
             ];
@@ -467,5 +582,204 @@ class DemoCompanyBuilder
             // pone aparte.
             $incidencia->forceFill(['created_at' => $abierta, 'updated_at' => $abierta])->save();
         }
+    }
+
+    /**
+     * Dos clientes que pagaron a medias.
+     *
+     * Es lo más común del negocio —se cobra en la puerta y la gente da lo que
+     * trae— y el demo lo enseñaba como si todo mundo pagara completo y a
+     * tiempo. Un abono no mueve el vencimiento: queda como saldo a favor hasta
+     * que junta el periodo, y eso es justo lo que hay que ver funcionando.
+     */
+    private function createAbonos(Company $company): void
+    {
+        $rentas = $company->rentals()
+            ->where('status', 'activa')
+            ->orderBy('id')
+            ->take(2)
+            ->get();
+
+        foreach ($rentas as $i => $renta) {
+            $precio = RentalTerms::forRental($renta)->price ?? self::RENT_PRICE;
+
+            // Menos de un periodo: si alcanzara, se aplicaría solo y no quedaría
+            // ningún abono pendiente que enseñar.
+            $monto = round($precio * ($i === 0 ? 0.6 : 0.4), -1);
+
+            $resultado = Abonos::register(
+                $renta,
+                $monto,
+                'Efectivo',
+                now()->subDays(2 + $i)->toDateString(),
+                'ABONO-DEMO-' . $renta->id,
+            );
+
+            $resultado['payment']->forceFill([
+                'collected_by' => $this->cobradores[1] ?? $this->cobradores[0] ?? null,
+            ])->save();
+        }
+    }
+
+    /**
+     * Tres días ya cerrados, para que el corte de caja tenga historia.
+     *
+     * Sin esto la pantalla sólo ofrecía el formulario en blanco y no se
+     * entendía para qué sirve. Uno sale con faltante a propósito: es la razón
+     * de ser del corte, y un demo donde siempre cuadra no convence a nadie que
+     * haya manejado efectivo.
+     */
+    private function createCashClosings(Company $company): void
+    {
+        $porCerrar = DB::table('payments')
+            ->selectRaw('payment_date, collected_by, SUM(amount) as efectivo, COUNT(*) as cuantos')
+            ->where('company_id', $company->id)
+            ->where('status', 'completado')
+            ->where('payment_method', 'efectivo')
+            ->whereNotNull('collected_by')
+            ->whereDate('payment_date', '<', now()->toDateString())
+            ->groupBy('payment_date', 'collected_by')
+            ->orderByDesc('payment_date')
+            ->limit(3)
+            ->get();
+
+        // El faltante va en el más viejo: así el visitante ve primero los días
+        // que cuadraron y el descuadre no parece la norma.
+        $conFaltante = $porCerrar->count() - 1;
+
+        foreach ($porCerrar as $i => $dia) {
+            $esperado = round((float) $dia->efectivo, 2);
+            $contado = $i === $conFaltante ? $esperado - 50 : $esperado;
+
+            CashClosing::create([
+                'company_id' => $company->id,
+                'user_id' => $dia->collected_by,
+                'closing_date' => $dia->payment_date,
+                'expected_cash' => $esperado,
+                'counted_cash' => $contado,
+                'difference' => round($contado - $esperado, 2),
+                'payments_count' => (int) $dia->cuantos,
+                'notes' => $i === $conFaltante
+                    ? 'Faltaron $50. Quedó pendiente revisar con el cobrador.'
+                    : null,
+            ]);
+        }
+    }
+
+    /**
+     * A un cliente se le descompuso la lavadora y se le llevó otra.
+     *
+     * Pasa cada semana en este negocio. Lo importante de enseñarlo es que la
+     * renta no se cancela: el cliente conserva sus pagos, su saldo y su fecha,
+     * y queda escrito qué equipo tenía antes y por qué se le cambió.
+     */
+    private function createMachineChange(Company $company): void
+    {
+        // Una que todavía no se entrega: el cambio pide la entrega de nuevo (es
+        // otro aparato), y hacerlo sobre una ya entregada borraría ese acuse.
+        $renta = $company->rentals()
+            ->where('status', 'activa')
+            ->whereNull('delivered_at')
+            ->orderBy('id')
+            ->first();
+
+        $nuevo = $company->washingMachines()
+            ->where('status', 'disponible')
+            ->where('kind', 'lavadora')
+            ->orderBy('machine_code')
+            ->first();
+
+        if (! $renta || ! $nuevo) {
+            return;
+        }
+
+        $cambio = app(CambioDeEquipo::class)->ejecutar(
+            $renta,
+            $nuevo,
+            'falla',
+            'No centrifugaba. Se le llevó otra el mismo día y se mandó la anterior a revisión.',
+        );
+
+        $cambio->forceFill([
+            'changed_by' => $this->cobradores[0] ?? null,
+            'created_at' => now()->subDays(9),
+            'updated_at' => now()->subDays(9),
+        ])->save();
+    }
+
+    /**
+     * Papeles del cliente y fotos de la entrega.
+     *
+     * Son la defensa del dueño cuando alguien devuelve el aparato golpeado o se
+     * muda con él, y sin un ejemplo cargado las dos pantallas salen vacías y
+     * parecen de adorno.
+     *
+     * Las imágenes se dibujan al vuelo en vez de venir en el repositorio: no
+     * son fotos de nada, y un archivo de ejemplo versionado se termina
+     * confundiendo con uno real.
+     */
+    private function createDocumentsAndPhotos(Company $company): void
+    {
+        if (! function_exists('imagecreatetruecolor')) {
+            return; // Sin GD no hay imágenes; el resto del demo no depende de esto.
+        }
+
+        $usuario = $this->cobradores[0] ?? null;
+
+        foreach ($company->customers()->orderBy('id')->take(2)->get() as $cliente) {
+            foreach (['ine' => 'Identificación', 'comprobante' => 'Comprobante de domicilio'] as $tipo => $titulo) {
+                $ruta = 'documentos-clientes/demo-' . $cliente->id . '-' . $tipo . '.png';
+
+                if ($this->guardarImagen('local', $ruta, $titulo, $cliente->name)) {
+                    CustomerDocument::create([
+                        'customer_id' => $cliente->id,
+                        'uploaded_by' => $usuario,
+                        'type' => $tipo,
+                        'file_path' => $ruta,
+                        'original_name' => Str::slug($titulo) . '.png',
+                        'notes' => 'Documento de ejemplo del demo.',
+                    ]);
+                }
+            }
+        }
+
+        foreach ($company->rentals()->whereNotNull('delivered_at')->orderBy('id')->take(2)->get() as $renta) {
+            $codigo = $renta->washingMachine?->machine_code ?? 'EQUIPO';
+            $rutas = [];
+
+            foreach (['frente' => 'Al entregar — frente', 'tablero' => 'Al entregar — tablero'] as $cual => $titulo) {
+                $ruta = 'entregas/demo-' . $renta->id . '-' . $cual . '.png';
+
+                if ($this->guardarImagen('privado', $ruta, $titulo, $codigo)) {
+                    $rutas[] = $ruta;
+                }
+            }
+
+            if ($rutas !== []) {
+                $renta->update(['delivery_photos' => $rutas]);
+            }
+        }
+    }
+
+    /** Dibuja un recuadro con su rótulo. Devuelve si se pudo guardar. */
+    private function guardarImagen(string $disco, string $ruta, string $titulo, string $pie): bool
+    {
+        $lienzo = imagecreatetruecolor(640, 420);
+        $fondo = imagecolorallocate($lienzo, 226, 232, 240);
+        $tinta = imagecolorallocate($lienzo, 51, 65, 85);
+        $marca = imagecolorallocate($lienzo, 6, 182, 212);
+
+        imagefilledrectangle($lienzo, 0, 0, 640, 420, $fondo);
+        imagefilledrectangle($lienzo, 0, 0, 640, 8, $marca);
+        imagestring($lienzo, 5, 30, 170, $titulo, $tinta);
+        imagestring($lienzo, 4, 30, 200, $pie, $tinta);
+        imagestring($lienzo, 3, 30, 380, 'Imagen de ejemplo generada para la demo', $tinta);
+
+        ob_start();
+        imagepng($lienzo);
+        $png = ob_get_clean();
+        imagedestroy($lienzo);
+
+        return $png !== false && Storage::disk($disco)->put($ruta, $png);
     }
 }
