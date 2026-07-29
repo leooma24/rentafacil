@@ -326,6 +326,12 @@ class WashingMachineResource extends Resource
                         $tenant,
                         fn (WashingMachine $record) => $record->activeRental,
                     ),
+                    \App\Filament\Resources\RentalResource\Actions\EntregarAction::make(
+                        fn (WashingMachine $record) => $record->activeRental,
+                    ),
+                    \App\Filament\Resources\RentalResource\Actions\EntregarAction::acuse(
+                        fn (WashingMachine $record) => $record->activeRental,
+                    ),
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\RestoreAction::make(),
                     Actions\RentAction::make($tenant),
@@ -360,7 +366,21 @@ class WashingMachineResource extends Resource
                         ->modalSubmitActionLabel('Recoger')
                         // Al recoger es cuando toca devolver el depósito, y es
                         // justo cuando se olvida: el formulario lo pone enfrente.
-                        ->form(fn (WashingMachine $record) => $record->activeRental?->hasPendingDeposit()
+                        ->form(fn (WashingMachine $record) => array_merge([
+                            // Las fotos de recolección son las que le dan sentido a
+                            // las de entrega: sin el después, el antes no compara
+                            // contra nada.
+                            Forms\Components\FileUpload::make('pickup_photos')
+                                ->label('Fotos de cómo lo devolvieron')
+                                ->image()
+                                ->multiple()
+                                ->maxFiles(6)
+                                ->directory('recolecciones')
+                                ->helperText($record->activeRental?->isDelivered()
+                                    ? 'Compáralas con las de la entrega antes de devolver el depósito.'
+                                    : 'De esta entrega no hay fotos previas para comparar.')
+                                ->columnSpanFull(),
+                        ], $record->activeRental?->hasPendingDeposit()
                             ? [
                                 Forms\Components\Placeholder::make('deposito_dejado')
                                     ->label('Dejó de depósito')
@@ -379,13 +399,17 @@ class WashingMachineResource extends Resource
                                     ->rows(2),
                             ]
                             : []
-                        )
+                        ))
                         ->action(function (array $data, WashingMachine $record) use ($tenant) {
                             $renta = $record->activeRental;
 
                             $record->update(['status' => 'disponible']);
 
-                            $cambios = ['status' => 'completada', 'end_date' => now()->toDateString()];
+                            $cambios = [
+                                'status' => 'completada',
+                                'end_date' => now()->toDateString(),
+                                'pickup_photos' => $data['pickup_photos'] ?? [],
+                            ];
 
                             if ($renta?->hasPendingDeposit() && isset($data['deposit_returned'])) {
                                 $cambios['deposit_returned'] = (float) $data['deposit_returned'];
@@ -397,9 +421,12 @@ class WashingMachineResource extends Resource
                                 }
                             }
 
-                            $record->rentals()
-                                ->whereIn('status', ['activa', 'vencida'])
-                                ->update($cambios);
+                            // Por el modelo y no por el query builder: una
+                            // actualización masiva se salta los casts y guardaría
+                            // el arreglo de fotos como texto basura.
+                            foreach ($record->rentals()->whereIn('status', ['activa', 'vencida'])->get() as $abierta) {
+                                $abierta->update($cambios);
+                            }
 
                             $retenido = isset($cambios['deposit_returned'])
                                 ? (float) $renta->deposit - $cambios['deposit_returned']

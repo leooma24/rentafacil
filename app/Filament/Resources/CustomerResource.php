@@ -215,8 +215,8 @@ class CustomerResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
             WashingMachinesRelationManager::class,
+            \App\Filament\Resources\CustomerResource\RelationManagers\DocumentsRelationManager::class,
         ];
     }
 

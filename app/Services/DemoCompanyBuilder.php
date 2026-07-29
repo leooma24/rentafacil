@@ -247,6 +247,12 @@ class DemoCompanyBuilder
                 'status' => 'activa',
                 'price' => match ($i) { 2 => 300, 5 => 200, default => null },
                 'deposit' => match ($i) { 0 => 500, 3 => 800, default => 0 },
+                // Las primeras cuatro ya se entregaron con su acuse; las demás
+                // quedan pendientes para que se vea también ese estado.
+                'delivered_at' => $i < 4 ? $start->copy()->addHours(9) : null,
+                'delivery_notes' => $i < 4
+                    ? 'Se entregó funcionando y se le explicó el uso al cliente.'
+                    : null,
                 'notes' => 'Renta de ejemplo generada para la demo.',
             ]);
             $this->collectWeeklyPayments($payments, $company, $rental, $start, now());

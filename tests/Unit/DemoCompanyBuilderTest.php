@@ -185,6 +185,26 @@ class DemoCompanyBuilderTest extends TestCase
         );
     }
 
+    /** El demo enseña los dos estados: entregas con acuse y entregas pendientes. */
+    public function test_el_demo_trae_entregas_registradas_y_pendientes(): void
+    {
+        $this->seedPackage();
+
+        $activas = (new DemoCompanyBuilder())->build()->rentals->where('status', 'activa');
+
+        $entregadas = $activas->filter(fn ($r) => $r->isDelivered());
+        $pendientes = $activas->filter(fn ($r) => $r->needsDelivery());
+
+        $this->assertGreaterThan(0, $entregadas->count(), 'Ninguna entrega registrada.');
+        $this->assertGreaterThan(0, $pendientes->count(), 'Ninguna entrega pendiente.');
+
+        // La entrega ocurre después de que arranca la renta, no antes.
+        $this->assertTrue(
+            $entregadas->every(fn ($r) => $r->delivered_at->gte(\Carbon\Carbon::parse($r->start_date))),
+            'Hay entregas registradas antes de que empezara la renta.'
+        );
+    }
+
     /**
      * Sin gastos, el escritorio del demo presumía un margen del 93%, que a
      * cualquier rentador le suena a cuento.

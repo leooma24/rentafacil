@@ -38,6 +38,12 @@ class Customer extends Model
         return $this->hasOne(Address::class);
     }
 
+    /** INE, comprobante de domicilio y referencias. */
+    public function documents()
+    {
+        return $this->hasMany(CustomerDocument::class);
+    }
+
     public function addresses()
     {
         return $this->morphMany(Address::class, 'addressable');

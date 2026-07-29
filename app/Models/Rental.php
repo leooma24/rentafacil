@@ -24,10 +24,14 @@ class Rental extends Model
     protected $fillable = [
         'company_id', 'customer_id', 'washing_machine_id', 'start_date', 'end_date',
         'status', 'notes', 'price', 'deposit', 'deposit_returned', 'deposit_returned_at',
+        'delivered_at', 'delivery_notes', 'delivery_photos', 'pickup_photos',
     ];
 
     protected $casts = [
         'deposit_returned_at' => 'datetime',
+        'delivered_at' => 'datetime',
+        'delivery_photos' => 'array',
+        'pickup_photos' => 'array',
     ];
 
     public function company(): BelongsTo
@@ -59,5 +63,21 @@ class Rental extends Model
     public function hasPendingDeposit(): bool
     {
         return (float) $this->deposit > 0 && $this->deposit_returned_at === null;
+    }
+
+    public function isDelivered(): bool
+    {
+        return $this->delivered_at !== null;
+    }
+
+    /**
+     * Falta registrar la entrega.
+     *
+     * Sólo aplica a rentas vivas: a las 160 que ya existen no se les va a pedir
+     * una entrega que ocurrió antes de que la app supiera registrarlas.
+     */
+    public function needsDelivery(): bool
+    {
+        return ! $this->isDelivered() && in_array($this->status, ['activa', 'vencida'], true);
     }
 }

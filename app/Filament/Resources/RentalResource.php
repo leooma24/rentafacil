@@ -240,6 +240,9 @@ class RentalResource extends Resource
                     $tenant,
                     fn (Rental $record) => in_array($record->status, ['activa', 'vencida']) ? $record : null,
                 ),
+                // Entregar sale primero mientras falte; después queda el acuse.
+                RentalResource\Actions\EntregarAction::make(fn (Rental $record) => $record),
+                RentalResource\Actions\EntregarAction::acuse(fn (Rental $record) => $record),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('download_contract')
                     ->label('Contrato')
