@@ -23,6 +23,10 @@ class WashingMachinesRelationManager extends RelationManager
     protected static string $relationship = 'rentals';
     protected static ?string $modelLabel = 'Renta';
 
+    // Sin esto la pestaña sale con el nombre de la relación —"Rentals"—, que es
+    // la única palabra en inglés que veía el cliente en toda la ficha.
+    protected static ?string $title = 'Rentas';
+
     public function form(Form $form): Form
     {
         $tenant = Filament::getTenant();

@@ -54,9 +54,10 @@ class WashingMachineResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Información Básica')
-                    ->description('Datos generales del equipo')
-                    ->icon('heroicon-o-information-circle')
+                Forms\Components\Section::make('Qué equipo es')
+                    ->description('Con qué lo identificas cuando alguien te llame a decir que no enciende.')
+                    ->icon('heroicon-o-cube')
+                    ->iconColor('primary')
                     ->schema([
                         Forms\Components\Select::make('kind')
                             ->label('Qué es')
@@ -64,25 +65,23 @@ class WashingMachineResource extends Resource
                             ->default('lavadora')
                             ->required()
                             ->native(false)
+                            ->live()
                             ->helperText('Lavadora, secadora o las dos en un mismo aparato.'),
                         Forms\Components\TextInput::make('machine_code')
                             ->label('Código')
-                            ->required(),
+                            ->required()
+                            ->live(onBlur: true)
+                            ->helperText('Como lo tienes rotulado en el aparato: LAV-001, SEC-002.'),
                         Forms\Components\TextInput::make('brand')
-                            ->label('Marca'),
+                            ->label('Marca')
+                            ->live(onBlur: true),
                         Forms\Components\TextInput::make('model')
-                            ->label('Modelo'),
+                            ->label('Modelo')
+                            ->live(onBlur: true),
                         Forms\Components\TextInput::make('serial_number')
                             ->label('Número de serie')
                             ->nullable()
                             ->maxLength(255),
-                        Forms\Components\DatePicker::make('purchase_date')
-                            ->label('Fecha de compra')
-                            ->nullable(),
-                        Forms\Components\TextInput::make('purchase_price')
-                            ->label('Precio de compra')
-                            ->nullable()
-                            ->numeric(),
                         // Cómo carga, no qué es: eso ahora vive en kind.
                         Forms\Components\Select::make('type')
                             ->label('Cómo carga')
@@ -95,12 +94,73 @@ class WashingMachineResource extends Resource
                             ->label('Color')
                             ->nullable()
                             ->maxLength(100),
+
+                        // El equipo, en una frase, mientras se captura. Ocho
+                        // campos sueltos no dejan ver qué se está dando de alta.
+                        Forms\Components\Placeholder::make('resumen')
+                            ->hiddenLabel()
+                            ->columnSpanFull()
+                            ->content(fn (Forms\Get $get) => new \Illuminate\Support\HtmlString(
+                                self::resumenDelEquipo($get)
+                            )),
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Dimensiones y Peso')
-                    ->description('Medidas y peso de la lavadora')
+                Forms\Components\Section::make('Qué te costó')
+                    ->description('De aquí sale cuánto lleva recuperado cada aparato en el reporte de rentabilidad.')
+                    ->icon('heroicon-o-banknotes')
+                    ->iconColor('success')
+                    ->schema([
+                        Forms\Components\TextInput::make('purchase_price')
+                            ->label('Precio de compra')
+                            ->nullable()
+                            ->numeric()
+                            ->minValue(0)
+                            ->step('0.01')
+                            ->prefix('$')
+                            ->suffix('MXN')
+                            ->live(onBlur: true)
+                            ->helperText('Sin esto, el reporte no puede decirte si este equipo ya se pagó solo.'),
+
+                        Forms\Components\DatePicker::make('purchase_date')
+                            ->label('Cuándo lo compraste')
+                            ->nullable()
+                            ->native(false)
+                            ->displayFormat('d/m/Y')
+                            ->format('Y-m-d')
+                            ->maxDate(now()),
+                    ])
+                    ->columns(2),
+
+                Forms\Components\Section::make('Cómo está')
+                    ->description('Sólo los disponibles aparecen a la hora de armar una renta.')
+                    ->icon('heroicon-o-clipboard-document-list')
+                    ->iconColor('warning')
+                    ->schema([
+                        Forms\Components\Select::make('status')
+                            ->label('Estatus')
+                            ->options([
+                                'disponible' => 'Disponible — se puede rentar',
+                                'rentada' => 'Rentada — está con un cliente',
+                                'mantenimiento' => 'En mantenimiento',
+                                'vendida' => 'Vendida',
+                                'extraviada' => 'Extraviada',
+                                'fuera_de_servicio' => 'Fuera de servicio',
+                            ])
+                            ->native(false)
+                            ->default('disponible')
+                            ->required()
+                            ->helperText('Vendida, extraviada y fuera de servicio dejan de contar en tu ocupación.'),
+                    ])
+                    ->columns(1),
+
+                Forms\Components\Section::make('Medidas y peso')
+                    ->description('Para saber si cabe en la camioneta y si entra por la puerta del cliente.')
                     ->icon('heroicon-o-scale')
+                    // Plegadas: casi nadie las llena, y abiertas hacían del alta
+                    // de un equipo una pantalla de veinte campos.
+                    ->collapsible()
+                    ->collapsed()
                     ->schema([
                         Forms\Components\TextInput::make('load_capacity')
                             ->label('Capacidad de carga (kg)')
@@ -125,9 +185,11 @@ class WashingMachineResource extends Resource
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Especificaciones Técnicas')
-                    ->description('Detalles técnicos de la lavadora')
+                Forms\Components\Section::make('Ficha técnica')
+                    ->description('Lo que trae la etiqueta del aparato. Opcional: sirve si algún día lo vendes o lo reclamas en garantía.')
                     ->icon('heroicon-o-cog')
+                    ->collapsible()
+                    ->collapsed()
                     ->schema([
                         Forms\Components\TextInput::make('motor_power')
                             ->label('Potencia del motor (W)')
@@ -169,24 +231,65 @@ class WashingMachineResource extends Resource
                             ->numeric(),
                     ])
                     ->columns(3),
-
-                Forms\Components\Section::make('Estatus')
-                    ->description('Estado actual de la lavadora')
-                    ->icon('heroicon-o-clipboard-document-list')
-                    ->schema([
-                        Forms\Components\Select::make('status')
-                            ->label('Estatus')
-                            ->options([
-                                'disponible' => 'Disponible',
-                                'rentada' => 'Rentada',
-                                'mantenimiento' => 'Mantenimiento',
-                                'vendida' => 'Vendida',
-                                'fuera_de_servicio' => 'Fuera de Servicio',
-                            ])
-                            ->required(),
-                    ])
-                    ->columns(1),
             ]);
+    }
+
+    /**
+     * El equipo en una frase, mientras se captura.
+     *
+     * Con secadoras en el parque, "LAV-016" ya no dice qué se está dando de
+     * alta, y el código se escribe a mano: un duplicado no se nota hasta que
+     * dos aparatos distintos aparecen con el mismo nombre en la lista.
+     */
+    private static function resumenDelEquipo(Forms\Get $get): string
+    {
+        return self::resumenDe([
+            'machine_code' => $get('machine_code'),
+            'kind' => $get('kind'),
+            'brand' => $get('brand'),
+            'model' => $get('model'),
+            'purchase_price' => $get('purchase_price'),
+        ]);
+    }
+
+    /**
+     * La frase en sí, a partir de valores sueltos.
+     *
+     * Separada de Forms\Get para poder comprobarla sin levantar medio Filament:
+     * armar un Get de mentiras cuesta más que la propia función.
+     *
+     * @param array<string, mixed> $datos
+     */
+    public static function resumenDe(array $datos): string
+    {
+        $codigo = trim((string) ($datos['machine_code'] ?? ''));
+        $tipo = WashingMachine::KINDS[$datos['kind'] ?? null] ?? 'Equipo';
+
+        if ($codigo === '') {
+            return '<p class="rf-cfg-resumen rf-cfg-resumen-falta">'
+                . 'Ponle un <strong>código</strong>: es con lo que lo vas a buscar en la lista, '
+                . 'en las rentas y en los reportes.</p>';
+        }
+
+        $marca = collect([$datos['brand'] ?? null, $datos['model'] ?? null])
+            ->filter(fn ($valor) => filled($valor))
+            ->join(' ');
+
+        $precio = (float) ($datos['purchase_price'] ?? 0);
+
+        $frase = '<strong>' . e($codigo) . '</strong> · ' . e(mb_strtolower($tipo));
+
+        if ($marca !== '') {
+            $frase .= ' ' . e($marca);
+        }
+
+        $frase .= '.';
+
+        if ($precio > 0) {
+            $frase .= ' Te costó <strong>$' . number_format($precio, 2) . '</strong>.';
+        }
+
+        return '<p class="rf-cfg-resumen">' . $frase . '</p>';
     }
 
     public static function table(Table $table): Table

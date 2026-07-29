@@ -58,28 +58,108 @@ class CustomerResource extends Resource
     {
         return $form
             ->schema([
-                Section::make('Información del Cliente')
-                    ->columns('3')
+                Section::make('Quién es')
+                    ->description('Con el nombre y el teléfono basta para empezar a rentarle.')
+                    ->icon('heroicon-o-user')
+                    ->iconColor('primary')
+                    ->columns(3)
                     ->schema([
                         Forms\Components\TextInput::make('name')
                             ->label('Nombre')
                             ->required()
-                            ->maxLength(255),
-                        Forms\Components\TextInput::make('email')
-                            ->label('Correo Electrónico')
-                            ->email()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->columnSpan(['default' => 3, 'md' => 1]),
+
                         Forms\Components\TextInput::make('phone')
                             ->label('Teléfono')
                             ->tel()
-                            ->maxLength(15),
+                            ->maxLength(15)
+                            ->prefixIcon('heroicon-o-phone')
+                            // El teléfono no es un dato de adorno: es por donde
+                            // se le manda el estado de cuenta y el aviso de
+                            // vencimiento. Sin él, este cliente queda fuera de
+                            // "Avisos de hoy" sin que nadie se entere.
+                            ->helperText('Por aquí le llegan los avisos y su estado de cuenta por WhatsApp.'),
+
+                        Forms\Components\TextInput::make('email')
+                            ->label('Correo')
+                            ->email()
+                            ->maxLength(255)
+                            ->prefixIcon('heroicon-o-envelope')
+                            ->helperText('Opcional.'),
                     ]),
-                Section::make('Dirección')
+
+                Section::make('Dónde vive')
+                    ->description('Sirve para armar la ruta de cobranza y para saber a dónde ir por el equipo.')
+                    ->icon('heroicon-o-map-pin')
+                    ->iconColor('warning')
+                    // Abierta al dar de alta y cerrada al editar: capturar la
+                    // dirección es parte del alta, pero después estorba entre uno
+                    // y el botón de guardar.
                     ->collapsible()
+                    ->collapsed(fn (?Customer $record) => $record !== null)
                     ->schema([AddressForm::getFormAddressFields()]),
 
-
+                // Cómo va este cliente, en una frase. Los datos de contacto no
+                // dicen nada de lo único que importa al abrir su ficha: si está
+                // al corriente y qué trae rentado.
+                Section::make('Cómo va')
+                    ->icon('heroicon-o-clipboard-document-check')
+                    ->iconColor('success')
+                    ->hiddenOn('create')
+                    ->schema([
+                        Forms\Components\Placeholder::make('resumen')
+                            ->hiddenLabel()
+                            ->content(fn (?Customer $record) => $record
+                                ? new \Illuminate\Support\HtmlString(self::comoVaElCliente($record))
+                                : ''),
+                    ]),
             ]);
+    }
+
+    /**
+     * El estado del cliente en una frase: qué trae, si debe y desde cuándo.
+     *
+     * Va aquí y no como columna suelta porque quien abre la ficha de alguien
+     * casi siempre viene con una pregunta —"¿este ya me pagó?"— y tenerla que
+     * ir a buscar a otra pantalla es justo lo que hace que no se busque.
+     */
+    public static function comoVaElCliente(Customer $record): string
+    {
+        $activas = $record->rentals()
+            ->whereIn('status', ['activa', 'vencida'])
+            ->with('washingMachine')
+            ->get();
+
+        $saldo = app(\App\Support\AccountStatement::class)->forCustomer($record)->total;
+
+        $partes = [];
+
+        if ($activas->isEmpty()) {
+            $partes[] = 'No trae nada rentado ahorita.';
+        } else {
+            $equipos = $activas
+                ->map(fn ($renta) => $renta->washingMachine
+                    ? "<strong>{$renta->washingMachine->machine_code}</strong> · {$renta->washingMachine->kindLabel()}"
+                    : 'un equipo')
+                ->join(', ', ' y ');
+
+            $partes[] = 'Trae ' . $equipos . '.';
+
+            $masVieja = $activas->sortBy('end_date')->first();
+            $partes[] = 'Cubierto hasta el <strong>'
+                . \Carbon\Carbon::parse($masVieja->end_date)->format('d/m/Y') . '</strong>.';
+        }
+
+        if ($saldo > 0) {
+            $partes[] = 'Debe <strong>$' . number_format($saldo, 2) . '</strong>.';
+        } elseif ($activas->isNotEmpty()) {
+            $partes[] = 'Está al corriente.';
+        }
+
+        $clase = $saldo > 0 ? 'rf-cfg-resumen rf-cfg-resumen-falta' : 'rf-cfg-resumen';
+
+        return '<p class="' . $clase . '">' . implode(' ', $partes) . '</p>';
     }
 
     public static function table(Table $table): Table

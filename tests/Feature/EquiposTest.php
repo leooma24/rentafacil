@@ -170,4 +170,40 @@ class EquiposTest extends TestCase
         $this->assertStringContainsString("'Carga frontal'", $recurso);
         $this->assertStringNotContainsString("'Lavadora-secadora' => 'Lavadora-secadora'", $recurso);
     }
+
+    /**
+     * El alta de un equipo eran veinte campos seguidos sin decir a qué llevaban.
+     * El resumen dice qué se está capturando mientras se captura: con secadoras
+     * en el parque, "LAV-016" ya no basta para saber qué se está dando de alta.
+     */
+    public function test_el_formulario_de_equipo_resume_lo_que_se_esta_capturando(): void
+    {
+        $resumen = \App\Filament\Resources\WashingMachineResource::resumenDe([
+            'machine_code' => 'SEC-004',
+            'kind' => 'secadora',
+            'brand' => 'Whirlpool',
+            'model' => '7MWED1730JQ',
+            'purchase_price' => 9400,
+        ]);
+
+        $this->assertStringContainsString('SEC-004', $resumen);
+        $this->assertStringContainsString('secadora', $resumen);
+        $this->assertStringContainsString('Whirlpool 7MWED1730JQ', $resumen);
+        $this->assertStringContainsString('$9,400.00', $resumen);
+    }
+
+    /**
+     * El código se escribe a mano y es con lo que se busca el aparato en todas
+     * las demás pantallas. Sin él, el equipo queda dado de alta y perdido.
+     */
+    public function test_el_formulario_de_equipo_avisa_si_va_sin_codigo(): void
+    {
+        $resumen = \App\Filament\Resources\WashingMachineResource::resumenDe([
+            'kind' => 'lavadora',
+            'brand' => 'Mabe',
+        ]);
+
+        $this->assertStringContainsString('rf-cfg-resumen-falta', $resumen);
+        $this->assertStringContainsString('código', $resumen);
+    }
 }
