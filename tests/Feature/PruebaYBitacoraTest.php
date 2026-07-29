@@ -127,26 +127,24 @@ class PruebaYBitacoraTest extends TestCase
     }
 
     /**
-     * Los respaldos se guardan 7 días y ya.
+     * Siete diarios más uno mensual por doce meses.
      *
-     * La configuración de fábrica del paquete guarda todo 7 días y de ahí
-     * adelgaza: uno diario por 16 días, uno semanal por 8 semanas y uno mensual
-     * por 4 meses. Con eso quedaban respaldos de hace medio año ocupando disco.
+     * Los diarios cubren lo que se nota rápido. El mensual cubre lo que tarda en
+     * salir a flote: los archivos maliciosos que aparecieron en storage llevaban
+     * cinco meses ahí sin que nadie los viera, y con sólo una semana de
+     * respaldos no habría de dónde volver.
      */
-    public function test_los_respaldos_se_guardan_siete_dias_y_no_mas(): void
+    public function test_se_guardan_siete_diarios_y_un_mensual_por_un_año(): void
     {
         $estrategia = config('backup.cleanup.default_strategy');
 
         $this->assertSame(7, $estrategia['keep_all_backups_for_days']);
+        $this->assertSame(12, $estrategia['keep_monthly_backups_for_months']);
 
-        foreach (['keep_daily_backups_for_days', 'keep_weekly_backups_for_weeks',
-                  'keep_monthly_backups_for_months', 'keep_yearly_backups_for_years'] as $clave) {
-            $this->assertSame(
-                0,
-                $estrategia[$clave],
-                "{$clave} volvió a su valor de fábrica y se van a acumular respaldos viejos."
-            );
-        }
+        // Sin diarios ni semanales sueltos entre la semana y el mensual.
+        $this->assertSame(0, $estrategia['keep_daily_backups_for_days']);
+        $this->assertSame(0, $estrategia['keep_weekly_backups_for_weeks']);
+        $this->assertSame(0, $estrategia['keep_yearly_backups_for_years']);
     }
 
     /** Y el respaldo incluye los archivos subidos, no sólo la base. */

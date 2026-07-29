@@ -297,13 +297,24 @@ return [
         'strategy' => \Spatie\Backup\Tasks\Cleanup\Strategies\DefaultStrategy::class,
 
         /*
-         * SIETE DÍAS Y SE ACABÓ.
+         * SIETE DIARIOS, MÁS UNO MENSUAL POR DOCE MESES.
          *
-         * La configuración que traía el paquete no era eso: guardaba todo 7 días
-         * y de ahí adelgazaba —uno diario por 16 días, uno semanal por 8 semanas,
-         * uno mensual por 4 meses—, así que quedaban respaldos de hace medio año
-         * ocupando disco. Poniendo en cero todo lo que sigue a
-         * keep_all_backups_for_days, lo que pasa de 7 días se borra.
+         * Los 7 diarios cubren lo que se nota rápido: un borrado, una migración
+         * mala, un disco que falla. Eso lo ves en horas.
+         *
+         * El mensual cubre lo que tarda en salir a flote, y de eso hay evidencia
+         * en este mismo servidor: los archivos maliciosos que aparecieron en
+         * storage llevaban ahí desde el 19 de febrero, cinco meses sin que nadie
+         * los viera. Lo mismo pasa con un error de cálculo que un cliente
+         * reclama tres meses después. Con sólo una semana, no hay de dónde
+         * volver.
+         *
+         * Cuesta casi nada: cada respaldo pesa 1.7 MB, así que los doce mensuales
+         * son unos 20 MB sobre un disco con 9.5 GB libres.
+         *
+         * Lo que traía el paquete de fábrica era otra cosa —diario 16 días,
+         * semanal 8 semanas, mensual 4 meses—, que dejaba 35 archivos de medio
+         * año sin que nadie lo hubiera decidido.
          */
         'default_strategy' => [
             /*
@@ -312,13 +323,15 @@ return [
             'keep_all_backups_for_days' => 7,
 
             /*
-             * En cero: pasados los 7 días no se conserva nada.
+             * En cero los intermedios: pasada la semana se salta directo a la
+             * regla mensual, sin quedarse con diarios ni semanales sueltos.
              */
             'keep_daily_backups_for_days' => 0,
 
             'keep_weekly_backups_for_weeks' => 0,
 
-            'keep_monthly_backups_for_months' => 0,
+            /* Uno por mes, un año hacia atrás. */
+            'keep_monthly_backups_for_months' => 12,
 
             'keep_yearly_backups_for_years' => 0,
 
