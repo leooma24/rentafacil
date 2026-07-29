@@ -52,6 +52,12 @@ class AdminDashboard extends Page
             \App\Filament\Widgets\CuentasAtoradas::class,
 
             SectionHeading::make([
+                'titulo' => 'Quiénes sí lo usaron',
+                'descripcion' => 'Cuánto alcanzó a cargar cada uno, con plan vigente o vencido. Quien ya capturó sus equipos sabe para qué sirve.',
+            ]),
+            \App\Filament\Widgets\CuentasQueLoUsaron::class,
+
+            SectionHeading::make([
                 'titulo' => 'Seguimiento',
                 'descripcion' => 'Lo que se vence, lo que se atoró y lo que falta contactar.',
             ]),

@@ -217,4 +217,90 @@ class PanoramaSaaSTest extends TestCase
             ->assertSee('Lavandería del Norte')
             ->assertSee('6681234567');
     }
+
+    /**
+     * Una cuenta con el plan vencido que alcanzó a cargar equipos NO es lo
+     * mismo que una que se registró y nunca abrió, y desde el escritorio se
+     * veían igual: la de equipos no salía en ninguna lista.
+     *
+     * Que haya cargado sus aparatos quiere decir que ya sabe para qué sirve
+     * esto, y es justamente a quien conviene marcarle.
+     */
+    public function test_la_cuenta_vencida_que_si_cargo_equipos_aparece_con_cuantos(): void
+    {
+        $vencida = $this->empresa('Lavandería El Águila', creadaHace: 90);
+        $vencida->companyPackage()->create([
+            'package_id' => 1,
+            'start_date' => now()->subDays(60),
+            'end_date' => now()->subDays(30),
+        ]);
+
+        for ($i = 0; $i < 8; $i++) {
+            $vencida->washingMachines()->create([
+                'machine_code' => 'AGU-' . $i,
+                'brand' => 'Mabe',
+                'status' => 'disponible',
+            ]);
+        }
+
+        $this->assertFalse($vencida->fresh()->hasActivePackage(), 'La cuenta debía quedar vencida.');
+
+        $usaron = PanoramaSaaS::queLoUsaron();
+
+        $this->assertTrue(
+            $usaron->contains('id', $vencida->id),
+            'La cuenta vencida con ocho equipos no aparece en ningún lado.'
+        );
+        $this->assertSame(8, $usaron->firstWhere('id', $vencida->id)->washing_machines_count);
+    }
+
+    /** Quien nunca cargó nada no se cuela a esta lista: para eso está la otra. */
+    public function test_quien_no_cargo_nada_no_aparece_entre_los_que_lo_usaron(): void
+    {
+        $sinNada = $this->empresa('Nunca Arrancó', creadaHace: 30);
+
+        $this->assertFalse(PanoramaSaaS::queLoUsaron()->contains('id', $sinNada->id));
+    }
+
+    /** Y las demos siguen fuera: traen 18 equipos de mentiras cada una. */
+    public function test_las_demos_no_se_cuelan_entre_los_que_lo_usaron(): void
+    {
+        $demo = $this->conEquipo($this->empresa('Lavandería Demo', demo: true, creadaHace: 1));
+
+        $this->assertFalse(PanoramaSaaS::queLoUsaron()->contains('id', $demo->id));
+    }
+
+    /** Se ordenan por cuánto cargaron: arriba el que más lejos llegó. */
+    public function test_los_que_mas_cargaron_salen_primero(): void
+    {
+        $poco = $this->conEquipo($this->empresa('Con Una', creadaHace: 20));
+
+        $mucho = $this->empresa('Con Cinco', creadaHace: 20);
+        for ($i = 0; $i < 5; $i++) {
+            $mucho->washingMachines()->create([
+                'machine_code' => 'CIN-' . $i,
+                'brand' => 'Mabe',
+                'status' => 'disponible',
+            ]);
+        }
+
+        $usaron = PanoramaSaaS::queLoUsaron();
+
+        $this->assertSame($mucho->id, $usaron->first()->id);
+        $this->assertSame(1, $usaron->firstWhere('id', $poco->id)->washing_machines_count);
+    }
+
+    /** Y la pantalla lo enseña, con el número de equipos a la vista. */
+    public function test_el_escritorio_enseña_cuanto_cargo_cada_quien(): void
+    {
+        $empresa = $this->empresa('Lavandería Del Valle', creadaHace: 30);
+        $empresa->members()->attach($this->admin);
+        $this->conEquipo($empresa);
+
+        $this->actingAs($this->admin)
+            ->get("/propietario/{$empresa->id}/escritorio")
+            ->assertOk()
+            ->assertSee('Cuánto cargó cada quien')
+            ->assertSee('Lavandería Del Valle');
+    }
 }

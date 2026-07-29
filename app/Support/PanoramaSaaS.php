@@ -110,6 +110,27 @@ class PanoramaSaaS
             ->values();
     }
 
+    /**
+     * Las que sí cargaron equipo, con cuánto cargó cada una.
+     *
+     * Aunque el plan ya se les haya vencido —de hecho sobre todo entonces. Una
+     * cuenta expirada que alcanzó a dar de alta ocho lavadoras no es lo mismo
+     * que una que se registró y nunca abrió: la primera ya sabe para qué sirve
+     * la app, y es a quien conviene marcarle. Sin esta lista las dos se veían
+     * igual desde afuera, o sea, no se veían.
+     *
+     * @return Collection<int, Company>
+     */
+    public static function queLoUsaron(): Collection
+    {
+        return Company::where('is_demo', false)
+            ->whereIn('id', DB::table('washing_machines')->select('company_id')->distinct())
+            ->withCount(['washingMachines', 'rentals', 'payments'])
+            ->get()
+            ->sortByDesc('washing_machines_count')
+            ->values();
+    }
+
     public static function prospectosSinContactar(): int
     {
         return ProspectiveClient::whereNull('last_contacted_at')->count();
