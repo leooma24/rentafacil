@@ -243,6 +243,7 @@ class RentalResource extends Resource
                 // Entregar sale primero mientras falte; después queda el acuse.
                 RentalResource\Actions\EntregarAction::make(fn (Rental $record) => $record),
                 RentalResource\Actions\EntregarAction::acuse(fn (Rental $record) => $record),
+                RentalResource\Actions\CambiarEquipoAction::make(fn (Rental $record) => $record),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('download_contract')
                     ->label('Contrato')

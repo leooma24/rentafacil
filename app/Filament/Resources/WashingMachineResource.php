@@ -242,7 +242,9 @@ class WashingMachineResource extends Resource
                         'rentada' => 'success',
                         'mantenimiento' => 'gray',
                         'vendida' => 'info',
+                        'extraviada' => 'danger',
                         'fuera_de_servicio' => 'danger',
+                        default => 'gray',
                     }),
                 Tables\Columns\TextColumn::make('activeRental.status')
                     ->visibleFrom('md')
@@ -305,6 +307,7 @@ class WashingMachineResource extends Resource
                         'rentada' => 'Rentada',
                         'mantenimiento' => 'Mantenimiento',
                         'vendida' => 'Vendida',
+                        'extraviada' => 'Extraviada',
                         'fuera_de_servicio' => 'Fuera de Servicio',
                     ])
                     ->label('Estatus'),
@@ -332,6 +335,10 @@ class WashingMachineResource extends Resource
                     \App\Filament\Resources\RentalResource\Actions\EntregarAction::acuse(
                         fn (WashingMachine $record) => $record->activeRental,
                     ),
+                    \App\Filament\Resources\RentalResource\Actions\CambiarEquipoAction::make(
+                        fn (WashingMachine $record) => $record->activeRental,
+                    ),
+                    Actions\MarcarExtraviadoAction::make(),
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\RestoreAction::make(),
                     Actions\RentAction::make($tenant),

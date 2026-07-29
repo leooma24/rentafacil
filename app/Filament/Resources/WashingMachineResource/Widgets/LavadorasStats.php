@@ -64,6 +64,8 @@ class LavadorasStats extends CatalogoStats
             ->map(function (string $tipo) use ($filas) {
                 $delTipo = $filas->where('kind', $tipo);
                 $rentadas = (int) $delTipo->where('status', 'rentada')->sum('total');
+                // Ni las vendidas ni las extraviadas son del parque: contarlas
+                // hundiría la ocupación con aparatos que ya no están.
                 $parque = (int) $delTipo
                     ->whereIn('status', ['rentada', 'disponible', 'mantenimiento', 'fuera_de_servicio'])
                     ->sum('total');

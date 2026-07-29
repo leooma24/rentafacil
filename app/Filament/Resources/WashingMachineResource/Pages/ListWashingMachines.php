@@ -48,6 +48,8 @@ class ListWashingMachines extends ListRecords
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'mantenimiento')),
             'vendida' => Tab::make()
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'vendida')),
+            'extraviada' => Tab::make('Extraviadas')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'extraviada')),
             'fuera_de_servicio' => Tab::make()
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'fuera_de_servicio')),
         ];
