@@ -51,6 +51,24 @@ class PanelBanner
             );
         }
 
+        // El gratuito no vence. Lo que lo acota es el cupo, así que sólo se le
+        // habla cuando de verdad se llenó, y ahí la barra es una oferta y no un
+        // regaño: es justo la señal de que ya lo está usando.
+        if ($tenant->isOnFreePlan()) {
+            $uso = PlanUsage::for($tenant);
+
+            if ($uso->isMaxedOut()) {
+                return self::bar(
+                    '#f59e0b',
+                    "Llegaste al tope del plan gratuito (<strong>{$uso->machinesLabel()} equipos</strong>). Súbete de plan para seguir dando de alta.",
+                    $planUrl,
+                    'Ver los planes'
+                );
+            }
+
+            return '';
+        }
+
         if (! $tenant->hasActivePackage()) {
             return self::bar(
                 '#ef4444',

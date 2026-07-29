@@ -141,6 +141,12 @@ class Company extends Model
             return false;
         }
 
+        // El gratuito no es una prueba: no se acaba. Anunciarle "te quedan X
+        // días" a quien está en gratuito es prometerle un final que no existe.
+        if ($cp->package?->isFree()) {
+            return false;
+        }
+
         return ! CompanyPackage::where('company_id', $this->id)
             ->where('id', '<', $cp->id)
             ->exists();
@@ -153,9 +159,31 @@ class Company extends Model
         return max(0, (int) now()->diffInDays($cp->end_date, false));
     }
 
+    /**
+     * Si la empresa tiene acceso.
+     *
+     * El gratuito no vence: lo que lo acota es el cupo de equipos, no la fecha.
+     * Antes esto miraba sólo end_date, así que las 13 cuentas en gratuito salían
+     * como expiradas.
+     */
     public function hasActivePackage(): bool
     {
         $cp = $this->companyPackage;
-        return $cp && $cp->end_date && $cp->end_date >= now();
+
+        if (! $cp) {
+            return false;
+        }
+
+        if ($cp->package?->isFree()) {
+            return true;
+        }
+
+        return $cp->end_date && $cp->end_date >= now();
+    }
+
+    /** Está en el plan gratuito, que no vence pero sí tiene tope. */
+    public function isOnFreePlan(): bool
+    {
+        return $this->companyPackage?->package?->isFree() ?? false;
     }
 }

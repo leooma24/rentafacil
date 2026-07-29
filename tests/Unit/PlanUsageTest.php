@@ -127,15 +127,80 @@ class PlanUsageTest extends TestCase
         $this->assertSame('gray', $usage->planColor());
     }
 
-    public function test_un_plan_vencido_se_marca_en_rojo(): void
+    /**
+     * EL GRATUITO NO VENCE.
+     *
+     * Existe para que el rentador pruebe la app con unos cuantos equipos, y para
+     * que del otro lado se vea si de verdad la usa antes de ofrecerle un plan
+     * mayor. Lo que lo acota es el cupo, no la fecha.
+     *
+     * Antes esto miraba sólo end_date: las 13 cuentas reales en gratuito salían
+     * como expiradas y veían una barra roja diciéndoles que contrataran un plan
+     * para poder continuar.
+     */
+    public function test_el_plan_gratuito_nunca_vence(): void
     {
-        $company = $this->makeCompany(1, -5);
+        $company = $this->makeCompany(1, -400);
+
+        $usage = PlanUsage::for($company->fresh());
+
+        $this->assertTrue($usage->isActive, 'El gratuito salió como vencido.');
+        $this->assertFalse($usage->isOnTrial, 'El gratuito no es una prueba: no se acaba.');
+        $this->assertStringNotContainsString('vencido', $usage->planLabel());
+        $this->assertSame('Gratuito · 0 / 3 equipos', $usage->planLabel());
+        $this->assertSame('info', $usage->planColor());
+    }
+
+    /** Y cuando se llena, esa es la señal de venta. */
+    public function test_el_gratuito_lleno_se_marca_como_oportunidad(): void
+    {
+        $company = $this->makeCompany(1, -400);
+        $this->addMachines($company, 3);
+
+        $usage = PlanUsage::for($company->fresh());
+
+        $this->assertTrue($usage->isActive, 'Llenarse no le quita el acceso.');
+        $this->assertTrue($usage->isMaxedOut());
+        $this->assertSame('Gratuito · lleno', $usage->planLabel());
+        $this->assertSame('warning', $usage->planColor());
+    }
+
+    /** Un plan de paga sí vence, y ahí el rojo es correcto. */
+    public function test_un_plan_de_paga_vencido_se_marca_en_rojo(): void
+    {
+        $company = $this->makeCompany(2, -5);
 
         $usage = PlanUsage::for($company->fresh());
 
         $this->assertTrue($usage->hasPlan);
         $this->assertFalse($usage->isActive);
-        $this->assertSame('Gratuito · vencido', $usage->planLabel());
+        $this->assertSame('Ilimitado · vencido', $usage->planLabel());
         $this->assertSame('danger', $usage->planColor());
+    }
+
+    /** La barra roja de "plan expirado" no se le enseña a quien está en gratuito. */
+    public function test_el_gratuito_no_ve_la_barra_de_plan_expirado(): void
+    {
+        $company = $this->makeCompany(1, -400);
+        $company->settings()->create(['price' => 250, 'days_per_payment' => 7]);
+
+        $barra = \App\Support\PanelBanner::for($company->fresh());
+
+        $this->assertStringNotContainsString('expirado', $barra);
+        $this->assertSame('', $barra, 'Con cupo de sobra no hay nada que avisarle.');
+    }
+
+    /** Pero al llenarse sí se le ofrece subir de plan, que es el objetivo. */
+    public function test_el_gratuito_lleno_ve_la_oferta_de_subir_de_plan(): void
+    {
+        $company = $this->makeCompany(1, -400);
+        $company->settings()->create(['price' => 250, 'days_per_payment' => 7]);
+        $this->addMachines($company, 3);
+
+        $barra = \App\Support\PanelBanner::for($company->fresh());
+
+        $this->assertStringContainsString('tope del plan gratuito', $barra);
+        $this->assertStringContainsString('mi-plan', $barra);
+        $this->assertStringNotContainsString('expirado', $barra);
     }
 }

@@ -17,6 +17,8 @@ class PlanUsage
         public readonly bool $hasPlan,
         public readonly bool $isActive,
         public readonly bool $isOnTrial,
+        /** El gratuito no vence: lo acota el cupo, no la fecha. */
+        public readonly bool $isFree,
         public readonly int $trialDaysLeft,
         public readonly int $machines,
         public readonly ?int $maxMachines,
@@ -45,6 +47,7 @@ class PlanUsage
             hasPlan: true,
             isActive: $company->hasActivePackage(),
             isOnTrial: $company->isOnTrial(),
+            isFree: $package->isFree(),
             trialDaysLeft: $company->trialDaysLeft(),
             machines: $machines,
             maxMachines: (int) $package->max_washers,
@@ -60,6 +63,7 @@ class PlanUsage
             hasPlan: false,
             isActive: false,
             isOnTrial: false,
+            isFree: false,
             trialDaysLeft: 0,
             machines: $machines,
             maxMachines: null,
@@ -104,6 +108,14 @@ class PlanUsage
             return 'Sin plan';
         }
 
+        // El gratuito no vence: lo que cuenta es cuánto cupo lleva usado. Decirle
+        // "vencido" era falso y lo empujaba a pensar que ya no puede usar la app.
+        if ($this->isFree) {
+            return $this->isMaxedOut()
+                ? "{$this->planName} · lleno"
+                : "{$this->planName} · {$this->machinesLabel()} equipos";
+        }
+
         if ($this->isOnTrial && $this->isActive) {
             return "{$this->planName} · prueba, {$this->trialDaysLeft} días";
         }
@@ -115,6 +127,11 @@ class PlanUsage
     {
         if (! $this->hasPlan) {
             return 'gray';
+        }
+
+        if ($this->isFree) {
+            // Lleno es la señal de venta, no una falla.
+            return $this->isMaxedOut() ? 'warning' : 'info';
         }
 
         if (! $this->isActive) {
