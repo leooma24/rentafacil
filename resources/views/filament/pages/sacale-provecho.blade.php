@@ -5,7 +5,8 @@
 --}}
 <x-filament-panels::page>
     @php($sinEstrenar = $provecho->sinEstrenar())
-    @php($resto = $provecho->resto())
+    @php($destacadas = $provecho->destacadas())
+    @php($resto = $provecho->elResto())
 
     @if (count($sinEstrenar))
         <div class="rf-provecho-aviso">
@@ -22,10 +23,19 @@
             </div>
         </div>
 
-        <h2 class="rf-provecho-seccion">Empieza por aquí</h2>
+        {{-- Sólo las de más peso. Con veintiuna herramientas, "empieza por aquí"
+             con quince tarjetas no es un punto de partida, es una pared. --}}
+        <h2 class="rf-provecho-seccion">
+            Empieza por aquí
+            @if (count($sinEstrenar) > count($destacadas))
+                <span class="rf-provecho-seccion-nota">
+                    las {{ count($destacadas) }} que más te sirven ahora
+                </span>
+            @endif
+        </h2>
 
         <div class="rf-provecho-lista">
-            @foreach ($sinEstrenar as $herramienta)
+            @foreach ($destacadas as $herramienta)
                 @include('filament.pages.partials.herramienta', [
                     'herramienta' => $herramienta,
                     'destacada' => true,
@@ -46,7 +56,7 @@
 
     @if (count($resto))
         <h2 class="rf-provecho-seccion">
-            {{ count($sinEstrenar) ? 'Lo demás que ya tienes' : 'Tus herramientas' }}
+            {{ count($sinEstrenar) ? 'Todo lo demás que tienes' : 'Tus herramientas' }}
         </h2>
 
         <div class="rf-provecho-lista">

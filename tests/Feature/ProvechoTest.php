@@ -219,4 +219,68 @@ class ProvechoTest extends TestCase
             $badge
         );
     }
+
+    /**
+     * LO QUE ESTA PANTALLA EXISTE PARA EVITAR.
+     *
+     * Se construyeron recolección, evidencia de entrega, papeles del cliente,
+     * cambio de equipo, cobrador, recargos, bitácora, depósito sugerido y la
+     * decisión de crecer, y ninguna aparecía aquí. Una función que nadie sabe
+     * que existe no existe, y esta pantalla se hizo justo por eso.
+     */
+    public function test_todo_lo_que_se_construyo_despues_tambien_se_presenta(): void
+    {
+        $claves = collect(Provecho::for($this->company)->herramientas)->pluck('clave');
+
+        foreach ([
+            'recoleccion',
+            'historial-cliente',
+            'deposito',
+            'entregas',
+            'documentos',
+            'cambio-equipo',
+            'bitacora',
+            'crecer',
+            'cobrador',
+            'recargos',
+        ] as $clave) {
+            $this->assertTrue(
+                $claves->contains($clave),
+                "La herramienta «{$clave}» existe en la app y nadie la presenta en Sácale provecho."
+            );
+        }
+    }
+
+    /**
+     * Con veintiuna herramientas, "empieza por aquí" con quince tarjetas no es un
+     * punto de partida, es una pared.
+     */
+    public function test_lo_destacado_se_acota_a_lo_que_se_alcanza_a_leer(): void
+    {
+        $provecho = Provecho::for($this->company);
+
+        $this->assertLessThanOrEqual(Provecho::CUANTAS_DESTACADAS, count($provecho->destacadas()));
+
+        // Y nada se pierde: lo que no cupo arriba sigue abajo.
+        $arriba = collect($provecho->destacadas())->pluck('clave');
+        $abajo = collect($provecho->elResto())->pluck('clave');
+
+        $this->assertSame(
+            count($provecho->herramientas),
+            $arriba->count() + $abajo->count(),
+            'Hay herramientas que no salen ni arriba ni abajo.'
+        );
+        $this->assertCount(0, $arriba->intersect($abajo), 'Una herramienta sale en las dos listas.');
+    }
+
+    /** Lo destacado es lo que no ha estrenado, no lo que ya usa. */
+    public function test_lo_destacado_solo_trae_lo_que_no_ha_estrenado(): void
+    {
+        foreach (Provecho::for($this->company)->destacadas() as $herramienta) {
+            $this->assertTrue(
+                $herramienta->sinEstrenar(),
+                "Se está destacando «{$herramienta->clave}», que ya usa."
+            );
+        }
+    }
 }

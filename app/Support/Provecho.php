@@ -76,6 +76,33 @@ class Provecho
             ->whereDate('end_date', '<=', today()->addDays(30))
             ->count();
 
+        // Las señales de lo que se agregó después de la primera versión de esta
+        // pantalla. Sin ellas, media app quedaba sin quien la presentara: se
+        // construyeron recolección, evidencia de entrega, papeles del cliente,
+        // cambio de equipo, cobrador, recargos y la bitácora, y ninguna aparecía
+        // aquí. Una función que nadie sabe que existe no existe.
+        $conDeposito = $company->rentals()->where('deposit', '>', 0)->count();
+        $conEntrega = $company->rentals()->whereNotNull('delivery_photos')->count();
+        $recogidasConAdeudo = $company->rentals()->where('debt_at_close', '>', 0)->count();
+
+        $documentos = \App\Models\CustomerDocument::whereIn(
+            'customer_id',
+            $company->customers()->select('id')
+        )->count();
+
+        $cambios = DB::table('rental_machine_changes')
+            ->whereIn('rental_id', $company->rentals()->select('id'))
+            ->count();
+
+        $cobradores = $company->members()
+            ->whereHas('roles', fn ($q) => $q->where('name', 'cobrador'))
+            ->count();
+
+        $cobraRecargo = $company->settings?->chargesLateFee() ?? false;
+        $paraRecoger = ParaRecoger::for($company);
+        $parados = EquipoParado::for($company);
+        $crecer = DecisionDeCrecer::for($company);
+
         return new self(array_values(array_filter([
             new Herramienta(
                 clave: 'estado-de-cuenta',
@@ -233,6 +260,166 @@ class Provecho
                 peso: 50,
             ),
 
+
+            // --- Lo que protege el aparato y el dinero ---
+
+            new Herramienta(
+                clave: 'recoleccion',
+                titulo: 'Recoge el equipo sin perder lo que te deben',
+                beneficio: 'Al recoger, el sistema te enseña cuánto te quedó debiendo y tú decides: queda anotado o quedaron en paz. Antes cerrar la renta borraba el adeudo, y el que te falló volvía a pedirte lavadora con la cuenta en ceros.',
+                comoSeUsa: 'En Equipos, con el botón Recoger equipo. El aparato queda en revisión hasta que lo marques listo.',
+                pista: $paraRecoger->hay()
+                    ? 'Ahorita ya toca ir por ' . $paraRecoger->cuantas()
+                        . ($paraRecoger->cuantas() === 1 ? ' equipo' : ' equipos')
+                        . ': son $' . number_format($paraRecoger->rentaDetenidaPorPeriodo(), 2)
+                        . ' de renta detenida cada periodo.'
+                    : ($recogidasConAdeudo > 0
+                        ? "Llevas {$recogidasConAdeudo} " . ($recogidasConAdeudo === 1 ? 'recolección' : 'recolecciones') . ' donde quedó anotado el adeudo.'
+                        : 'Cuando alguien deje de pagar, esto es lo que te deja recuperar el equipo sin regalarle lo que debía.'),
+                estado: $recogidasConAdeudo > 0 ? self::USANDO : self::SIN_ESTRENAR,
+                icono: 'heroicon-o-arrow-uturn-left',
+                ruta: 'filament.propietario.pages.avisos',
+                accion: $paraRecoger->hay() ? 'Ver a quiénes' : 'Ver los avisos',
+                peso: $paraRecoger->hay() ? 99 : 88,
+            ),
+
+            new Herramienta(
+                clave: 'historial-cliente',
+                titulo: 'Sabe a quién le estás volviendo a rentar',
+                beneficio: 'Cada cliente trae su etiqueta: cumplido, se atrasa, o ya quedó a deber. Y al escogerlo para una renta nueva te lo dice antes de entregarle. Volverle a dar equipo a quien ya te falló cuesta el aparato completo, no una semana de renta.',
+                comoSeUsa: 'Sale solo en la lista de Clientes y en el formulario de renta. No hay que hacer nada.',
+                pista: $recogidasConAdeudo > 0
+                    ? 'Ya hay clientes marcados por haber quedado a deber: fíjate en la columna Cómo paga.'
+                    : 'Se llena solo conforme cobras. Con tres cobros ya te dice si alguien paga tarde siempre.',
+                estado: null,
+                icono: 'heroicon-o-identification',
+                ruta: 'filament.propietario.resources.clientes.index',
+                accion: 'Ver mis clientes',
+                peso: 96,
+            ),
+
+            new Herramienta(
+                clave: 'deposito',
+                titulo: 'Pide depósito según cómo paga cada quien',
+                beneficio: 'Al armar la renta te sugiere cuánto pedirle, medido en periodos: al nuevo dos, al que ya te falló tres, y al que lleva años pagando puntual ninguno. Es lo que te deja competir sin bajar el precio.',
+                comoSeUsa: 'En el formulario de renta, el campo de depósito se precarga solo al escoger al cliente.',
+                pista: $conDeposito > 0
+                    ? "Llevas {$conDeposito} " . ($conDeposito === 1 ? 'renta con depósito' : 'rentas con depósito') . '.'
+                    : 'Ninguna de tus rentas trae depósito: es lo único que protege el aparato si alguien se muda con él.',
+                estado: $conDeposito > 0 ? self::USANDO : self::SIN_ESTRENAR,
+                icono: 'heroicon-o-shield-check',
+                ruta: 'filament.propietario.resources.mis-rentas.index',
+                accion: 'Ver mis rentas',
+                peso: 94,
+            ),
+
+            new Herramienta(
+                clave: 'entregas',
+                titulo: 'Deja constancia de cómo lo entregaste',
+                beneficio: 'Fotos del equipo al entregarlo y al recogerlo. Es lo único con que puedes responder al así me la diste cuando te la devuelven golpeada, y lo que te permite retener parte del depósito con razón.',
+                comoSeUsa: 'En Rentas, con el botón Entregar. Al recoger te pide las de regreso para comparar.',
+                pista: $conEntrega > 0
+                    ? "Llevas {$conEntrega} " . ($conEntrega === 1 ? 'entrega con fotos' : 'entregas con fotos') . '.'
+                    : 'Ninguna entrega tiene fotos: sin el antes, el después no compara contra nada.',
+                estado: $conEntrega > 0 ? self::USANDO : self::SIN_ESTRENAR,
+                icono: 'heroicon-o-camera',
+                ruta: 'filament.propietario.resources.mis-rentas.index',
+                accion: 'Ver mis rentas',
+                peso: 91,
+            ),
+
+            new Herramienta(
+                clave: 'documentos',
+                titulo: 'Guarda la INE de tus clientes',
+                beneficio: 'Su identificación y su comprobante de domicilio, en su ficha. Es con lo que se recupera un aparato cuando alguien se muda con él. Tu cobrador no los puede ver.',
+                comoSeUsa: 'En Clientes, abre uno y ve a la pestaña Documentos.',
+                pista: $documentos > 0
+                    ? "Llevas {$documentos} " . ($documentos === 1 ? 'documento guardado' : 'documentos guardados') . '.'
+                    : 'Ningún cliente tiene papeles guardados: sin eso, recuperar un equipo extraviado es cuesta arriba.',
+                estado: $documentos > 0 ? self::USANDO : self::SIN_ESTRENAR,
+                icono: 'heroicon-o-folder',
+                ruta: 'filament.propietario.resources.clientes.index',
+                accion: 'Ver mis clientes',
+                peso: 89,
+            ),
+
+            // --- Lo que ordena el parque ---
+
+            new Herramienta(
+                clave: 'cambio-equipo',
+                titulo: 'Cámbiale el aparato sin perder su historial',
+                beneficio: 'Si se le descompone, le llevas otra y la renta sigue igual: conserva sus pagos, su saldo y su fecha. Antes había que cancelar y crear otra, y el cliente arrancaba de cero.',
+                comoSeUsa: 'En Rentas o en Equipos, con el botón Cambiar equipo.',
+                pista: $cambios > 0
+                    ? "Llevas {$cambios} " . ($cambios === 1 ? 'cambio registrado' : 'cambios registrados') . '.'
+                    : 'Pasa cada semana en este negocio: así no se le borra el historial al cliente.',
+                estado: $cambios > 0 ? self::USANDO : self::SIN_ESTRENAR,
+                icono: 'heroicon-o-arrow-path',
+                ruta: 'filament.propietario.resources.mis-rentas.index',
+                accion: 'Ver mis rentas',
+                peso: 75,
+            ),
+
+            new Herramienta(
+                clave: 'bitacora',
+                titulo: 'Mira toda la vida de un aparato',
+                beneficio: 'Quién la ha tenido, qué se le ha reparado y cuánto costó, cuánto ha generado y cuántas veces ha regresado, en una sola pantalla y en orden. Con eso contestas por qué una lavadora te está saliendo tan cara.',
+                comoSeUsa: 'En Equipos, el botón del relojito en cada fila.',
+                pista: $parados->hay()
+                    ? 'El que más lleva parado son ' . $parados->diasDelPeor() . ' días sin generar nada.'
+                    : ($lavadoras > 0 ? "Cualquiera de tus {$lavadoras} equipos tiene la suya." : null),
+                estado: null,
+                icono: 'heroicon-o-clock',
+                ruta: 'filament.propietario.resources.lavadoras.index',
+                accion: 'Ir a equipos',
+                peso: 72,
+            ),
+
+            new Herramienta(
+                clave: 'crecer',
+                titulo: 'Sabe cuándo te conviene comprar otra',
+                beneficio: 'Las tres cifras que deciden, juntas: si está todo colocado, si hay a quién dárselo, y en cuánto se paga una nueva con tu tarifa. Comprar con aparatos parados en la bodega es cambiar dinero por más dinero parado.',
+                comoSeUsa: 'Está al final de tu escritorio, en el bloque Crecer.',
+                pista: $crecer->parque > 0 ? $crecer->veredicto() : null,
+                estado: null,
+                icono: 'heroicon-o-arrow-trending-up',
+                ruta: 'filament.propietario.pages.dashboard',
+                accion: 'Ver mi escritorio',
+                peso: 68,
+            ),
+
+            // --- Lo que reparte el trabajo ---
+
+            new Herramienta(
+                clave: 'cobrador',
+                titulo: 'Dale acceso a tu cobrador',
+                beneficio: 'Entra con su propia clave, ve a quién cobrar y registra los pagos desde su celular. No ve tus precios, tus reportes ni los papeles de nadie, y no puede borrar. Y su corte de caja se cuadra por separado.',
+                comoSeUsa: 'En Mi cuenta, entra a Mi equipo y dale de alta.',
+                pista: $cobradores > 0
+                    ? "Tienes {$cobradores} " . ($cobradores === 1 ? 'cobrador dado de alta' : 'cobradores dados de alta') . '.'
+                    : 'Si alguien más sale a cobrar por ti, esto le da su acceso sin enseñarle tus números.',
+                estado: $cobradores > 0 ? self::USANDO : self::SIN_ESTRENAR,
+                icono: 'heroicon-o-users',
+                ruta: 'filament.propietario.resources.mi-equipo.index',
+                accion: 'Ver mi equipo',
+                peso: 65,
+            ),
+
+            new Herramienta(
+                clave: 'recargos',
+                titulo: 'Cobra recargo por atrasarse',
+                beneficio: 'Un monto fijo o un porcentaje por cada periodo vencido, con los días de gracia que tú pongas. Atrasarse deja de salir gratis, y el recargo aparece desglosado en su estado de cuenta.',
+                comoSeUsa: 'En Preferencias, en el bloque de recargo por atraso. En cero está apagado.',
+                pista: $cobraRecargo
+                    ? 'Ya lo tienes configurado.'
+                    : 'Está apagado: hoy atrasarse no le cuesta nada a nadie.',
+                estado: $cobraRecargo ? self::USANDO : self::SIN_ESTRENAR,
+                icono: 'heroicon-o-exclamation-circle',
+                ruta: 'filament.propietario.pages.configuracion',
+                accion: 'Abrir Preferencias',
+                peso: 58,
+            ),
+
             // Sólo tiene sentido ofrecerlo cuando todavía hay poco cargado.
             $lavadoras < 10 || $clientes < 10
                 ? new Herramienta(
@@ -249,6 +436,34 @@ class Provecho
                 )
                 : null,
         ])));
+    }
+
+    /**
+     * Cuántas se destacan arriba.
+     *
+     * La lista creció de once herramientas a veintiuna, y una cuenta nueva no
+     * tiene estrenada casi ninguna: "Empieza por aquí" con quince tarjetas no es
+     * un punto de partida, es una pared. Cinco es lo que se alcanza a leer y a
+     * hacer en una sentada; el resto sigue abajo sin desaparecer.
+     */
+    public const CUANTAS_DESTACADAS = 5;
+
+    /** Por dónde conviene empezar: las de más peso que no ha estrenado. */
+    public function destacadas(): array
+    {
+        return array_slice($this->sinEstrenar(), 0, self::CUANTAS_DESTACADAS);
+    }
+
+    /** Todo lo demás: lo que ya usa y lo que no cupo arriba. */
+    public function elResto(): array
+    {
+        $destacadas = collect($this->destacadas())->pluck('clave');
+
+        return collect($this->herramientas)
+            ->reject(fn (Herramienta $h) => $destacadas->contains($h->clave))
+            ->sortByDesc(fn (Herramienta $h) => $h->peso)
+            ->values()
+            ->all();
     }
 
     /** Lo que no ha estrenado, primero lo que más le sirve. */

@@ -93,6 +93,8 @@ class GuiaDelDemo
             self::pasoPapeles($empresa),
             self::pasoCobrador($empresa),
             self::pasoGanancia($empresa),
+            self::pasoRecoger($empresa),
+            self::pasoBitacora($empresa),
         ]);
 
         return array_values(array_map(
@@ -243,6 +245,56 @@ class GuiaDelDemo
             'titulo' => 'Revisa qué alcanza a ver ' . $cobrador->name,
             'gancho' => 'Entra con su propia clave, ve a quién cobrar y registra los pagos. No ve tus precios, tus reportes ni los papeles de nadie, y no puede borrar.',
             'url' => \App\Filament\Resources\EquipoResource::getUrl('index', tenant: $empresa),
+        ];
+    }
+
+    /**
+     * Recoger sin perder el adeudo.
+     *
+     * Es el paso del ciclo que más se pregunta —"¿y si dejan de pagar?"— y la
+     * respuesta es justo lo que separa esto de una libreta: se recupera el
+     * equipo y lo que quedó debiendo no se borra.
+     */
+    private static function pasoRecoger(Company $empresa): ?array
+    {
+        $recogida = $empresa->rentals()
+            ->where('debt_at_close', '>', 0)
+            ->with(['customer', 'washingMachine'])
+            ->latest('end_date')
+            ->first();
+
+        if (! $recogida) {
+            return null;
+        }
+
+        return [
+            'clave' => 'recoger',
+            'icono' => 'heroicon-o-arrow-uturn-left',
+            'titulo' => 'Mira qué pasó cuando dejaron de pagar',
+            'gancho' => 'A ' . ($recogida->customer?->name ?? 'un cliente') . ' se le recogió el equipo y quedó anotado que debe $'
+                . number_format((float) $recogida->debt_at_close, 2) . '. Si vuelve a pedir lavadora, el sistema te lo advierte antes de entregársela.',
+            'url' => \App\Filament\Resources\CustomerResource::getUrl('edit', ['record' => $recogida->customer], tenant: $empresa),
+        ];
+    }
+
+    /** Toda la vida de un aparato, que es lo que nadie lleva en papel. */
+    private static function pasoBitacora(Company $empresa): ?array
+    {
+        $equipo = $empresa->washingMachines()
+            ->withCount('rentals')
+            ->orderByDesc('rentals_count')
+            ->first();
+
+        if (! $equipo) {
+            return null;
+        }
+
+        return [
+            'clave' => 'bitacora',
+            'icono' => 'heroicon-o-clock',
+            'titulo' => 'Abre la historia completa de ' . $equipo->machine_code,
+            'gancho' => 'Quién la ha tenido, qué se le ha reparado y cuánto costó, y si ya se pagó sola. Todo en orden y en una pantalla.',
+            'url' => \App\Filament\Resources\WashingMachineResource::getUrl('bitacora', ['record' => $equipo], tenant: $empresa),
         ];
     }
 
