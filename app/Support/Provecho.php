@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 /**
  * Qué herramientas tiene una empresa y cuáles no ha estrenado.
  *
- * De 17 cuentas reales, 9 cargaron lavadoras y sólo 4 registran pagos. El
+ * De 17 cuentas reales, 6 cargaron equipo y sólo 1 ha registrado un cobro. El
  * problema no es que falten funciones: es que nadie les dijo para qué sirven.
  *
  * Cada tarjeta se apoya en la huella que la función deja en los datos, no en
