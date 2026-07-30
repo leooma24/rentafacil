@@ -1418,3 +1418,109 @@
     text-transform: none;
     color: #94a3b8;
 }
+
+/* ---------------------------------------------------------------------------
+   "Si el sistema está trabajando": el latido de las tareas, en el escritorio
+   del administrador.
+   --------------------------------------------------------------------------- */
+.rf-salud-ok {
+    margin-bottom: .9rem;
+    padding: .7rem .85rem;
+    border-left: 4px solid #059669;
+    border-radius: .5rem;
+    background: rgba(5, 150, 105, .07);
+    font-size: .875rem;
+    font-weight: 600;
+    color: #065f46;
+}
+
+.rf-salud-lista {
+    display: flex;
+    flex-direction: column;
+}
+
+.rf-salud-fila {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: .3rem .75rem;
+    padding: .55rem 0;
+    border-bottom: 1px solid rgba(148, 163, 184, .14);
+    font-size: .8125rem;
+}
+
+.rf-salud-fila:last-child {
+    border-bottom: 0;
+}
+
+.rf-salud-nombre {
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.rf-salud-comando {
+    margin-left: .4rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: .6875rem;
+    font-weight: 400;
+    color: #94a3b8;
+}
+
+.rf-salud-estado {
+    color: #64748b;
+}
+
+.rf-salud-fila-mal .rf-salud-estado {
+    color: #be123c;
+    font-weight: 700;
+}
+
+.rf-salud-fila-mal .rf-salud-nombre {
+    color: #9f1239;
+}
+
+.rf-salud-fila-gris .rf-salud-nombre,
+.rf-salud-fila-gris .rf-salud-estado {
+    color: #94a3b8;
+}
+
+.rf-salud-datos {
+    margin-top: 1rem;
+    padding: .85rem .95rem;
+    border-left: 4px solid #f97316;
+    border-radius: .5rem;
+    background: rgba(249, 115, 22, .06);
+}
+
+.rf-salud-datos-titulo {
+    font-size: .875rem;
+    font-weight: 700;
+    color: #9a3412;
+}
+
+.rf-salud-datos-linea {
+    margin-top: .45rem;
+    font-size: .8125rem;
+    line-height: 1.5;
+    color: #7c2d12;
+}
+
+.rf-salud-hallazgo {
+    display: block;
+    padding-left: .75rem;
+    color: #9a3412;
+}
+
+.rf-salud-datos-pie {
+    margin-top: .7rem;
+    font-size: .75rem;
+    line-height: 1.5;
+    color: #9a3412;
+}
+
+.dark .rf-salud-nombre { color: #e2e8f0; }
+.dark .rf-salud-datos-titulo,
+.dark .rf-salud-datos-linea,
+.dark .rf-salud-hallazgo,
+.dark .rf-salud-datos-pie { color: #fed7aa; }

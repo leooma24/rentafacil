@@ -58,6 +58,12 @@ class AdminDashboard extends Page
             \App\Filament\Widgets\CuentasQueLoUsaron::class,
 
             SectionHeading::make([
+                'titulo' => 'Si el sistema está trabajando',
+                'descripcion' => 'Lo que corre solo, y si de verdad está corriendo. Una tarea caída no se ve en ninguna otra pantalla.',
+            ]),
+            \App\Filament\Widgets\SaludDelSistema::class,
+
+            SectionHeading::make([
                 'titulo' => 'Seguimiento',
                 'descripcion' => 'Lo que se vence, lo que se atoró y lo que falta contactar.',
             ]),

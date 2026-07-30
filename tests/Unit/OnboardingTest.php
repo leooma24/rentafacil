@@ -33,12 +33,13 @@ class OnboardingTest extends TestCase
         ])->fresh();
     }
 
-    public function test_una_empresa_nueva_trae_los_cuatro_pasos_pendientes(): void
+    public function test_una_empresa_nueva_trae_los_cinco_pasos_pendientes(): void
     {
         $onboarding = Onboarding::for($this->makeCompany());
 
-        $this->assertCount(4, $onboarding->steps);
-        $this->assertSame(4, $onboarding->pendingCount());
+        // Cinco: el quinto es el primer cobro, que es donde de verdad se caen.
+        $this->assertCount(5, $onboarding->steps);
+        $this->assertSame(5, $onboarding->pendingCount());
         $this->assertSame(0, $onboarding->doneCount());
         $this->assertFalse($onboarding->isComplete());
         $this->assertTrue($onboarding->needsPrice());
@@ -53,7 +54,7 @@ class OnboardingTest extends TestCase
 
         $this->assertFalse($onboarding->needsPrice());
         $this->assertSame(1, $onboarding->doneCount());
-        $this->assertSame(3, $onboarding->pendingCount());
+        $this->assertSame(4, $onboarding->pendingCount());
         $this->assertFalse($onboarding->isComplete());
     }
 
@@ -65,7 +66,14 @@ class OnboardingTest extends TestCase
         $this->assertTrue(Onboarding::for($company->fresh())->needsPrice());
     }
 
-    public function test_con_los_cuatro_pasos_hechos_queda_completo(): void
+    /**
+     * Ya con la renta NO queda completo: falta el cobro.
+     *
+     * La lista terminaba aquí y se daba por arrancada la cuenta. Pero de las 6
+     * cuentas reales que cargaron equipo, 5 nunca registraron un cobro: la pared
+     * está justo en el escalón siguiente.
+     */
+    public function test_con_la_primera_renta_todavia_falta_el_cobro(): void
     {
         $company = $this->makeCompany();
         $company->settings()->create(['price' => 250, 'days_per_payment' => 7]);
@@ -76,7 +84,7 @@ class OnboardingTest extends TestCase
         $customer = $company->customers()->create([
             'name' => 'Juan', 'email' => 'juan' . uniqid() . '@x.com', 'phone' => '1',
         ]);
-        $company->rentals()->create([
+        $renta = $company->rentals()->create([
             'customer_id' => $customer->id,
             'washing_machine_id' => $machine->id,
             'start_date' => now()->toDateString(),
@@ -86,8 +94,25 @@ class OnboardingTest extends TestCase
 
         $onboarding = Onboarding::for($company->fresh());
 
-        $this->assertTrue($onboarding->isComplete());
-        $this->assertSame(0, $onboarding->pendingCount());
+        $this->assertFalse($onboarding->isComplete());
+        $this->assertSame(1, $onboarding->pendingCount());
+        $this->assertTrue($onboarding->faltaElPrimerCobro());
+        $this->assertSame('cobro', $onboarding->siguiente()['clave']);
+
+        // Y con el primer cobro sí.
+        $renta->payments()->create([
+            'company_id' => $company->id,
+            'amount' => 250,
+            'payment_date' => today()->toDateString(),
+            'payment_method' => 'Efectivo',
+            'status' => 'completado',
+        ]);
+
+        $completo = Onboarding::for($company->fresh());
+
+        $this->assertTrue($completo->isComplete());
+        $this->assertSame(0, $completo->pendingCount());
+        $this->assertNull($completo->siguiente());
     }
 
     public function test_la_barra_avisa_cuando_falta_el_precio(): void

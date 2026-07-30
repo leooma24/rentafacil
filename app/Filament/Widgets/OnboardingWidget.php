@@ -44,6 +44,9 @@ class OnboardingWidget extends Widget
             'lavadoras' => WashingMachineResource::getUrl('index'),
             'clientes' => CustomerResource::getUrl('index'),
             'renta' => RentalResource::getUrl('index'),
+            // Al mismo lugar que la renta: el cobro se registra con el botón
+            // Cobrar de cada renta, no en una pantalla aparte.
+            'cobro' => RentalResource::getUrl('index'),
         };
     }
 }
